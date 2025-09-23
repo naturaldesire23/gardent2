@@ -1,129 +1,122 @@
---// Whitelist system
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
 
-local whitelist = {
-    ["itsmeharsh3123"] = true,
-    ["balbonbacono"] = true,
-    ["balbonbacon"] = true,
-    ["vellryesBBC"] = true,
-    ["sau2010052"] = true,
-    ["lukysestakcz"] = true,
-    ["ToxicM1817"] = false,
-    ["namfhhh2"] = true,
-    ["LanamrNTHr"] = false,
-    ["Anonimato_91"] = true,
-    ["juztphunz"] = true,
-    ["dieoutzzzz"] = true,
-    ["nxxteiei"] = true,
-    ["mimipokop"] = true,
-    ["jadpai24"] = true,
-    ["Hdhjsnsjzvzj"] = true,
-    ["Hyasp4"] = true,
-    ["fwrjhiee"] = true,
-    ["1919three"] = true,
-    ["Otaldovictormidia"] = true,
-    ["Am_kareem36839alt"] = true,
-    ["demonicjajajxd"] = true,
-    ["fuzifauzi"] = true,
-    ["Alqoure45"] = false,
-    ["molo_tw1"] = true,
-    ["DinoGok555"] = true,
-    ["Suukunaa888"] = true,
-    ["yuuji8888"] = true,
-    ["Wave110izz"] = true,
-    ["xma300z"] = true,
-    ["gpxdronex"] = true,
-    ["pcx160ccx"] = true,
-    ["4bangzz"] = true,
-    ["1mill888z"] = true,
-    ["dusfuxxx"] = true,
-    ["dusfuxx"] = true,
-    ["SamMaBig30"] = true,
-    ["dusfaaq"] = true,
-    ["sopainnn"] = true,
-    ["YaysRagna"] = true,
-    ["Tien_Fram"] = true,
-    ["tindeptraigem7"] = true,
-    ["tindeptraigem8"] = true,
-    ["tindeptraigem9"] = true,
-    ["tindeptraigem11"] = true,
-    ["tindeptraigem12"] = true,
-    ["tindeptraigem13"] = true,
-    ["7CaNyV83zcy13N"] = true,
-    ["Dreamer_playz9"] = true,
-    ["OMAR_SALAK1510"] = true,
-    ["growagardenvinh"] = true,
-    ["padil_10s"] = true,
-    ["Lonewolfgameing"] = true,
-    ["bebekoyen1"] = true,
-    ["adoptmekonfetu1"] = true,
-    ["adoptmekonfetu2"] = true,
-    ["adoptmekonfetu4"] = true,
-    ["VtZxNoWsuJU"] = true,
-    ["roo00_00"] = true,
-    ["natuskol1"] = true,
-    ["0Rusian069"] = true,
-    ["1Rusian069"] = true,
-    ["ITSMEHARSH132"] = true,
-    ["Vasika2282"] = true,
-    ["Dark_20981"] = true,
-    ["somerandomguy13424"] = true,
-    ["king_izen1"] = true,
-    ["Llamacanspit1"] = true,
-    ["progemes464235"] = true,
-    ["justcr15"] = true
-    
-}
+print("Waiting for key...")
 
-if not whitelist[plr.Name] then
-    plr:Kick("You are not whitelisted to use this script pls contact owner at discord to buy script and get whitelist.")
-    return
-end
+--// Beautiful Key GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = plr:WaitForChild("PlayerGui")
+ScreenGui.Name = "KeySystemGUI"
 
-print(plr.Name .. " is whitelisted. Waiting for key...")
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 350, 0, 280)
+Frame.Position = UDim2.new(0.5, -175, 0.5, -140)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+Frame.BorderSizePixel = 0
+Frame.BackgroundTransparency = 0.1
 
---// Key GUI
-local ScreenGui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 300, 0, 200)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = Frame
 
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1, 0, 0, 40)
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 120)
+UIStroke.Thickness = 2
+UIStroke.Parent = Frame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 60)
+Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Enter Key"
+Title.Text = "KEY SYSTEM"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
+Title.TextSize = 24
+Title.TextStrokeTransparency = 0.8
+Title.Parent = Frame
 
-local TextBox = Instance.new("TextBox", Frame)
-TextBox.Size = UDim2.new(1, -20, 0, 40)
-TextBox.Position = UDim2.new(0, 10, 0, 50)
-TextBox.PlaceholderText = "Enter Key Here"
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, -40, 0, 30)
+SubTitle.Position = UDim2.new(0, 20, 0, 45)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "Enter the key to continue"
+SubTitle.TextColor3 = Color3.fromRGB(200, 200, 220)
+SubTitle.Font = Enum.Font.Gotham
+SubTitle.TextSize = 14
+SubTitle.Parent = Frame
+
+local TextBoxContainer = Instance.new("Frame")
+TextBoxContainer.Size = UDim2.new(1, -40, 0, 50)
+TextBoxContainer.Position = UDim2.new(0, 20, 0, 85)
+TextBoxContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+TextBoxContainer.BorderSizePixel = 0
+TextBoxContainer.Parent = Frame
+
+local TextBoxCorner = Instance.new("UICorner")
+TextBoxCorner.CornerRadius = UDim.new(0, 8)
+TextBoxCorner.Parent = TextBoxContainer
+
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(1, -20, 1, -10)
+TextBox.Position = UDim2.new(0, 10, 0, 5)
+TextBox.PlaceholderText = "Enter key here..."
 TextBox.Text = ""
 TextBox.Font = Enum.Font.Gotham
 TextBox.TextSize = 16
-TextBox.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.BackgroundTransparency = 1
+TextBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 170)
+TextBox.Parent = TextBoxContainer
 
-local CheckBtn = Instance.new("TextButton", Frame)
-CheckBtn.Size = UDim2.new(1, -20, 0, 40)
-CheckBtn.Position = UDim2.new(0, 10, 0, 100)
-CheckBtn.Text = "Check Key"
+local CheckBtn = Instance.new("TextButton")
+CheckBtn.Size = UDim2.new(1, -40, 0, 50)
+CheckBtn.Position = UDim2.new(0, 20, 0, 150)
+CheckBtn.Text = "VERIFY KEY"
 CheckBtn.Font = Enum.Font.GothamBold
 CheckBtn.TextSize = 18
-CheckBtn.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 120, 220)
+CheckBtn.BorderSizePixel = 0
+CheckBtn.AutoButtonColor = true
+CheckBtn.Parent = Frame
 
-local Label = Instance.new("TextLabel", Frame)
-Label.Size = UDim2.new(1, -20, 0, 40)
-Label.Position = UDim2.new(0, 10, 0, 150)
+local CheckBtnCorner = Instance.new("UICorner")
+CheckBtnCorner.CornerRadius = UDim.new(0, 8)
+CheckBtnCorner.Parent = CheckBtn
+
+local Label = Instance.new("TextLabel")
+Label.Size = UDim2.new(1, -40, 0, 40)
+Label.Position = UDim2.new(0, 20, 0, 210)
 Label.BackgroundTransparency = 1
 Label.Text = ""
 Label.Font = Enum.Font.GothamBold
-Label.TextSize = 16
+Label.TextSize = 14
 Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+Label.TextWrapped = true
+Label.Parent = Frame
+
+-- Hover effects
+CheckBtn.MouseEnter:Connect(function()
+    TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 140, 240)}):Play()
+end)
+
+CheckBtn.MouseLeave:Connect(function()
+    TweenService:Create(CheckBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 120, 220)}):Play()
+end)
+
+TextBoxContainer.MouseEnter:Connect(function()
+    TweenService:Create(TextBoxContainer, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+end)
+
+TextBoxContainer.MouseLeave:Connect(function()
+    TweenService:Create(TextBoxContainer, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 45)}):Play()
+end)
+
+-- Animation on load
+Frame.BackgroundTransparency = 1
+Frame.Position = UDim2.new(0.5, -175, 0.4, -140)
+TweenService:Create(Frame, TweenInfo.new(0.5), {BackgroundTransparency = 0.1, Position = UDim2.new(0.5, -175, 0.5, -140)}):Play()
 
 --// Remotes
 local rs = game:GetService("ReplicatedStorage")
@@ -138,48 +131,22 @@ task.delay(2, function()
 end)
 
 --=== GAME SCRIPTS ===--
-
 function load2xScript()
     warn("[System] Loaded 2x Speed Script")
     remotes.ChangeTickSpeed:InvokeServer(2)
-
     local difficulty = "dif_impossible"
     local placements = {
-        {
-            time = 29, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-843.87384,62.1803055,-123.052032),
-                DistanceAlongPath=248.0065,
-                CF=CFrame.new(-843.87384,62.1803055,-123.052032,-0,0,1,0,1,-0,-1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 47, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-162.012131),
-                DistanceAlongPath=180.53,
-                CF=CFrame.new(-842.381287,62.1803055,-162.012131,1,0,0,0,1,0,0,0,1),
-                Rotation=180}
-        },
-        {
-            time = 85, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-164.507538),
-                DistanceAlongPath=178.04,
-                CF=CFrame.new(-842.381287,62.1803055,-164.507538,1,0,0,0,1,0,0,0,1),
-                Rotation=180}
-        },
-        {
-            time = 110, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-864.724426,62.1803055,-199.052032),
-                DistanceAlongPath=100.65,
-                CF=CFrame.new(-864.724426,62.1803055,-199.052032,-0,0,1,0,1,0,-1,0,0),
-                Rotation=180}
-        }
+        { time = 29, unit = "unit_lawnmower", slot = "1", data = {Valid=true,PathIndex=3,Position=Vector3.new(-843.87384,62.1803055,-123.052032), DistanceAlongPath=248.0065, CF=CFrame.new(-843.87384,62.1803055,-123.052032,-0,0,1,0,1,-0,-1,0,-0), Rotation=180} },
+        { time = 47, unit = "unit_rafflesia", slot = "2", data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-162.012131), DistanceAlongPath=180.53, CF=CFrame.new(-842.381287,62.1803055,-162.012131,1,0,0,0,1,0,0,0,1), Rotation=180} },
+        { time = 85, unit = "unit_rafflesia", slot = "2", data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-164.507538), DistanceAlongPath=178.04, CF=CFrame.new(-842.381287,62.1803055,-164.507538,1,0,0,0,1,0,0,0,1), Rotation=180} },
+        { time = 110, unit = "unit_rafflesia", slot = "2", data = {Valid=true,PathIndex=2,Position=Vector3.new(-864.724426,62.1803055,-199.052032), DistanceAlongPath=100.65, CF=CFrame.new(-864.724426,62.1803055,-199.052032,-0,0,1,0,1,0,-1,0,0), Rotation=180} }
     }
-
+    
     local function placeUnit(unitName, slot, data)
         remotes.PlaceUnit:InvokeServer(unitName, data)
         warn("[Placing] "..unitName.." at "..os.clock())
     end
-
+    
     local function startGame()
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         for _, p in ipairs(placements) do
@@ -188,7 +155,7 @@ function load2xScript()
             end)
         end
     end
-
+    
     while true do
         startGame()
         task.wait(174.5)
@@ -199,44 +166,19 @@ end
 function load3xScript()
     warn("[System] Loaded 3x Speed Script")
     remotes.ChangeTickSpeed:InvokeServer(3)
-
     local difficulty = "dif_impossible"
     local placements = {
-        {
-            time = 23, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-843.87384,62.1803055,-123.052032),
-                DistanceAlongPath=248.0065,
-                CF=CFrame.new(-843.87384,62.1803055,-123.052032,-0,0,1,0,1,-0,-1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 32, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-162.012131),
-                DistanceAlongPath=180.53,
-                CF=CFrame.new(-842.381287,62.1803055,-162.012131,1,0,0,0,1,0,0,0,1),
-                Rotation=180}
-        },
-        {
-            time = 57, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-164.507538),
-                DistanceAlongPath=178.04,
-                CF=CFrame.new(-842.381287,62.1803055,-164.507538,1,0,0,0,1,0,0,0,1),
-                Rotation=180}
-        },
-        {
-            time = 77, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-864.724426,62.1803055,-199.052032),
-                DistanceAlongPath=100.65,
-                CF=CFrame.new(-864.724426,62.1803055,-199.052032,-0,0,1,0,1,0,-1,0,0),
-                Rotation=180}
-        }
+        { time = 23, unit = "unit_lawnmower", slot = "1", data = {Valid=true,PathIndex=3,Position=Vector3.new(-843.87384,62.1803055,-123.052032), DistanceAlongPath=248.0065, CF=CFrame.new(-843.87384,62.1803055,-123.052032,-0,0,1,0,1,-0,-1,0,-0), Rotation=180} },
+        { time = 32, unit = "unit_rafflesia", slot = "2", data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-162.012131), DistanceAlongPath=180.53, CF=CFrame.new(-842.381287,62.1803055,-162.012131,1,0,0,0,1,0,0,0,1), Rotation=180} },
+        { time = 57, unit = "unit_rafflesia", slot = "2", data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-164.507538), DistanceAlongPath=178.04, CF=CFrame.new(-842.381287,62.1803055,-164.507538,1,0,0,0,1,0,0,0,1), Rotation=180} },
+        { time = 77, unit = "unit_rafflesia", slot = "2", data = {Valid=true,PathIndex=2,Position=Vector3.new(-864.724426,62.1803055,-199.052032), DistanceAlongPath=100.65, CF=CFrame.new(-864.724426,62.1803055,-199.052032,-0,0,1,0,1,0,-1,0,0), Rotation=180} }
     }
-
+    
     local function placeUnit(unitName, slot, data)
         remotes.PlaceUnit:InvokeServer(unitName, data)
         warn("[Placing] "..unitName.." at "..os.clock())
     end
-
+    
     local function startGame()
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         for _, p in ipairs(placements) do
@@ -245,7 +187,7 @@ function load3xScript()
             end)
         end
     end
-
+    
     while true do
         startGame()
         task.wait(128)
@@ -255,39 +197,80 @@ end
 
 --=== SPEED MENU ===--
 local function showSpeedMenu()
-    Title.Text = "Select Speed"
-    TextBox.Visible = false
+    Title.Text = "SELECT SPEED"
+    SubTitle.Text = "Choose your preferred speed multiplier"
+    TextBoxContainer.Visible = false
     CheckBtn.Visible = false
-
-    -- Reminder label directly below title
-    local AutoSkipMsg = Instance.new("TextLabel", Frame)
-    AutoSkipMsg.Size = UDim2.new(1, -20, 0, 30)
-    AutoSkipMsg.Position = UDim2.new(0, 10, 0, 40)
+    
+    -- Reminder label
+    local AutoSkipMsg = Instance.new("TextLabel")
+    AutoSkipMsg.Size = UDim2.new(1, -40, 0, 40)
+    AutoSkipMsg.Position = UDim2.new(0, 20, 0, 80)
     AutoSkipMsg.BackgroundTransparency = 1
-    AutoSkipMsg.Text = "Pls Enable Auto Skip On Manually"
-    AutoSkipMsg.Font = Enum.Font.GothamBold
-    AutoSkipMsg.TextSize = 14
-    AutoSkipMsg.TextColor3 = Color3.fromRGB(255, 200, 0)
+    AutoSkipMsg.Text = "Please enable Auto Skip manually in the game settings"
+    AutoSkipMsg.Font = Enum.Font.Gotham
+    AutoSkipMsg.TextSize = 12
+    AutoSkipMsg.TextColor3 = Color3.fromRGB(255, 200, 100)
     AutoSkipMsg.TextWrapped = true
-
-    local btn2x = Instance.new("TextButton", Frame)
+    AutoSkipMsg.Parent = Frame
+    
+    local btn2x = Instance.new("TextButton")
     btn2x.Size = UDim2.new(0.45, 0, 0, 50)
     btn2x.Position = UDim2.new(0.05, 0, 0.5, -25)
-    btn2x.Text = "2x Speed"
-    btn2x.BackgroundColor3 = Color3.fromRGB(80,160,250)
-
-    local btn3x = Instance.new("TextButton", Frame)
+    btn2x.Text = "2x SPEED"
+    btn2x.BackgroundColor3 = Color3.fromRGB(80, 160, 250)
+    btn2x.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn2x.Font = Enum.Font.GothamBold
+    btn2x.TextSize = 16
+    btn2x.BorderSizePixel = 0
+    btn2x.AutoButtonColor = true
+    btn2x.Parent = Frame
+    
+    local btn3x = Instance.new("TextButton")
     btn3x.Size = UDim2.new(0.45, 0, 0, 50)
     btn3x.Position = UDim2.new(0.5, 0, 0.5, -25)
-    btn3x.Text = "3x Speed"
-    btn3x.BackgroundColor3 = Color3.fromRGB(250,120,120)
-
+    btn3x.Text = "3x SPEED"
+    btn3x.BackgroundColor3 = Color3.fromRGB(250, 120, 120)
+    btn3x.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn3x.Font = Enum.Font.GothamBold
+    btn3x.TextSize = 16
+    btn3x.BorderSizePixel = 0
+    btn3x.AutoButtonColor = true
+    btn3x.Parent = Frame
+    
+    local btn2xCorner = Instance.new("UICorner")
+    btn2xCorner.CornerRadius = UDim.new(0, 8)
+    btn2xCorner.Parent = btn2x
+    
+    local btn3xCorner = Instance.new("UICorner")
+    btn3xCorner.CornerRadius = UDim.new(0, 8)
+    btn3xCorner.Parent = btn3x
+    
+    -- Hover effects for speed buttons
+    btn2x.MouseEnter:Connect(function()
+        TweenService:Create(btn2x, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 180, 255)}):Play()
+    end)
+    btn2x.MouseLeave:Connect(function()
+        TweenService:Create(btn2x, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 160, 250)}):Play()
+    end)
+    
+    btn3x.MouseEnter:Connect(function()
+        TweenService:Create(btn3x, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 140, 140)}):Play()
+    end)
+    btn3x.MouseLeave:Connect(function()
+        TweenService:Create(btn3x, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(250, 120, 120)}):Play()
+    end)
+    
     btn2x.MouseButton1Click:Connect(function()
+        TweenService:Create(Frame, TweenInfo.new(0.5), {BackgroundTransparency = 1, Position = UDim2.new(0.5, -175, 0.4, -140)}):Play()
+        task.wait(0.5)
         ScreenGui:Destroy()
         load2xScript()
     end)
-
+    
     btn3x.MouseButton1Click:Connect(function()
+        TweenService:Create(Frame, TweenInfo.new(0.5), {BackgroundTransparency = 1, Position = UDim2.new(0.5, -175, 0.4, -140)}):Play()
+        task.wait(0.5)
         ScreenGui:Destroy()
         load3xScript()
     end)
@@ -295,13 +278,34 @@ end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
-    if TextBox.Text == "HELLROOT" then
-        Label.Text = "Key Accepted!"
-        Label.TextColor3 = Color3.fromRGB(0,255,0)
+    if TextBox.Text:lower() == "cracked" then
+        Label.Text = "✓ Key Accepted!"
+        Label.TextColor3 = Color3.fromRGB(100, 255, 100)
+        
+        -- Success animation
+        TweenService:Create(CheckBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(100, 200, 100)}):Play()
+        TweenService:Create(Label, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(100, 255, 100)}):Play()
+        
         task.delay(1, showSpeedMenu)
     else
         TextBox.Text = ""
-        Label.Text = "Invalid Key!"
-        Label.TextColor3 = Color3.fromRGB(255,0,0)
+        Label.Text = "✗ Invalid Key! Try again."
+        Label.TextColor3 = Color3.fromRGB(255, 100, 100)
+        
+        -- Error animation
+        TweenService:Create(CheckBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(220, 100, 100)}):Play()
+        TweenService:Create(Label, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+        
+        -- Reset button color after animation
+        task.delay(0.5, function()
+            TweenService:Create(CheckBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(80, 120, 220)}):Play()
+        end)
+    end
+end)
+
+-- Also check when Enter key is pressed in textbox
+TextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        CheckBtn.MouseButton1Click:Fire()
     end
 end)
