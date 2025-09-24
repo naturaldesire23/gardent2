@@ -1,4 +1,3 @@
---// Key system (обновлённый с безопасным апгрейдом)
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
