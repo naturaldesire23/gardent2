@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Lawnmower Only
+--// Garden Tower Defense Script - New Map Rafflesia
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,125 +113,26 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - LAWNMOWER ONLY ===--
-
-function load2xScript()
-    warn("[System] Loaded 2x Speed Script - Lawnmower Only")
-    remotes.ChangeTickSpeed:InvokeServer(2)
-
-    local difficulty = "dif_impossible"
-    local placements = {
-        {
-            time = 29, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-850.121826171875,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=241.758544921875,
-                CF=CFrame.new(-850.121826171875,62.18030548095703,-123.05203247070312,-0,0,1,0,1,-0,-1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 47, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(-860.4614868164062,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=249.33053398132324,
-                CF=CFrame.new(-860.4614868164062,62.18030548095703,-123.05203247070312,-0,-0,-1,-0,1,-0,1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 85, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-857.3809814453125,62.18030548095703,-114.79885864257812),
-                DistanceAlongPath=222.2525634765625,
-                CF=CFrame.new(-857.3809814453125,62.18030548095703,-114.79885864257812,1,0,-0,-0,1,-0,-0,0,1),
-                Rotation=180}
-        },
-        {
-            time = 110, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-849.2750244140625,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=242.6053466796875,
-                CF=CFrame.new(-849.2750244140625,62.18030548095703,-123.05203247070312,-0,0,1,0,1,-0,-1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 130, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(-864.8019409179688,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=253.67098808288574,
-                CF=CFrame.new(-864.8019409179688,62.18030548095703,-123.05203247070312,-0,-0,-1,-0,1,-0,1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 150, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-849.6709594726562,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=242.20941162109375,
-                CF=CFrame.new(-849.6709594726562,62.18030548095703,-123.05203247070312,-0,0,1,0,1,-0,-1,0,-0),
-                Rotation=180}
-        }
-    }
-
-    local function placeUnit(unitName, slot, data)
-        remotes.PlaceUnit:InvokeServer(unitName, data)
-        warn("[Placing] "..unitName.." at "..os.clock())
-    end
-
-    local function startGame()
-        remotes.PlaceDifficultyVote:InvokeServer(difficulty)
-        for _, p in ipairs(placements) do
-            task.delay(p.time, function()
-                placeUnit(p.unit, p.slot, p.data)
-            end)
-        end
-    end
-
-    while true do
-        startGame()
-        task.wait(174.5)
-        remotes.RestartGame:InvokeServer()
-    end
-end
+--=== GAME SCRIPTS - NEW MAP RAFFLESIA ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Lawnmower Only")
+    warn("[System] Loaded 3x Speed Script - Rafflesia Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
-    local difficulty = "dif_impossible"
+    local difficulty = "dif_apocalypse"
     local placements = {
         {
-            time = 23, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-850.121826171875,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=241.758544921875,
-                CF=CFrame.new(-850.121826171875,62.18030548095703,-123.05203247070312,-0,0,1,0,1,-0,-1,0,-0),
+            time = 5, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=1,Position=Vector3.new(33.522560119628906,-21.749000549316406,-31.79338264465332),
+                DistanceAlongPath=35.42360714378076,
+                CF=CFrame.new(33.522560119628906,-21.749000549316406,-31.79338264465332,0.9231332540512085,0,-0.38448020815849304,-0,0.9999999403953552,-0,0.3844802677631378,0,0.923133134841919),
                 Rotation=180}
         },
         {
-            time = 32, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(-860.4614868164062,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=249.33053398132324,
-                CF=CFrame.new(-860.4614868164062,62.18030548095703,-123.05203247070312,-0,-0,-1,-0,1,-0,1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 57, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-857.3809814453125,62.18030548095703,-114.79885864257812),
-                DistanceAlongPath=222.2525634765625,
-                CF=CFrame.new(-857.3809814453125,62.18030548095703,-114.79885864257812,1,0,-0,-0,1,-0,-0,0,1),
-                Rotation=180}
-        },
-        {
-            time = 77, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-849.2750244140625,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=242.6053466796875,
-                CF=CFrame.new(-849.2750244140625,62.18030548095703,-123.05203247070312,-0,0,1,0,1,-0,-1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 90, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(-864.8019409179688,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=253.67098808288574,
-                CF=CFrame.new(-864.8019409179688,62.18030548095703,-123.05203247070312,-0,-0,-1,-0,1,-0,1,0,-0),
-                Rotation=180}
-        },
-        {
-            time = 105, unit = "unit_lawnmower", slot = "1",
-            data = {Valid=true,PathIndex=3,Position=Vector3.new(-849.6709594726562,62.18030548095703,-123.05203247070312),
-                DistanceAlongPath=242.20941162109375,
-                CF=CFrame.new(-849.6709594726562,62.18030548095703,-123.05203247070312,-0,0,1,0,1,-0,-1,0,-0),
+            time = 20, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=1,Position=Vector3.new(33.522560119628906,-21.749000549316406,-31.79338264465332),
+                DistanceAlongPath=35.42360714378076,
+                CF=CFrame.new(33.522560119628906,-21.749000549316406,-31.79338264465332,0.9231332540512085,0,-0.38448020815849304,-0,0.9999999403953552,-0,0.3844802677631378,0,0.923133134841919),
                 Rotation=180}
         }
     }
@@ -241,6 +142,11 @@ function load3xScript()
         warn("[Placing] "..unitName.." at "..os.clock())
     end
 
+    local function upgradeUnit(unitId)
+        remotes.UpgradeUnit:InvokeServer(unitId)
+        warn("[Upgrading] Unit ID: "..unitId.." at "..os.clock())
+    end
+
     local function startGame()
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         for _, p in ipairs(placements) do
@@ -248,22 +154,29 @@ function load3xScript()
                 placeUnit(p.unit, p.slot, p.data)
             end)
         end
+        
+        -- Upgrade second rafflesia at 50 seconds
+        task.delay(50, function()
+            -- Note: You'll need to find the correct unit ID dynamically
+            -- For now using placeholder ID 171
+            upgradeUnit(171)
+        end)
     end
 
     while true do
         startGame()
-        task.wait(128)
+        task.wait(120) -- Adjust this based on map length
         remotes.RestartGame:InvokeServer()
     end
 end
 
---=== IMPROVED SPEED MENU ===--
+--=== SIMPLIFIED SPEED MENU ===--
 local function showSpeedMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT SPEED MODE"
-    SubTitle.Text = "Choose your preferred game speed"
+    SubTitle.Text = "New Map - Rafflesia Strategy"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -273,34 +186,18 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 60)
     Instructions.Position = UDim2.new(0, 20, 0, 70)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Please enable Auto Skip manually in-game for optimal performance"
+    Instructions.Text = "⚠️ Rafflesia + Upgrade Strategy\nApocalypse Difficulty"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- 2x Speed Button
-    local btn2x = Instance.new("TextButton")
-    btn2x.Size = UDim2.new(1, -40, 0, 70)
-    btn2x.Position = UDim2.new(0, 20, 0, 150)
-    btn2x.Text = "2× SPEED\nLawnmower Only"
-    btn2x.BackgroundColor3 = Color3.fromRGB(70, 150, 250)
-    btn2x.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn2x.Font = Enum.Font.GothamBold
-    btn2x.TextSize = 18
-    btn2x.BorderSizePixel = 0
-    btn2x.Parent = Frame
-
-    local btn2xCorner = Instance.new("UICorner")
-    btn2xCorner.CornerRadius = UDim.new(0, 10)
-    btn2xCorner.Parent = btn2x
-
-    -- 3x Speed Button
+    -- Only 3x Speed Button
     local btn3x = Instance.new("TextButton")
-    btn3x.Size = UDim2.new(1, -40, 0, 70)
-    btn3x.Position = UDim2.new(0, 20, 0, 240)
-    btn3x.Text = "3× SPEED\nLawnmower Only"
+    btn3x.Size = UDim2.new(1, -40, 0, 120)
+    btn3x.Position = UDim2.new(0, 20, 0, 150)
+    btn3x.Text = "3× SPEED\nRafflesia Strategy\nPlace: 5s & 20s\nUpgrade: 50s"
     btn3x.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
     btn3x.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn3x.Font = Enum.Font.GothamBold
@@ -311,11 +208,6 @@ local function showSpeedMenu()
     local btn3xCorner = Instance.new("UICorner")
     btn3xCorner.CornerRadius = UDim.new(0, 10)
     btn3xCorner.Parent = btn3x
-
-    btn2x.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-        load2xScript()
-    end)
 
     btn3x.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
