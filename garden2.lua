@@ -120,34 +120,72 @@ function load3xScript()
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
+    local firstRafflesiaId = nil
+    
     local placements = {
         {
-            time = 5, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(33.522560119628906,-21.749000549316406,-31.79338264465332),
-                DistanceAlongPath=35.42360714378076,
-                CF=CFrame.new(33.522560119628906,-21.749000549316406,-31.79338264465332,0.9231332540512085,0,-0.38448020815849304,-0,0.9999999403953552,-0,0.3844802677631378,0,0.923133134841919),
+            time = 7, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=1,Position=Vector3.new(49.52396774291992,-21.75,-52.60224914550781),
+                DistanceAlongPath=8.780204010731204,
+                CF=CFrame.new(49.52396774291992,-21.75,-52.60224914550781,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
                 Rotation=180}
         },
         {
-            time = 20, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(33.522560119628906,-21.749000549316406,-31.79338264465332),
-                DistanceAlongPath=35.42360714378076,
-                CF=CFrame.new(33.522560119628906,-21.749000549316406,-31.79338264465332,0.9231332540512085,0,-0.38448020815849304,-0,0.9999999403953552,-0,0.3844802677631378,0,0.923133134841919),
+            time = 15, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-39.27058029174805,-21.749000549316406,39.21887969970703),
+                DistanceAlongPath=108.87929081916809,
+                CF=CFrame.new(-39.27058029174805,-21.749000549316406,39.21887969970703,1,0,-0,-0,1,-0,-0,0,1),
                 Rotation=180}
         }
     }
 
     local function placeUnit(unitName, slot, data)
-        remotes.PlaceUnit:InvokeServer(unitName, data)
-        warn("[Placing] "..unitName.." at "..os.clock())
+        local success, result = pcall(function()
+            return remotes.PlaceUnit:InvokeServer(unitName, data)
+        end)
+        
+        if success and result then
+            warn("[Placing] "..unitName.." at "..os.clock().." - Result: "..tostring(result))
+            -- Try to extract unit ID from result
+            if type(result) == "number" then
+                if unitName == "unit_rafflesia" and not firstRafflesiaId then
+                    firstRafflesiaId = result
+                    warn("[Tracking] First rafflesia ID: "..firstRafflesiaId)
+                end
+            elseif type(result) == "table" then
+                -- Check if result contains unit ID
+                for k, v in pairs(result) do
+                    if type(v) == "number" and unitName == "unit_rafflesia" and not firstRafflesiaId then
+                        firstRafflesiaId = v
+                        warn("[Tracking] First rafflesia ID: "..firstRafflesiaId)
+                        break
+                    end
+                end
+            end
+        else
+            warn("[Placing] "..unitName.." at "..os.clock().." - Failed or no ID returned")
+        end
     end
 
     local function upgradeUnit(unitId)
-        remotes.UpgradeUnit:InvokeServer(unitId)
-        warn("[Upgrading] Unit ID: "..unitId.." at "..os.clock())
+        if unitId then
+            local success, result = pcall(function()
+                return remotes.UpgradeUnit:InvokeServer(unitId)
+            end)
+            if success then
+                warn("[Upgrading] Unit ID: "..unitId.." at "..os.clock().." - Success: "..tostring(result))
+            else
+                warn("[Upgrading] Unit ID: "..unitId.." at "..os.clock().." - Failed")
+            end
+        else
+            warn("[Upgrading] No unit ID available to upgrade")
+        end
     end
 
     local function startGame()
+        -- Reset unit ID tracking
+        firstRafflesiaId = nil
+        
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
@@ -155,11 +193,19 @@ function load3xScript()
             end)
         end
         
-        -- Upgrade second rafflesia at 50 seconds
+        -- Try to upgrade first rafflesia at 50 seconds
         task.delay(50, function()
-            -- Note: You'll need to find the correct unit ID dynamically
-            -- For now using placeholder ID 171
-            upgradeUnit(171)
+            if firstRafflesiaId then
+                upgradeUnit(firstRafflesiaId)
+            else
+                warn("[Upgrade] Could not find first rafflesia ID, attempting backup method...")
+                -- Backup: Try common ID range
+                for i = 500, 600 do
+                    upgradeUnit(i)
+                    task.wait(0.1) -- Small delay between attempts
+                    break -- Remove this break to try multiple IDs
+                end
+            end
         end)
     end
 
@@ -197,7 +243,7 @@ local function showSpeedMenu()
     local btn3x = Instance.new("TextButton")
     btn3x.Size = UDim2.new(1, -40, 0, 120)
     btn3x.Position = UDim2.new(0, 20, 0, 150)
-    btn3x.Text = "3× SPEED\nRafflesia Strategy\nPlace: 5s & 20s\nUpgrade: 50s"
+    btn3x.Text = "3× SPEED\nRafflesia Strategy\nPlace: 7s & 15s\nUpgrade: 50s"
     btn3x.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
     btn3x.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn3x.Font = Enum.Font.GothamBold
