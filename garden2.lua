@@ -78,7 +78,7 @@ local CheckBtn = Instance.new("TextButton")
 CheckBtn.Size = UDim2.new(1, -40, 0, 50)
 CheckBtn.Position = UDim2.new(0, 20, 0, 160)
 CheckBtn.Text = "VERIFY KEY"
-CheckBtn.Font = Enum.Font.GothamBold
+CheckBtn.Font =Enum.Font.GothamBold
 CheckBtn.TextSize = 18
 CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CheckBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 200)
@@ -120,7 +120,6 @@ function load3xScript()
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
-    local firstRafflesiaId = nil
     
     local placements = {
         {
@@ -140,52 +139,64 @@ function load3xScript()
     }
 
     local function placeUnit(unitName, slot, data)
-        local success, result = pcall(function()
+        local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
-        if success and result then
-            warn("[Placing] "..unitName.." at "..os.clock().." - Result: "..tostring(result))
-            -- Try to extract unit ID from result
-            if type(result) == "number" then
-                if unitName == "unit_rafflesia" and not firstRafflesiaId then
-                    firstRafflesiaId = result
-                    warn("[Tracking] First rafflesia ID: "..firstRafflesiaId)
-                end
-            elseif type(result) == "table" then
-                -- Check if result contains unit ID
-                for k, v in pairs(result) do
-                    if type(v) == "number" and unitName == "unit_rafflesia" and not firstRafflesiaId then
-                        firstRafflesiaId = v
-                        warn("[Tracking] First rafflesia ID: "..firstRafflesiaId)
-                        break
-                    end
-                end
-            end
+        if success then
+            warn("[Placing] "..unitName.." at "..os.clock())
         else
-            warn("[Placing] "..unitName.." at "..os.clock().." - Failed or no ID returned")
+            warn("[Placing] "..unitName.." at "..os.clock().." - Failed")
         end
     end
 
     local function upgradeUnit(unitId)
-        if unitId then
-            local success, result = pcall(function()
-                return remotes.UpgradeUnit:InvokeServer(unitId)
-            end)
-            if success then
-                warn("[Upgrading] Unit ID: "..unitId.." at "..os.clock().." - Success: "..tostring(result))
-            else
-                warn("[Upgrading] Unit ID: "..unitId.." at "..os.clock().." - Failed")
-            end
+        local success, result = pcall(function()
+            return remotes.UpgradeUnit:InvokeServer(unitId)
+        end)
+        if success then
+            warn("[Upgrading] Unit ID: "..unitId.." - Success: "..tostring(result))
+            return true
         else
-            warn("[Upgrading] No unit ID available to upgrade")
+            warn("[Upgrading] Unit ID: "..unitId.." - Failed")
+            return false
+        end
+    end
+
+    local function findAndUpgradeFirstRafflesia()
+        warn("[Upgrade] Searching for first rafflesia ID...")
+        
+        -- Try common ID ranges for the first rafflesia
+        local found = false
+        
+        -- Try lower range first (common for first units)
+        for id = 1, 50 do
+            if upgradeUnit(id) then
+                warn("[Upgrade] Successfully upgraded unit ID: "..id)
+                found = true
+                break
+            end
+            task.wait(0.05) -- Small delay between attempts
+        end
+        
+        if not found then
+            -- Try higher range
+            for id = 500, 600 do
+                if upgradeUnit(id) then
+                    warn("[Upgrade] Successfully upgraded unit ID: "..id)
+                    found = true
+                    break
+                end
+                task.wait(0.05)
+            end
+        end
+        
+        if not found then
+            warn("[Upgrade] Could not find first rafflesia ID")
         end
     end
 
     local function startGame()
-        -- Reset unit ID tracking
-        firstRafflesiaId = nil
-        
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
@@ -194,19 +205,7 @@ function load3xScript()
         end
         
         -- Try to upgrade first rafflesia at 50 seconds
-        task.delay(50, function()
-            if firstRafflesiaId then
-                upgradeUnit(firstRafflesiaId)
-            else
-                warn("[Upgrade] Could not find first rafflesia ID, attempting backup method...")
-                -- Backup: Try common ID range
-                for i = 500, 600 do
-                    upgradeUnit(i)
-                    task.wait(0.1) -- Small delay between attempts
-                    break -- Remove this break to try multiple IDs
-                end
-            end
-        end)
+        task.delay(50, findAndUpgradeFirstRafflesia)
     end
 
     while true do
