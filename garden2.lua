@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Rainbow Tomato Smart Upgrade
+--// Garden Tower Defense Script - Dual Rainbow Tomato Fast Upgrade
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,28 +113,40 @@ task.delay(2, function()
     end)
 end)
 
---=== RAINBOW TOMATO SMART UPGRADE ===--
+--=== DUAL RAINBOW TOMATO FAST UPGRADE ===--
 
 function loadRainbowTomatoScript()
-    warn("[System] Loaded Rainbow Tomato - Smart Upgrade Strategy")
+    warn("[System] Loaded Dual Rainbow Tomato - Fast Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
-    local rainbowTomatoId = nil -- This will store the found ID
     
-    local rainbowTomatoPlacement = {
-        unit = "unit_tomato_rainbow",
-        data = {
-            Valid = true,
-            Rotation = 180,
-            CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-            Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
+    local tomatoPlacements = {
+        {
+            time = 5,
+            unit = "unit_tomato_rainbow",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
+            }
+        },
+        {
+            time = 42,
+            unit = "unit_tomato_rainbow", 
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
+            }
         }
     }
 
-    local function placeRainbowTomato()
+    local function placeTomato(unitName, data)
         local success = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(rainbowTomatoPlacement.unit, rainbowTomatoPlacement.data)
+            return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
@@ -151,67 +163,23 @@ function loadRainbowTomatoScript()
             return remotes.UpgradeUnit:InvokeServer(unitId)
         end)
         if success then
-            warn("[Upgrading] Unit ID: "..unitId.." - Success: "..tostring(result))
             return true
         else
-            warn("[Upgrading] Unit ID: "..unitId.." - Failed")
             return false
         end
     end
 
-    local function findRainbowTomatoId()
-        warn("[Find] Searching for Rainbow Tomato ID...")
-        
-        -- Search in common ID ranges
-        for id = 1, 100 do
-            if upgradeUnit(id) then
-                warn("[FOUND] Rainbow Tomato ID: "..id.." - Remembering this ID!")
-                return id -- Return the found ID
-            end
-            task.wait(0.05) -- Small delay between attempts
-        end
-        
-        -- Extended range if not found
-        for id = 500, 600 do
-            if upgradeUnit(id) then
-                warn("[FOUND] Rainbow Tomato ID: "..id.." - Remembering this ID!")
-                return id -- Return the found ID
-            end
-            task.wait(0.05)
-        end
-        
-        warn("[Find] Could not find Rainbow Tomato ID")
-        return nil
-    end
-
-    local function smartUpgradeRainbowTomato()
-        warn("[Smart Upgrade] Starting smart upgrade system...")
+    local function fastInfiniteUpgrade()
+        warn("[Fast Upgrade] Starting infinite fast upgrades...")
         
         while true do
-            if rainbowTomatoId then
-                -- We found the ID, upgrade it infinitely
-                if upgradeUnit(rainbowTomatoId) then
-                    warn("[Smart Upgrade] Successfully upgraded ID: "..rainbowTomatoId)
-                    task.wait(0.5) -- Wait 0.5 seconds between upgrades
-                else
-                    warn("[Smart Upgrade] Failed to upgrade ID: "..rainbowTomatoId.." - Unit may be max level or sold")
-                    -- If upgrade fails, try to find the ID again
-                    rainbowTomatoId = findRainbowTomatoId()
-                    if not rainbowTomatoId then
-                        warn("[Smart Upgrade] Could not find Rainbow Tomato, waiting before retry...")
-                        task.wait(2)
-                    end
-                end
-            else
-                -- Haven't found the ID yet, search for it
-                rainbowTomatoId = findRainbowTomatoId()
-                if not rainbowTomatoId then
-                    warn("[Smart Upgrade] Still searching for Rainbow Tomato ID...")
-                    task.wait(1) -- Wait 1 second before searching again
-                else
-                    warn("[Smart Upgrade] Now upgrading ID: "..rainbowTomatoId.." infinitely!")
-                end
+            -- Rapidly upgrade all IDs from 1 to 100
+            for id = 1, 100 do
+                upgradeUnit(id)
+                -- No delay between upgrades for maximum speed
             end
+            -- Very small delay between full cycles
+            task.wait(0.1)
         end
     end
 
@@ -219,25 +187,26 @@ function loadRainbowTomatoScript()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Reset ID for new game
-        rainbowTomatoId = nil
+        -- Place both tomatoes at their times
+        for _, placement in ipairs(tomatoPlacements) do
+            task.delay(placement.time, function()
+                placeTomato(placement.unit, placement.data)
+            end)
+        end
         
-        -- Place rainbow tomato at 5 seconds
-        task.delay(5, function()
-            if placeRainbowTomato() then
-                warn("[Success] Rainbow Tomato placed, starting smart upgrades in 3 seconds...")
-                -- Start smart upgrades 3 seconds after placement
-                task.delay(3, smartUpgradeRainbowTomato)
-            end
+        -- Start fast infinite upgrades at 8 seconds (after first tomato)
+        task.delay(8, function()
+            warn("[Starting] Beginning fast infinite upgrades!")
+            fastInfiniteUpgrade()
         end)
         
         -- Auto-restart at 180 seconds (3 minutes)
         task.delay(180, function()
-            warn("[Restart] Game ended, restarting in 5 seconds...")
-            task.wait(5)
+            warn("[Restart] Game ended, restarting in 3 seconds...")
+            task.wait(3)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(3)
+            task.wait(2)
             startGame()
         end)
     end
@@ -252,7 +221,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Rainbow Tomato Smart Upgrade"
+    SubTitle.Text = "Dual Rainbow Tomato Fast Upgrade"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -262,7 +231,7 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Smart Rainbow Tomato\n• Hard Difficulty\n• Place Tomato: 5s\n• Finds & Remembers ID\n• Infinite Targeted Upgrades"
+    Instructions.Text = "⚠️ Dual Rainbow Tomato\n• Hard Difficulty\n• Place 1st: 5s\n• Place 2nd: 42s\n• Fast Infinite Upgrades\n• IDs 1-100 Rapid Fire"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -273,7 +242,7 @@ local function showStrategyMenu()
     local btnRainbow = Instance.new("TextButton")
     btnRainbow.Size = UDim2.new(1, -40, 0, 120)
     btnRainbow.Position = UDim2.new(0, 20, 0, 160)
-    btnRainbow.Text = "SMART RAINBOW TOMATO\nFinds & Remembers ID\nInfinite Targeted Upgrades"
+    btnRainbow.Text = "DUAL RAINBOW TOMATO\nFast Infinite Upgrades\nRapid Fire IDs 1-100"
     btnRainbow.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
     btnRainbow.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnRainbow.Font = Enum.Font.GothamBold
