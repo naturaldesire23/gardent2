@@ -1,12 +1,6 @@
 --// Garden Tower Defense Script - Punch Potato Strategy
-wait(3) -- Wait for game to fully load
-
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
-
--- Wait for player to be ready
-repeat wait() until plr
-repeat wait() until plr:FindFirstChild("PlayerGui")
 
 print(plr.Name .. " loaded the script. Waiting for key...")
 
@@ -123,9 +117,7 @@ end)
 
 function loadPunchPotatoScript()
     warn("[System] Loaded Punch Potato Strategy")
-    pcall(function()
-        remotes.ChangeTickSpeed:InvokeServer(3)
-    end)
+    remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
     
@@ -272,9 +264,7 @@ function loadPunchPotatoScript()
 
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
-        pcall(function()
-            remotes.PlaceDifficultyVote:InvokeServer(difficulty)
-        end)
+        remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
         -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
@@ -305,9 +295,7 @@ function loadPunchPotatoScript()
         task.delay(300, function()
             warn("[Restart] Game ended, restarting in 2 seconds...")
             task.wait(2)
-            pcall(function()
-                remotes.RestartGame:InvokeServer()
-            end)
+            remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
             task.wait(1)
             startGame()
@@ -395,10 +383,8 @@ TextBox.FocusLost:Connect(function()
 end)
 
 -- Load anti-afk scripts
-pcall(function()
-    loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
-end)
+loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
 -- Force GUI to be on top
 ScreenGui.DisplayOrder = 999
