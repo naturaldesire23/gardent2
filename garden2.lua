@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Triple Unit + Golem Dragons Ultra Fast Upgrade
+--// Garden Tower Defense Script - HYPER SPEED UPGRADES
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== TRIPLE UNIT + GOLEM DRAGONS ULTRA FAST UPGRADE ===--
+--=== HYPER SPEED UPGRADES ===--
 
-function loadUltraFastScript()
-    warn("[System] Loaded Triple Unit + Golem Dragons - Ultra Fast Upgrade Strategy")
+function loadHyperSpeedScript()
+    warn("[System] Loaded HYPER SPEED Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -133,7 +133,7 @@ function loadUltraFastScript()
             }
         },
         {
-            time = 55, -- Fixed to 55 seconds
+            time = 55,
             unit = "unit_tomato_rainbow", 
             data = {
                 Valid = true,
@@ -143,7 +143,7 @@ function loadUltraFastScript()
             }
         },
         {
-            time = 90, -- 1:30 minutes
+            time = 90,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -153,7 +153,7 @@ function loadUltraFastScript()
             }
         },
         {
-            time = 170, -- 2:50 minutes
+            time = 170,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -163,7 +163,7 @@ function loadUltraFastScript()
             }
         },
         {
-            time = 175, -- 2:55 minutes
+            time = 175,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -173,7 +173,7 @@ function loadUltraFastScript()
             }
         },
         {
-            time = 180, -- 3:00 minutes
+            time = 180,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -204,29 +204,41 @@ function loadUltraFastScript()
         end)
     end
 
-    local function ultraFastInfiniteUpgrade()
-        warn("[Ultra Fast Upgrade] Starting MAXIMUM SPEED upgrades...")
+    -- HYPER SPEED UPGRADE FUNCTIONS
+    local function hyperSpeedUpgradeLow()
+        warn("[HYPER SPEED] Starting LOW RANGE upgrades (1-100)")
         
-        while true do
-            -- MAXIMUM SPEED: Upgrade all IDs from 1 to 100 with ZERO delays
-            for id = 1, 100 do
-                upgradeUnit(id)
-                -- NO DELAYS - ABSOLUTE MAXIMUM SPEED
-            end
-            -- NO DELAY BETWEEN CYCLES - INSTANT RESTART
+        -- MULTI-THREADED UPGRADES - Run multiple ranges simultaneously
+        for rangeStart = 1, 100, 25 do
+            local rangeEnd = math.min(rangeStart + 24, 100)
+            task.spawn(function()
+                while true do
+                    for id = rangeStart, rangeEnd do
+                        upgradeUnit(id)
+                        upgradeUnit(id) -- DOUBLE UPGRADE CALL
+                        upgradeUnit(id) -- TRIPLE UPGRADE CALL
+                    end
+                end
+            end)
         end
     end
 
-    local function ultraFastGolemUpgrade()
-        warn("[Golem Upgrade] Starting FAST GOLEM upgrades (200-450)...")
+    local function hyperSpeedUpgradeHigh()
+        warn("[HYPER SPEED] Starting HIGH RANGE upgrades (200-450)")
         
-        while true do
-            -- Fast upgrades for golem range (200-450)
-            for id = 200, 450 do
-                upgradeUnit(id)
-                -- NO DELAYS - MAXIMUM SPEED
-            end
-            -- NO DELAY BETWEEN CYCLES - INSTANT RESTART
+        -- MULTI-THREADED UPGRADES - Run multiple ranges simultaneously
+        for rangeStart = 200, 450, 50 do
+            local rangeEnd = math.min(rangeStart + 49, 450)
+            task.spawn(function()
+                while true do
+                    for id = rangeStart, rangeEnd do
+                        upgradeUnit(id)
+                        upgradeUnit(id) -- DOUBLE UPGRADE CALL
+                        upgradeUnit(id) -- TRIPLE UPGRADE CALL
+                        upgradeUnit(id) -- QUADRUPLE UPGRADE CALL
+                    end
+                end
+            end)
         end
     end
 
@@ -241,25 +253,25 @@ function loadUltraFastScript()
             end)
         end
         
-        -- Start ULTRA FAST infinite upgrades at 6 seconds (immediately after first tomato)
+        -- Start HYPER SPEED upgrades at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning ULTRA FAST infinite upgrades - MAXIMUM SPEED!")
-            ultraFastInfiniteUpgrade()
+            warn("[Starting] Beginning HYPER SPEED upgrades - MAXIMUM POSSIBLE SPEED!")
+            hyperSpeedUpgradeLow()
         end)
         
-        -- Start Golem upgrades at 181 seconds (after placing all 3 golems)
+        -- Start HYPER SPEED golem upgrades at 181 seconds
         task.delay(181, function()
-            warn("[Starting] Beginning GOLEM upgrades (200-450) - MAXIMUM SPEED!")
-            ultraFastGolemUpgrade()
+            warn("[Starting] Beginning HYPER SPEED golem upgrades!")
+            hyperSpeedUpgradeHigh()
         end)
         
         -- Auto-restart at 240 seconds (4 minutes)
         task.delay(240, function()
-            warn("[Restart] Game ended, restarting in 2 seconds...")
-            task.wait(2)
+            warn("[Restart] Game ended, restarting in 1 second...")
+            task.wait(1)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(1)
+            task.wait(0.5)
             startGame()
         end)
     end
@@ -274,7 +286,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Triple Unit + Golem Dragons"
+    SubTitle.Text = "HYPER SPEED UPGRADES"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -284,32 +296,32 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 100)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Complete Strategy\n• Hard Difficulty\n• Tomato 1: 5s\n• Tomato 2: 55s\n• Metal Flower: 90s\n• Golems: 2:50, 2:55, 3:00\n• Ultra Fast Upgrades 1-100\n• Golem Upgrades 200-450"
+    Instructions.Text = "⚡ HYPER SPEED UPGRADES ⚡\n• Multi-threaded upgrades\n• Multiple upgrade calls per ID\n• Parallel range processing\n• MAXIMUM POSSIBLE SPEED\n• 3x faster than before"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
+    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Ultra Fast Button
-    local btnUltra = Instance.new("TextButton")
-    btnUltra.Size = UDim2.new(1, -40, 0, 120)
-    btnUltra.Position = UDim2.new(0, 20, 0, 180)
-    btnUltra.Text = "COMPLETE STRATEGY\nTomatoes + Metal Flower + Golems\nULTRA FAST UPGRADES"
-    btnUltra.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
-    btnUltra.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnUltra.Font = Enum.Font.GothamBold
-    btnUltra.TextSize = 16
-    btnUltra.BorderSizePixel = 0
-    btnUltra.Parent = Frame
+    -- Hyper Speed Button
+    local btnHyper = Instance.new("TextButton")
+    btnHyper.Size = UDim2.new(1, -40, 0, 120)
+    btnHyper.Position = UDim2.new(0, 20, 0, 180)
+    btnHyper.Text = "⚡ HYPER SPEED ⚡\nMulti-Threaded Upgrades\nMAXIMUM POSSIBLE SPEED"
+    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnHyper.Font = Enum.Font.GothamBold
+    btnHyper.TextSize = 18
+    btnHyper.BorderSizePixel = 0
+    btnHyper.Parent = Frame
 
-    local btnUltraCorner = Instance.new("UICorner")
-    btnUltraCorner.CornerRadius = UDim.new(0, 10)
-    btnUltraCorner.Parent = btnUltra
+    local btnHyperCorner = Instance.new("UICorner")
+    btnHyperCorner.CornerRadius = UDim.new(0, 10)
+    btnHyperCorner.Parent = btnHyper
 
-    btnUltra.MouseButton1Click:Connect(function()
+    btnHyper.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadUltraFastScript()
+        loadHyperSpeedScript()
     end)
 end
 
