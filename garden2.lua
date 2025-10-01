@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Simple Working Version
+--// Garden Tower Defense Script - Back to Working Version
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,32 +113,34 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - SIMPLE WORKING VERSION ===--
+--=== GAME SCRIPTS - WORKING VERSION ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Simple Version")
+    warn("[System] Loaded 3x Speed Script - Working Version")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
     
-    local placements = {
-        {
-            time = 5, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
-                DistanceAlongPath=5.6959664442733,
-                CF=CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
-                Rotation=180}
-        },
-        {
-            time = 8, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
-                DistanceAlongPath=46.379028904084905,
-                CF=CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
-                Rotation=180}
-        }
+    -- Placement data
+    local firstRaffData = {
+        Valid = true,
+        PathIndex = 1,
+        Position = Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
+        DistanceAlongPath = 5.6959664442733,
+        CF = CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
+        Rotation = 180
+    }
+    
+    local secondRaffData = {
+        Valid = true,
+        PathIndex = 2,
+        Position = Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
+        DistanceAlongPath = 46.379028904084905,
+        CF = CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
+        Rotation = 180
     }
 
-    local function placeUnit(unitName, slot, data)
+    local function placeUnit(unitName, data)
         local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
@@ -154,11 +156,10 @@ function load3xScript()
         local success, result = pcall(function()
             return remotes.UpgradeUnit:InvokeServer(unitId)
         end)
-        if success then
-            warn("[Upgrading] Unit ID: "..unitId.." - Success: "..tostring(result))
+        if success and result == true then
+            warn("[Upgrading] Unit ID: "..unitId.." - SUCCESS")
             return true
         else
-            warn("[Upgrading] Unit ID: "..unitId.." - Failed")
             return false
         end
     end
@@ -167,51 +168,39 @@ function load3xScript()
         local success, result = pcall(function()
             return remotes.SellUnit:InvokeServer(unitId)
         end)
-        if success then
-            warn("[Selling] Unit ID: "..unitId.." - Success: "..tostring(result))
+        if success and result == true then
+            warn("[Selling] Unit ID: "..unitId.." - SUCCESS")
             return true
         else
-            warn("[Selling] Unit ID: "..unitId.." - Failed")
             return false
         end
     end
 
-    local function findAndUpgradeFirstRafflesia()
-        warn("[Upgrade] Searching for first rafflesia ID...")
-        for id = 1, 50 do
+    local function findAndUpgradeRafflesia(isFirst)
+        warn("[Search] Looking for "..(isFirst and "first" or "second").." rafflesia...")
+        
+        local startId = isFirst and 1 or 50
+        local endId = isFirst and 49 or 100
+        
+        for id = startId, endId do
             if upgradeUnit(id) then
-                warn("[Upgrade] Successfully upgraded first rafflesia ID: "..id)
-                return id
-            end
-            task.wait(0.05)
-        end
-        warn("[Upgrade] Could not find first rafflesia ID")
-        return nil
-    end
-
-    local function findAndUpgradeSecondRafflesia()
-        warn("[Upgrade] Searching for second rafflesia ID...")
-        for id = 51, 100 do
-            if upgradeUnit(id) then
-                warn("[Upgrade] Successfully upgraded second rafflesia ID: "..id)
-                return id
-            end
-            task.wait(0.05)
-        end
-        warn("[Upgrade] Could not find second rafflesia ID")
-        return nil
-    end
-
-    local function findAndSellSecondRafflesia()
-        warn("[Sell] Searching for second rafflesia ID to sell...")
-        for id = 51, 100 do
-            if sellUnit(id) then
-                warn("[Sell] Successfully sold second rafflesia ID: "..id)
+                warn("[Found] "..(isFirst and "First" or "Second").." rafflesia ID: "..id)
                 return true
             end
-            task.wait(0.05)
         end
-        warn("[Sell] Could not find second rafflesia ID to sell")
+        warn("[Search] Could not find "..(isFirst and "first" or "second").." rafflesia")
+        return false
+    end
+
+    local function findAndSellRafflesia()
+        warn("[Search] Looking for second rafflesia to sell...")
+        for id = 50, 100 do
+            if sellUnit(id) then
+                warn("[Sold] Second rafflesia ID: "..id)
+                return true
+            end
+        end
+        warn("[Search] Could not find second rafflesia to sell")
         return false
     end
 
@@ -219,36 +208,39 @@ function load3xScript()
         warn("[Game Start] Choosing Apocalypse difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place units using the simple approach that worked before
-        for _, p in ipairs(placements) do
-            task.delay(p.time, function()
-                placeUnit(p.unit, p.slot, p.data)
-            end)
-        end
+        -- Place first rafflesia at 5 seconds
+        task.delay(5, function()
+            placeUnit("unit_rafflesia", firstRaffData)
+        end)
+        
+        -- Place second rafflesia at 8 seconds  
+        task.delay(8, function()
+            placeUnit("unit_rafflesia", secondRaffData)
+        end)
         
         -- Upgrade first rafflesia at 38 seconds
         task.delay(38, function()
-            findAndUpgradeFirstRafflesia()
+            findAndUpgradeRafflesia(true)
         end)
         
-        -- Upgrade second rafflesia at 63 seconds (1:03)
+        -- Upgrade second rafflesia at 63 seconds
         task.delay(63, function()
-            findAndUpgradeSecondRafflesia()
+            findAndUpgradeRafflesia(false)
         end)
         
-        -- Sell second rafflesia at 80 seconds (1:20)
+        -- Sell second rafflesia at 80 seconds
         task.delay(80, function()
-            findAndSellSecondRafflesia()
+            findAndSellRafflesia()
         end)
         
-        -- Auto-restart at 98 seconds (1:35 + 3 seconds wait)
+        -- Auto-restart at 98 seconds
         task.delay(98, function()
             warn("[Restart] Game ended, restarting in 3 seconds...")
             task.wait(3)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
             task.wait(2)
-            startGame() -- Recursive call for infinite loop
+            startGame()
         end)
     end
 
