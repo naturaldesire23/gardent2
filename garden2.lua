@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Fixed Position & ID Range
+--// Garden Tower Defense Script - Sequential Upgrades
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - FIXED POSITION & ID RANGE ===--
+--=== GAME SCRIPTS - SEQUENTIAL UPGRADES ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Fixed Position & ID Range")
+    warn("[System] Loaded 3x Speed Script - Sequential Upgrades")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
@@ -172,46 +172,45 @@ function load3xScript()
         return false
     end
 
-    local function upgradeAllRafflesias()
-        warn("[Upgrade] Searching for ALL rafflesias to upgrade...")
-        local upgradedCount = 0
+    local function upgradeFirstRafflesiaOnly()
+        warn("[Upgrade] Searching for FIRST rafflesia only...")
         
-        -- Try much wider range for upgrades
-        for id = 1, 500 do
+        -- First rafflesia is usually in lower IDs
+        for id = 1, 100 do
             if tryUpgradeUnit(id) then
-                upgradedCount = upgradedCount + 1
-                warn("[Upgrade SUCCESS] Unit ID: "..id.." - Total: "..upgradedCount)
+                warn("[Upgrade SUCCESS] First rafflesia ID: "..id)
+                return id -- Return the ID so we know which one NOT to upgrade later
             end
-            if upgradedCount >= 2 then break end
         end
         
-        if upgradedCount == 0 then
-            warn("[Upgrade] No rafflesias found to upgrade")
-        else
-            warn("[Upgrade] Successfully upgraded "..upgradedCount.." rafflesias")
-        end
+        warn("[Upgrade] Could not find first rafflesia")
+        return nil
     end
 
-    local function sellSecondRafflesia()
-        warn("[Sell] Searching for second rafflesia to sell...")
+    local function upgradeSecondRafflesiaOnly(firstRaffId)
+        warn("[Upgrade] Searching for SECOND rafflesia only...")
         
-        -- Try wider range for selling
-        for id = 200, 500 do
-            if trySellUnit(id) then
-                warn("[Sell SUCCESS] Second rafflesia ID: "..id)
-                return true
+        -- Second rafflesia is usually in higher IDs, skip the first one's ID
+        for id = 100, 500 do
+            if id ~= firstRaffId and tryUpgradeUnit(id) then
+                warn("[Upgrade SUCCESS] Second rafflesia ID: "..id)
+                return id -- Return the ID for selling later
             end
         end
         
-        -- If not found, try even broader range
-        for id = 100, 600 do
-            if trySellUnit(id) then
-                warn("[Sell SUCCESS] Second rafflesia ID: "..id)
+        warn("[Upgrade] Could not find second rafflesia")
+        return nil
+    end
+
+    local function sellSpecificRafflesia(unitId)
+        if unitId then
+            warn("[Sell] Selling specific rafflesia ID: "..unitId)
+            if trySellUnit(unitId) then
+                warn("[Sell SUCCESS] Sold rafflesia ID: "..unitId)
                 return true
             end
         end
-        
-        warn("[Sell] Could not find second rafflesia to sell")
+        warn("[Sell] Could not sell specified rafflesia")
         return false
     end
 
@@ -226,14 +225,30 @@ function load3xScript()
             end)
         end
         
-        -- Upgrade BOTH rafflesias at 43 seconds
+        local firstRafflesiaId = nil
+        local secondRafflesiaId = nil
+        
+        -- Upgrade FIRST rafflesia only at 43 seconds
         task.delay(43, function()
-            upgradeAllRafflesias()
+            firstRafflesiaId = upgradeFirstRafflesiaOnly()
         end)
         
-        -- Sell second rafflesia at 85 seconds
+        -- Upgrade SECOND rafflesia only at 68 seconds
+        task.delay(68, function()
+            if firstRafflesiaId then
+                secondRafflesiaId = upgradeSecondRafflesiaOnly(firstRafflesiaId)
+            else
+                warn("[Upgrade] Can't upgrade second without knowing first ID")
+            end
+        end)
+        
+        -- Sell SECOND rafflesia at 85 seconds
         task.delay(85, function()
-            sellSecondRafflesia()
+            if secondRafflesiaId then
+                sellSpecificRafflesia(secondRafflesiaId)
+            else
+                warn("[Sell] Don't know which rafflesia to sell")
+            end
         end)
         
         -- Auto-restart at 103 seconds
@@ -267,7 +282,7 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 7s & 15s\n• Upgrade Both: 43s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
+    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 7s & 15s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
