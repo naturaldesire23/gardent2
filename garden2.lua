@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Complete Placement & Upgrade Strategy
+--// Garden Tower Defense Script - Instant Upgrade Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== COMPLETE PLACEMENT & UPGRADE STRATEGY ===--
+--=== INSTANT UPGRADE STRATEGY ===--
 
-function loadCompleteScript()
-    warn("[System] Loaded Complete Placement & Upgrade Strategy")
+function loadInstantUpgradeScript()
+    warn("[System] Loaded Instant Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -134,7 +134,7 @@ function loadCompleteScript()
             }
         },
         {
-            time = 55, -- Second tomato at 55 seconds
+            time = 55,
             unit = "unit_tomato_rainbow", 
             data = {
                 Valid = true,
@@ -145,7 +145,7 @@ function loadCompleteScript()
         },
         -- Metal Flowers
         {
-            time = 85, -- 1:25
+            time = 85,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -155,7 +155,7 @@ function loadCompleteScript()
             }
         },
         {
-            time = 100, -- 1:40
+            time = 100,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -165,7 +165,7 @@ function loadCompleteScript()
             }
         },
         {
-            time = 115, -- 1:55
+            time = 115,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -176,7 +176,7 @@ function loadCompleteScript()
         },
         -- Golem Dragons
         {
-            time = 195, -- 3:15
+            time = 195,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -186,7 +186,7 @@ function loadCompleteScript()
             }
         },
         {
-            time = 225, -- 3:45
+            time = 225,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -196,7 +196,7 @@ function loadCompleteScript()
             }
         },
         {
-            time = 240, -- 4:00
+            time = 240,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -227,40 +227,41 @@ function loadCompleteScript()
         end)
     end
 
-    -- ULTRA FAST UPGRADE FUNCTIONS
-    local function ultraFastUpgradeTomatoes()
-        warn("[ULTRA FAST] Starting TOMATO upgrades (1-50)")
+    -- INSTANT UPGRADE FUNCTIONS
+    local function instantUpgradeTomatoes()
+        warn("[INSTANT] Starting TOMATO upgrades (1-50)")
         
         while true do
             for id = 1, 50 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call for speed
+                upgradeUnit(id) -- Double call
             end
             task.wait(0.01)
         end
     end
 
-    local function ultraFastUpgradeMetalFlowers()
-        warn("[ULTRA FAST] Starting METAL FLOWER upgrades (20-80)")
+    local function instantUpgradeMetalFlowers()
+        warn("[INSTANT] Starting METAL FLOWER upgrades (20-80)")
         
         while true do
             for id = 20, 80 do
                 upgradeUnit(id)
                 upgradeUnit(id) -- Double call
-                upgradeUnit(id) -- Triple call for MAX speed
+                upgradeUnit(id) -- Triple call
             end
             task.wait(0.01)
         end
     end
 
-    local function ultraFastUpgradeGolems()
-        warn("[ULTRA FAST] Starting GOLEM upgrades (200-450)")
+    local function instantUpgradeGolems()
+        warn("[INSTANT] Starting GOLEM upgrades (150-500)")
         
         while true do
-            for id = 200, 450 do
+            -- Expanded range for golems to make sure we catch them
+            for id = 150, 500 do
                 upgradeUnit(id)
                 upgradeUnit(id) -- Double call
-                upgradeUnit(id) -- Triple call for MAX speed
+                upgradeUnit(id) -- Triple call
             end
             task.wait(0.01)
         end
@@ -277,22 +278,22 @@ function loadCompleteScript()
             end)
         end
         
-        -- Start ULTRA FAST TOMATO upgrades at 6 seconds
+        -- Start INSTANT TOMATO upgrades at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning ULTRA FAST TOMATO upgrades!")
-            ultraFastUpgradeTomatoes()
+            warn("[Starting] Beginning INSTANT TOMATO upgrades!")
+            instantUpgradeTomatoes()
         end)
         
-        -- Start ULTRA FAST METAL FLOWER upgrades at 116 seconds (after 3rd metal flower)
-        task.delay(116, function()
-            warn("[Starting] Beginning ULTRA FAST METAL FLOWER upgrades!")
-            ultraFastUpgradeMetalFlowers()
+        -- Start INSTANT METAL FLOWER upgrades at 86 seconds (after 1st metal flower)
+        task.delay(86, function()
+            warn("[Starting] Beginning INSTANT METAL FLOWER upgrades!")
+            instantUpgradeMetalFlowers()
         end)
         
-        -- Start ULTRA FAST GOLEM upgrades at 241 seconds (after 3rd golem)
-        task.delay(241, function()
-            warn("[Starting] Beginning ULTRA FAST GOLEM upgrades!")
-            ultraFastUpgradeGolems()
+        -- Start INSTANT GOLEM upgrades at 196 seconds (after 1st golem)
+        task.delay(196, function()
+            warn("[Starting] Beginning INSTANT GOLEM upgrades!")
+            instantUpgradeGolems()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -316,7 +317,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Complete Placement Strategy"
+    SubTitle.Text = "Instant Upgrade Strategy"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -326,32 +327,32 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 COMPLETE STRATEGY\n• Rainbow Tomatoes: 5s & 55s (IDs 1-50)\n• Metal Flowers: 1:25, 1:40, 1:55 (IDs 20-80)\n• Golem Dragons: 3:15, 3:45, 4:00 (IDs 200-450)\n• Upgrades start AFTER all units placed\n• ULTRA FAST upgrade cycles"
+    Instructions.Text = "⚡ INSTANT UPGRADES ⚡\n• Tomatoes: 6s (IDs 1-50)\n• Metal Flowers: 1:26 (IDs 20-80)\n• Golems: 3:16 (IDs 150-500)\n• Upgrades start IMMEDIATELY after 1st unit\n• EXPANDED golem range for better coverage"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
+    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Complete Button
-    local btnComplete = Instance.new("TextButton")
-    btnComplete.Size = UDim2.new(1, -40, 0, 120)
-    btnComplete.Position = UDim2.new(0, 20, 0, 200)
-    btnComplete.Text = "COMPLETE STRATEGY\n2 Tomatoes + 3 Metal + 3 Golems\nULTRA FAST UPGRADES"
-    btnComplete.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnComplete.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnComplete.Font = Enum.Font.GothamBold
-    btnComplete.TextSize = 18
-    btnComplete.BorderSizePixel = 0
-    btnComplete.Parent = Frame
+    -- Instant Button
+    local btnInstant = Instance.new("TextButton")
+    btnInstant.Size = UDim2.new(1, -40, 0, 120)
+    btnInstant.Position = UDim2.new(0, 20, 0, 200)
+    btnInstant.Text = "⚡ INSTANT UPGRADES ⚡\nStarts Immediately After Placement\nExpanded Golem Range"
+    btnInstant.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    btnInstant.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnInstant.Font = Enum.Font.GothamBold
+    btnInstant.TextSize = 18
+    btnInstant.BorderSizePixel = 0
+    btnInstant.Parent = Frame
 
-    local btnCompleteCorner = Instance.new("UICorner")
-    btnCompleteCorner.CornerRadius = UDim.new(0, 10)
-    btnCompleteCorner.Parent = btnComplete
+    local btnInstantCorner = Instance.new("UICorner")
+    btnInstantCorner.CornerRadius = UDim.new(0, 10)
+    btnInstantCorner.Parent = btnInstant
 
-    btnComplete.MouseButton1Click:Connect(function()
+    btnInstant.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadCompleteScript()
+        loadInstantUpgradeScript()
     end)
 end
 
