@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Instant Upgrade Strategy
+--// Garden Tower Defense Script - Fast Golem Upgrade Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,11 +113,11 @@ task.delay(2, function()
     end)
 end)
 
---=== INSTANT UPGRADE STRATEGY ===--
+--=== FAST GOLEM UPGRADE STRATEGY ===--
 
-function loadInstantUpgradeScript()
-    warn("[System] Loaded Instant Upgrade Strategy")
-    remotes.ChangeTickSpeed:InvokeServer(3)
+function loadFastGolemScript()
+    warn("[System] Loaded Fast Golem Upgrade Strategy")
+    remotes.ChangeTickSpeed:InvokeServer(3) -- Force 3x speed
 
     local difficulty = "dif_hard"
     
@@ -174,9 +174,9 @@ function loadInstantUpgradeScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Golem Dragons
+        -- Golem Dragons (10 seconds earlier)
         {
-            time = 195,
+            time = 185, -- 3:05 (was 3:15)
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -186,7 +186,7 @@ function loadInstantUpgradeScript()
             }
         },
         {
-            time = 225,
+            time = 215, -- 3:35 (was 3:45)
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -196,7 +196,7 @@ function loadInstantUpgradeScript()
             }
         },
         {
-            time = 240,
+            time = 230, -- 3:50 (was 4:00)
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -227,9 +227,9 @@ function loadInstantUpgradeScript()
         end)
     end
 
-    -- INSTANT UPGRADE FUNCTIONS
-    local function instantUpgradeTomatoes()
-        warn("[INSTANT] Starting TOMATO upgrades (1-50)")
+    -- ULTRA FAST UPGRADE FUNCTIONS
+    local function ultraFastUpgradeTomatoes()
+        warn("[ULTRA FAST] Starting TOMATO upgrades (1-50)")
         
         while true do
             for id = 1, 50 do
@@ -240,8 +240,8 @@ function loadInstantUpgradeScript()
         end
     end
 
-    local function instantUpgradeMetalFlowers()
-        warn("[INSTANT] Starting METAL FLOWER upgrades (20-80)")
+    local function ultraFastUpgradeMetalFlowers()
+        warn("[ULTRA FAST] Starting METAL FLOWER upgrades (20-80)")
         
         while true do
             for id = 20, 80 do
@@ -253,17 +253,18 @@ function loadInstantUpgradeScript()
         end
     end
 
-    local function instantUpgradeGolems()
-        warn("[INSTANT] Starting GOLEM upgrades (150-500)")
+    local function ultraFastUpgradeGolems()
+        warn("[ULTRA FAST] Starting GOLEM upgrades (250-480) - MAXIMUM SPEED")
         
         while true do
-            -- Expanded range for golems to make sure we catch them
-            for id = 150, 500 do
+            -- OPTIMIZED GOLEM RANGE: 250-480
+            for id = 250, 480 do
                 upgradeUnit(id)
                 upgradeUnit(id) -- Double call
                 upgradeUnit(id) -- Triple call
+                upgradeUnit(id) -- QUADRUPLE call for MAXIMUM speed
             end
-            task.wait(0.01)
+            -- NO DELAY - ABSOLUTE MAXIMUM SPEED
         end
     end
 
@@ -278,22 +279,22 @@ function loadInstantUpgradeScript()
             end)
         end
         
-        -- Start INSTANT TOMATO upgrades at 6 seconds
+        -- Start ULTRA FAST TOMATO upgrades at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning INSTANT TOMATO upgrades!")
-            instantUpgradeTomatoes()
+            warn("[Starting] Beginning ULTRA FAST TOMATO upgrades!")
+            ultraFastUpgradeTomatoes()
         end)
         
-        -- Start INSTANT METAL FLOWER upgrades at 86 seconds (after 1st metal flower)
+        -- Start ULTRA FAST METAL FLOWER upgrades at 86 seconds (after 1st metal flower)
         task.delay(86, function()
-            warn("[Starting] Beginning INSTANT METAL FLOWER upgrades!")
-            instantUpgradeMetalFlowers()
+            warn("[Starting] Beginning ULTRA FAST METAL FLOWER upgrades!")
+            ultraFastUpgradeMetalFlowers()
         end)
         
-        -- Start INSTANT GOLEM upgrades at 196 seconds (after 1st golem)
-        task.delay(196, function()
-            warn("[Starting] Beginning INSTANT GOLEM upgrades!")
-            instantUpgradeGolems()
+        -- Start ULTRA FAST GOLEM upgrades at 186 seconds (after 1st golem)
+        task.delay(186, function()
+            warn("[Starting] Beginning ULTRA FAST GOLEM upgrades - MAXIMUM SPEED!")
+            ultraFastUpgradeGolems()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -316,8 +317,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Instant Upgrade Strategy"
+    Title.Text = "ULTRA SPEED STRATEGY"
+    SubTitle.Text = "3x Speed - Fast Golem Upgrades"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -327,39 +328,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ INSTANT UPGRADES ⚡\n• Tomatoes: 6s (IDs 1-50)\n• Metal Flowers: 1:26 (IDs 20-80)\n• Golems: 3:16 (IDs 150-500)\n• Upgrades start IMMEDIATELY after 1st unit\n• EXPANDED golem range for better coverage"
+    Instructions.Text = "⚡ ULTRA SPEED - 3X GAME SPEED ⚡\n• Tomatoes: IDs 1-50 (2x calls)\n• Metal Flowers: IDs 20-80 (3x calls)\n• Golems: IDs 250-480 (4x calls)\n• Golems placed 10s earlier\n• MAXIMUM SPEED - NO DELAYS"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Instant Button
-    local btnInstant = Instance.new("TextButton")
-    btnInstant.Size = UDim2.new(1, -40, 0, 120)
-    btnInstant.Position = UDim2.new(0, 20, 0, 200)
-    btnInstant.Text = "⚡ INSTANT UPGRADES ⚡\nStarts Immediately After Placement\nExpanded Golem Range"
-    btnInstant.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnInstant.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnInstant.Font = Enum.Font.GothamBold
-    btnInstant.TextSize = 18
-    btnInstant.BorderSizePixel = 0
-    btnInstant.Parent = Frame
+    -- Ultra Speed Button (Only Option)
+    local btnUltra = Instance.new("TextButton")
+    btnUltra.Size = UDim2.new(1, -40, 0, 120)
+    btnUltra.Position = UDim2.new(0, 20, 0, 200)
+    btnUltra.Text = "⚡ ULTRA SPEED - 3X ⚡\nFast Golem Upgrades (250-480)\nMAXIMUM SPEED - NO DELAYS"
+    btnUltra.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    btnUltra.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnUltra.Font = Enum.Font.GothamBold
+    btnUltra.TextSize = 18
+    btnUltra.BorderSizePixel = 0
+    btnUltra.Parent = Frame
 
-    local btnInstantCorner = Instance.new("UICorner")
-    btnInstantCorner.CornerRadius = UDim.new(0, 10)
-    btnInstantCorner.Parent = btnInstant
+    local btnUltraCorner = Instance.new("UICorner")
+    btnUltraCorner.CornerRadius = UDim.new(0, 10)
+    btnUltraCorner.Parent = btnUltra
 
-    btnInstant.MouseButton1Click:Connect(function()
+    btnUltra.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadInstantUpgradeScript()
+        loadFastGolemScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading strategy selection..."
+        Label.Text = "✅ Key Verified! Loading ULTRA SPEED..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
