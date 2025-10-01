@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Golem Priority Upgrade Strategy
+--// Garden Tower Defense Script - SMART Single Upgrade System
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GOLEM PRIORITY UPGRADE STRATEGY ===--
+--=== SMART SINGLE UPGRADE SYSTEM ===--
 
-function loadGolemPriorityScript()
-    warn("[System] Loaded Golem Priority Upgrade Strategy")
+function loadSmartUpgradeScript()
+    warn("[System] Loaded SMART Single Upgrade System")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -227,75 +227,46 @@ function loadGolemPriorityScript()
         end)
     end
 
-    -- Variables to control upgrade loops
-    local upgradeTomatoesActive = true
-    local upgradeMetalFlowersActive = true
-    local upgradeGolemsActive = false
-
-    -- UPGRADE FUNCTIONS
-    local function upgradeTomatoes()
-        warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
+    -- SMART SINGLE UPGRADE SYSTEM
+    local function smartSingleUpgrade()
+        warn("[SMART SYSTEM] Starting SMART single upgrade system...")
         
-        while upgradeTomatoesActive do
-            for id = 1, 50 do
-                upgradeUnit(id)
-                upgradeUnit(id) -- Double call
+        while true do
+            local gameTime = os.clock()
+            
+            -- PHASE 1: Early Game - Focus on Tomatoes (1-50)
+            if gameTime < 85 then
+                for id = 1, 50 do
+                    upgradeUnit(id)
+                    upgradeUnit(id) -- Double call
+                end
+            
+            -- PHASE 2: Mid Game - Focus on Metal Flowers (20-80)  
+            elseif gameTime < 185 then
+                for id = 20, 80 do
+                    upgradeUnit(id)
+                    upgradeUnit(id) -- Double call
+                    upgradeUnit(id) -- Triple call
+                end
+            
+            -- PHASE 3: Late Game - Focus on Golems (250-480)
+            else
+                for id = 250, 480 do
+                    upgradeUnit(id)
+                    upgradeUnit(id) -- Double call
+                    upgradeUnit(id) -- Triple call
+                    upgradeUnit(id) -- Quadruple call
+                end
             end
-            task.wait(0.01)
+            
+            -- Small delay to prevent crashing but keep it fast
+            task.wait(0.02)
         end
-        warn("[UPGRADE] Tomato upgrades STOPPED")
-    end
-
-    local function upgradeMetalFlowers()
-        warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
-        
-        while upgradeMetalFlowersActive do
-            for id = 20, 80 do
-                upgradeUnit(id)
-                upgradeUnit(id) -- Double call
-                upgradeUnit(id) -- Triple call
-            end
-            task.wait(0.01)
-        end
-        warn("[UPGRADE] Metal Flower upgrades STOPPED")
-    end
-
-    local function upgradeGolems()
-        warn("[UPGRADE] Starting GOLEM upgrades (250-480) - PRIORITY")
-        
-        while upgradeGolemsActive do
-            for id = 250, 480 do
-                upgradeUnit(id)
-                upgradeUnit(id) -- Double call
-                upgradeUnit(id) -- Triple call
-                upgradeUnit(id) -- QUADRUPLE call
-            end
-            -- NO DELAY - MAXIMUM SPEED
-        end
-    end
-
-    local function stopAllUpgradesExceptGolems()
-        warn("[PRIORITY] Stopping tomato and metal flower upgrades...")
-        upgradeTomatoesActive = false
-        upgradeMetalFlowersActive = false
-        
-        -- Wait a moment for other loops to stop
-        task.wait(0.1)
-        
-        -- Start golem upgrades
-        upgradeGolemsActive = true
-        warn("[PRIORITY] Starting GOLEM PRIORITY upgrades!")
-        upgradeGolems()
     end
 
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
-        
-        -- Reset upgrade states
-        upgradeTomatoesActive = true
-        upgradeMetalFlowersActive = true
-        upgradeGolemsActive = false
         
         -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
@@ -304,22 +275,10 @@ function loadGolemPriorityScript()
             end)
         end
         
-        -- Start TOMATO upgrades at 6 seconds
+        -- Start SINGLE smart upgrade system at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning TOMATO upgrades!")
-            upgradeTomatoes()
-        end)
-        
-        -- Start METAL FLOWER upgrades at 86 seconds
-        task.delay(86, function()
-            warn("[Starting] Beginning METAL FLOWER upgrades!")
-            upgradeMetalFlowers()
-        end)
-        
-        -- STOP other upgrades and START GOLEM upgrades at 186 seconds
-        task.delay(186, function()
-            warn("[PRIORITY] First golem placed - SWITCHING TO GOLEM PRIORITY!")
-            stopAllUpgradesExceptGolems()
+            warn("[Starting] Beginning SMART SINGLE upgrade system!")
+            smartSingleUpgrade()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -342,8 +301,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "GOLEM PRIORITY STRATEGY"
-    SubTitle.Text = "3x Speed - Golems Only After Placement"
+    Title.Text = "SMART SINGLE UPGRADE"
+    SubTitle.Text = "No Competition - Consistent Upgrades"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -353,39 +312,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 GOLEM PRIORITY STRATEGY\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• Golems: IDs 250-480 (LATE GAME PRIORITY)\n• After 1st golem: ONLY GOLEMS upgrade\n• No interference - Maximum focus"
+    Instructions.Text = "🎯 SMART SINGLE UPGRADE SYSTEM\n• ONE upgrade loop - NO competition\n• Phase 1 (0-1:25): Tomatoes 1-50\n• Phase 2 (1:25-3:05): Metal Flowers 20-80\n• Phase 3 (3:05+): Golems 250-480\n• Consistent upgrades every game"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Golem Priority Button
-    local btnGolem = Instance.new("TextButton")
-    btnGolem.Size = UDim2.new(1, -40, 0, 120)
-    btnGolem.Position = UDim2.new(0, 20, 0, 200)
-    btnGolem.Text = "GOLEM PRIORITY\nStops Tomatoes/Metal After Golems\nGolems Get 100% Focus"
-    btnGolem.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnGolem.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnGolem.Font = Enum.Font.GothamBold
-    btnGolem.TextSize = 18
-    btnGolem.BorderSizePixel = 0
-    btnGolem.Parent = Frame
+    -- Smart Button
+    local btnSmart = Instance.new("TextButton")
+    btnSmart.Size = UDim2.new(1, -40, 0, 120)
+    btnSmart.Position = UDim2.new(0, 20, 0, 200)
+    btnSmart.Text = "SMART SINGLE UPGRADE\nOne Loop - No Competition\nConsistent Every Game"
+    btnSmart.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnSmart.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnSmart.Font = Enum.Font.GothamBold
+    btnSmart.TextSize = 18
+    btnSmart.BorderSizePixel = 0
+    btnSmart.Parent = Frame
 
-    local btnGolemCorner = Instance.new("UICorner")
-    btnGolemCorner.CornerRadius = UDim.new(0, 10)
-    btnGolemCorner.Parent = btnGolem
+    local btnSmartCorner = Instance.new("UICorner")
+    btnSmartCorner.CornerRadius = UDim.new(0, 10)
+    btnSmartCorner.Parent = btnSmart
 
-    btnGolem.MouseButton1Click:Connect(function()
+    btnSmart.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadGolemPriorityScript()
+        loadSmartUpgradeScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading GOLEM PRIORITY..."
+        Label.Text = "✅ Key Verified! Loading SMART system..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
