@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - ULTRA FAST Simple Upgrade
+--// Garden Tower Defense Script - Full Range After Golems
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== ULTRA FAST SIMPLE UPGRADE ===--
+--=== FULL RANGE AFTER GOLEMS ===--
 
-function loadUltraFastSimpleScript()
-    warn("[System] Loaded ULTRA FAST Simple Upgrade Strategy")
+function loadFullRangeScript()
+    warn("[System] Loaded Full Range After Golems Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -227,39 +227,35 @@ function loadUltraFastSimpleScript()
         end)
     end
 
-    -- ULTRA FAST SIMPLE UPGRADE FUNCTIONS
-    local function ultraFastUpgradeTomatoes()
-        warn("[ULTRA FAST] Starting TOMATO upgrades (1-50)")
+    -- UPGRADE FUNCTIONS
+    local function upgradeTomatoes()
+        warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
         
         while true do
-            -- SIMPLE: 1 call per ID, NO multiple calls
             for id = 1, 50 do
                 upgradeUnit(id)
             end
-            -- VERY SMALL delay
-            task.wait(0.001)
+            task.wait(0.01)
         end
     end
 
-    local function ultraFastUpgradeMetalFlowers()
-        warn("[ULTRA FAST] Starting METAL FLOWER upgrades (20-80)")
+    local function upgradeMetalFlowers()
+        warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
         
         while true do
-            -- SIMPLE: 1 call per ID, NO multiple calls
             for id = 20, 80 do
                 upgradeUnit(id)
             end
-            -- VERY SMALL delay
-            task.wait(0.001)
+            task.wait(0.01)
         end
     end
 
-    local function ultraFastUpgradeGolems()
-        warn("[ULTRA FAST] Starting GOLEM upgrades (250-480)")
+    local function upgradeFullRange()
+        warn("[UPGRADE] Starting FULL RANGE upgrades (1-500)")
         
         while true do
-            -- SIMPLE: 1 call per ID, NO multiple calls
-            for id = 250, 480 do
+            -- Upgrade ALL IDs from 1 to 500
+            for id = 1, 500 do
                 upgradeUnit(id)
             end
             -- NO DELAY - MAXIMUM SPEED
@@ -277,22 +273,23 @@ function loadUltraFastSimpleScript()
             end)
         end
         
-        -- Start ULTRA FAST TOMATO upgrades at 6 seconds
+        -- Start TOMATO upgrades at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning ULTRA FAST TOMATO upgrades!")
-            ultraFastUpgradeTomatoes()
+            warn("[Starting] Beginning TOMATO upgrades!")
+            upgradeTomatoes()
         end)
         
-        -- Start ULTRA FAST METAL FLOWER upgrades at 86 seconds
+        -- Start METAL FLOWER upgrades at 86 seconds
         task.delay(86, function()
-            warn("[Starting] Beginning ULTRA FAST METAL FLOWER upgrades!")
-            ultraFastUpgradeMetalFlowers()
+            warn("[Starting] Beginning METAL FLOWER upgrades!")
+            upgradeMetalFlowers()
         end)
         
-        -- Start ULTRA FAST GOLEM upgrades at 186 seconds
+        -- STOP other upgrades and START FULL RANGE upgrades at 186 seconds
         task.delay(186, function()
-            warn("[Starting] Beginning ULTRA FAST GOLEM upgrades!")
-            ultraFastUpgradeGolems()
+            warn("[FULL RANGE] First golem placed - SWITCHING TO FULL RANGE 1-500!")
+            -- All previous loops continue running, but now we add FULL RANGE
+            upgradeFullRange()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -315,8 +312,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "ULTRA FAST SIMPLE"
-    SubTitle.Text = "No Multiple Calls - Maximum Speed"
+    Title.Text = "FULL RANGE STRATEGY"
+    SubTitle.Text = "1-500 After Golems"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -326,39 +323,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ ULTRA FAST SIMPLE ⚡\n• Tomatoes: 1-50 (1x call, 0.001s delay)\n• Metal Flowers: 20-80 (1x call, 0.001s delay)\n• Golems: 250-480 (1x call, NO DELAY)\n• No multiple calls = FASTER cycles\n• Maximum possible speed"
+    Instructions.Text = "🎯 FULL RANGE STRATEGY\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• After Golems: FULL RANGE 1-500\n• Upgrades ALL units including golems\n• No missing any IDs"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
+    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Ultra Fast Simple Button
-    local btnSimple = Instance.new("TextButton")
-    btnSimple.Size = UDim2.new(1, -40, 0, 120)
-    btnSimple.Position = UDim2.new(0, 20, 0, 200)
-    btnSimple.Text = "⚡ ULTRA FAST SIMPLE ⚡\n1 Call Per ID - No Overload\nMaximum Cycle Speed"
-    btnSimple.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnSimple.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnSimple.Font = Enum.Font.GothamBold
-    btnSimple.TextSize = 18
-    btnSimple.BorderSizePixel = 0
-    btnSimple.Parent = Frame
+    -- Full Range Button
+    local btnFull = Instance.new("TextButton")
+    btnFull.Size = UDim2.new(1, -40, 0, 120)
+    btnFull.Position = UDim2.new(0, 20, 0, 200)
+    btnFull.Text = "FULL RANGE STRATEGY\nAfter Golems: Upgrades 1-500\nCatches ALL Units"
+    btnFull.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnFull.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnFull.Font = Enum.Font.GothamBold
+    btnFull.TextSize = 18
+    btnFull.BorderSizePixel = 0
+    btnFull.Parent = Frame
 
-    local btnSimpleCorner = Instance.new("UICorner")
-    btnSimpleCorner.CornerRadius = UDim.new(0, 10)
-    btnSimpleCorner.Parent = btnSimple
+    local btnFullCorner = Instance.new("UICorner")
+    btnFullCorner.CornerRadius = UDim.new(0, 10)
+    btnFullCorner.Parent = btnFull
 
-    btnSimple.MouseButton1Click:Connect(function()
+    btnFull.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadUltraFastSimpleScript()
+        loadFullRangeScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading ULTRA FAST..."
+        Label.Text = "✅ Key Verified! Loading FULL RANGE..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
