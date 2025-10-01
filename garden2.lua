@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Punch Potato Strategy
+
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -391,3 +391,4 @@ ScreenGui.DisplayOrder = 999
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 print("GUI setup complete - Should be visible now!")
+
