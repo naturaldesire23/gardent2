@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Complete Automation
+--// Garden Tower Defense Script - Working Version
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,27 +113,27 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - COMPLETE AUTOMATION ===--
+--=== GAME SCRIPTS - WORKING VERSION ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Complete Automation")
+    warn("[System] Loaded 3x Speed Script - Working Version")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
     
     local placements = {
         {
-            time = 10, unit = "unit_rafflesia", slot = "2", -- 5 + 5
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
-                DistanceAlongPath=5.6959664442733,
-                CF=CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
+            time = 7, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=1,Position=Vector3.new(49.52396774291992,-21.75,-52.60224914550781),
+                DistanceAlongPath=8.780204010731204,
+                CF=CFrame.new(49.52396774291992,-21.75,-52.60224914550781,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
                 Rotation=180}
         },
         {
-            time = 13, unit = "unit_rafflesia", slot = "2", -- 8 + 5
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
-                DistanceAlongPath=46.379028904084905,
-                CF=CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
+            time = 15, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-39.27058029174805,-21.749000549316406,39.21887969970703),
+                DistanceAlongPath=108.87929081916809,
+                CF=CFrame.new(-39.27058029174805,-21.749000549316406,39.21887969970703,1,0,-0,-0,1,-0,-0,0,1),
                 Rotation=180}
         }
     }
@@ -206,29 +206,29 @@ function load3xScript()
         warn("[Game Start] Choosing Apocalypse difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place units
+        -- Place units (using the working timing)
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
                 placeUnit(p.unit, p.slot, p.data)
             end)
         end
         
-        -- Upgrade first rafflesia at 43 seconds (38 + 5)
+        -- Upgrade first rafflesia at 43 seconds
         task.delay(43, function()
             findAndUpgradeRafflesia(true)
         end)
         
-        -- Upgrade second rafflesia at 68 seconds (63 + 5)
+        -- Upgrade second rafflesia at 68 seconds
         task.delay(68, function()
             findAndUpgradeRafflesia(false)
         end)
         
-        -- Sell second rafflesia at 85 seconds (80 + 5)
+        -- Sell second rafflesia at 85 seconds
         task.delay(85, function()
             findAndSellRafflesia()
         end)
         
-        -- Auto-restart at 103 seconds (98 + 5)
+        -- Auto-restart at 103 seconds
         task.delay(103, function()
             warn("[Restart] Game ended, restarting in 3 seconds...")
             task.wait(3)
@@ -259,7 +259,7 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 10s & 13s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
+    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 7s & 15s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
