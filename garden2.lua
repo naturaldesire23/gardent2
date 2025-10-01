@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - New Map Rafflesia
+--// Garden Tower Defense Script - Fixed Timing
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -78,7 +78,7 @@ local CheckBtn = Instance.new("TextButton")
 CheckBtn.Size = UDim2.new(1, -40, 0, 50)
 CheckBtn.Position = UDim2.new(0, 20, 0, 160)
 CheckBtn.Text = "VERIFY KEY"
-CheckBtn.Font =Enum.Font.GothamBold
+CheckBtn.Font = Enum.Font.GothamBold
 CheckBtn.TextSize = 18
 CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CheckBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 200)
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - NEW MAP RAFFLESIA ===--
+--=== GAME SCRIPTS - FIXED TIMING ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Rafflesia Strategy")
+    warn("[System] Loaded 3x Speed Script - Fixed Timing")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
@@ -206,13 +206,19 @@ function load3xScript()
         
         -- Try to upgrade first rafflesia at 50 seconds
         task.delay(50, findAndUpgradeFirstRafflesia)
+        
+        -- Auto-restart at 120 seconds
+        task.delay(120, function()
+            warn("[Restart] Game ended, restarting...")
+            remotes.RestartGame:InvokeServer()
+            warn("[Restart] Game restarted, starting new cycle...")
+            task.wait(2)
+            startGame()
+        end)
     end
 
-    while true do
-        startGame()
-        task.wait(120) -- Adjust this based on map length
-        remotes.RestartGame:InvokeServer()
-    end
+    -- Start the first game
+    startGame()
 end
 
 --=== SIMPLIFIED SPEED MENU ===--
