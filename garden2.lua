@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Working Version
+--// Garden Tower Defense Script - Fixed Upgrade System
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - WORKING VERSION ===--
+--=== GAME SCRIPTS - FIXED UPGRADE SYSTEM ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Working Version")
+    warn("[System] Loaded 3x Speed Script - Fixed Upgrade System")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
@@ -150,55 +150,68 @@ function load3xScript()
         end
     end
 
-    local function upgradeUnit(unitId)
+    local function tryUpgradeUnit(unitId)
         local success, result = pcall(function()
             return remotes.UpgradeUnit:InvokeServer(unitId)
         end)
-        if success and result == true then
-            warn("[Upgrading] Unit ID: "..unitId.." - SUCCESS")
-            return true
-        else
-            return false
+        if success then
+            warn("[Upgrade Attempt] Unit ID: "..unitId.." - Result: "..tostring(result))
+            return result == true
         end
-    end
-
-    local function sellUnit(unitId)
-        local success, result = pcall(function()
-            return remotes.SellUnit:InvokeServer(unitId)
-        end)
-        if success and result == true then
-            warn("[Selling] Unit ID: "..unitId.." - SUCCESS")
-            return true
-        else
-            return false
-        end
-    end
-
-    local function findAndUpgradeRafflesia(isFirst)
-        warn("[Search] Looking for "..(isFirst and "first" or "second").." rafflesia...")
-        
-        local startId = isFirst and 1 or 50
-        local endId = isFirst and 49 or 100
-        
-        for id = startId, endId do
-            if upgradeUnit(id) then
-                warn("[Found] "..(isFirst and "First" or "Second").." rafflesia ID: "..id)
-                return true
-            end
-        end
-        warn("[Search] Could not find "..(isFirst and "first" or "second").." rafflesia")
         return false
     end
 
-    local function findAndSellRafflesia()
-        warn("[Search] Looking for second rafflesia to sell...")
-        for id = 50, 100 do
-            if sellUnit(id) then
-                warn("[Sold] Second rafflesia ID: "..id)
+    local function trySellUnit(unitId)
+        local success, result = pcall(function()
+            return remotes.SellUnit:InvokeServer(unitId)
+        end)
+        if success then
+            warn("[Sell Attempt] Unit ID: "..unitId.." - Result: "..tostring(result))
+            return result == true
+        end
+        return false
+    end
+
+    local function upgradeAllRafflesias()
+        warn("[Upgrade] Searching for ALL rafflesias to upgrade...")
+        local upgradedCount = 0
+        
+        -- Try wider range for both rafflesias
+        for id = 1, 200 do
+            if tryUpgradeUnit(id) then
+                upgradedCount = upgradedCount + 1
+                warn("[Upgrade SUCCESS] Unit ID: "..id.." - Total: "..upgradedCount)
+            end
+            if upgradedCount >= 2 then break end
+        end
+        
+        if upgradedCount == 0 then
+            warn("[Upgrade] No rafflesias found to upgrade")
+        else
+            warn("[Upgrade] Successfully upgraded "..upgradedCount.." rafflesias")
+        end
+    end
+
+    local function sellSecondRafflesia()
+        warn("[Sell] Searching for second rafflesia to sell...")
+        
+        -- Try to sell in the likely second rafflesia ID range
+        for id = 100, 200 do
+            if trySellUnit(id) then
+                warn("[Sell SUCCESS] Second rafflesia ID: "..id)
                 return true
             end
         end
-        warn("[Search] Could not find second rafflesia to sell")
+        
+        -- If not found, try broader range
+        for id = 50, 300 do
+            if trySellUnit(id) then
+                warn("[Sell SUCCESS] Second rafflesia ID: "..id)
+                return true
+            end
+        end
+        
+        warn("[Sell] Could not find second rafflesia to sell")
         return false
     end
 
@@ -206,26 +219,21 @@ function load3xScript()
         warn("[Game Start] Choosing Apocalypse difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place units (using the working timing)
+        -- Place units
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
                 placeUnit(p.unit, p.slot, p.data)
             end)
         end
         
-        -- Upgrade first rafflesia at 43 seconds
+        -- Upgrade BOTH rafflesias at 43 seconds
         task.delay(43, function()
-            findAndUpgradeRafflesia(true)
-        end)
-        
-        -- Upgrade second rafflesia at 68 seconds
-        task.delay(68, function()
-            findAndUpgradeRafflesia(false)
+            upgradeAllRafflesias()
         end)
         
         -- Sell second rafflesia at 85 seconds
         task.delay(85, function()
-            findAndSellRafflesia()
+            sellSecondRafflesia()
         end)
         
         -- Auto-restart at 103 seconds
@@ -259,7 +267,7 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 7s & 15s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
+    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 7s & 15s\n• Upgrade Both: 43s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
