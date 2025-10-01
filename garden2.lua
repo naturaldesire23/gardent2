@@ -120,10 +120,8 @@ function load3xScript()
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
-    local firstRafflesiaId = nil
-    local secondRafflesiaId = nil
     
-    -- Define placements locally within the function
+    -- Define placement data
     local firstRafflesiaData = {
         Valid = true,
         PathIndex = 1,
@@ -142,25 +140,20 @@ function load3xScript()
         Rotation = 180
     }
 
-    local function placeUnit(unitName, data, isFirstRafflesia)
+    local firstRafflesiaId = nil
+    local secondRafflesiaId = nil
+
+    local function placeUnit(unitName, data)
         local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
             warn("[Placing] "..unitName.." at "..os.clock())
-            -- Store placement order for ID tracking
-            if isFirstRafflesia and not firstRafflesiaId then
-                task.delay(1, function() -- Small delay to let unit register
-                    findUnitId(true) -- Find first rafflesia ID
-                end)
-            elseif not isFirstRafflesia and not secondRafflesiaId then
-                task.delay(1, function() -- Small delay to let unit register
-                    findUnitId(false) -- Find second rafflesia ID
-                end)
-            end
+            return true
         else
             warn("[Placing] "..unitName.." at "..os.clock().." - Failed")
+            return false
         end
     end
 
@@ -186,7 +179,7 @@ function load3xScript()
                     break
                 end
             end
-            task.wait(0.02) -- Very small delay between attempts
+            task.wait(0.02)
         end
         
         if not found then
@@ -240,12 +233,20 @@ function load3xScript()
         
         -- Place first rafflesia at 5 seconds
         task.delay(5, function()
-            placeUnit("unit_rafflesia", firstRafflesiaData, true)
+            if placeUnit("unit_rafflesia", firstRafflesiaData) then
+                task.delay(1, function()
+                    findUnitId(true)
+                end)
+            end
         end)
         
         -- Place second rafflesia at 8 seconds
         task.delay(8, function()
-            placeUnit("unit_rafflesia", secondRafflesiaData, false)
+            if placeUnit("unit_rafflesia", secondRafflesiaData) then
+                task.delay(1, function()
+                    findUnitId(false)
+                end)
+            end
         end)
         
         -- Upgrade first rafflesia at 38 seconds
@@ -296,8 +297,8 @@ function load3xScript()
             task.wait(3)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(2) -- Small delay before next game starts
-            startGame() -- Recursive call for infinite loop
+            task.wait(2)
+            startGame()
         end)
     end
 
