@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Complete Automation
+--// Garden Tower Defense Script - Simple Working Version
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,182 +113,132 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - COMPLETE AUTOMATION ===--
+--=== GAME SCRIPTS - SIMPLE WORKING VERSION ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Complete Automation")
+    warn("[System] Loaded 3x Speed Script - Simple Version")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
     
-    -- Define placement data
-    local firstRafflesiaData = {
-        Valid = true,
-        PathIndex = 1,
-        Position = Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
-        DistanceAlongPath = 5.6959664442733,
-        CF = CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
-        Rotation = 180
-    }
-    
-    local secondRafflesiaData = {
-        Valid = true,
-        PathIndex = 2,
-        Position = Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
-        DistanceAlongPath = 46.379028904084905,
-        CF = CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
-        Rotation = 180
+    local placements = {
+        {
+            time = 5, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=1,Position=Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
+                DistanceAlongPath=5.6959664442733,
+                CF=CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
+                Rotation=180}
+        },
+        {
+            time = 8, unit = "unit_rafflesia", slot = "2",
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
+                DistanceAlongPath=46.379028904084905,
+                CF=CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
+                Rotation=180}
+        }
     }
 
-    local firstRafflesiaId = nil
-    local secondRafflesiaId = nil
-
-    local function placeUnit(unitName, data)
+    local function placeUnit(unitName, slot, data)
         local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
             warn("[Placing] "..unitName.." at "..os.clock())
-            return true
         else
             warn("[Placing] "..unitName.." at "..os.clock().." - Failed")
-            return false
         end
     end
 
-    local function findUnitId(isFirstRafflesia)
-        warn("[ID Search] Looking for "..(isFirstRafflesia and "first" or "second").." rafflesia...")
-        
-        local found = false
-        for id = 1, 300 do
-            local success, result = pcall(function()
-                return remotes.UpgradeUnit:InvokeServer(id)
-            end)
-            
-            if success and result == true then
-                if isFirstRafflesia and not firstRafflesiaId then
-                    firstRafflesiaId = id
-                    warn("[ID Found] First rafflesia ID: "..id)
-                    found = true
-                    break
-                elseif not isFirstRafflesia and not secondRafflesiaId then
-                    secondRafflesiaId = id
-                    warn("[ID Found] Second rafflesia ID: "..id)
-                    found = true
-                    break
-                end
-            end
-            task.wait(0.02)
-        end
-        
-        if not found then
-            warn("[ID Search] Could not find "..(isFirstRafflesia and "first" or "second").." rafflesia ID")
-        end
-    end
-
-    local function upgradeUnit(unitId, unitName)
-        if unitId then
-            local success, result = pcall(function()
-                return remotes.UpgradeUnit:InvokeServer(unitId)
-            end)
-            if success and result then
-                warn("[Upgrading] "..unitName.." ID: "..unitId.." - Success")
-                return true
-            else
-                warn("[Upgrading] "..unitName.." ID: "..unitId.." - Failed")
-                return false
-            end
+    local function upgradeUnit(unitId)
+        local success, result = pcall(function()
+            return remotes.UpgradeUnit:InvokeServer(unitId)
+        end)
+        if success then
+            warn("[Upgrading] Unit ID: "..unitId.." - Success: "..tostring(result))
+            return true
         else
-            warn("[Upgrading] No "..unitName.." ID available")
+            warn("[Upgrading] Unit ID: "..unitId.." - Failed")
             return false
         end
     end
 
-    local function sellUnit(unitId, unitName)
-        if unitId then
-            local success, result = pcall(function()
-                return remotes.SellUnit:InvokeServer(unitId)
-            end)
-            if success and result then
-                warn("[Selling] "..unitName.." ID: "..unitId.." - Success")
-                return true
-            else
-                warn("[Selling] "..unitName.." ID: "..unitId.." - Failed")
-                return false
-            end
+    local function sellUnit(unitId)
+        local success, result = pcall(function()
+            return remotes.SellUnit:InvokeServer(unitId)
+        end)
+        if success then
+            warn("[Selling] Unit ID: "..unitId.." - Success: "..tostring(result))
+            return true
         else
-            warn("[Selling] No "..unitName.." ID available")
+            warn("[Selling] Unit ID: "..unitId.." - Failed")
             return false
         end
+    end
+
+    local function findAndUpgradeFirstRafflesia()
+        warn("[Upgrade] Searching for first rafflesia ID...")
+        for id = 1, 50 do
+            if upgradeUnit(id) then
+                warn("[Upgrade] Successfully upgraded first rafflesia ID: "..id)
+                return id
+            end
+            task.wait(0.05)
+        end
+        warn("[Upgrade] Could not find first rafflesia ID")
+        return nil
+    end
+
+    local function findAndUpgradeSecondRafflesia()
+        warn("[Upgrade] Searching for second rafflesia ID...")
+        for id = 51, 100 do
+            if upgradeUnit(id) then
+                warn("[Upgrade] Successfully upgraded second rafflesia ID: "..id)
+                return id
+            end
+            task.wait(0.05)
+        end
+        warn("[Upgrade] Could not find second rafflesia ID")
+        return nil
+    end
+
+    local function findAndSellSecondRafflesia()
+        warn("[Sell] Searching for second rafflesia ID to sell...")
+        for id = 51, 100 do
+            if sellUnit(id) then
+                warn("[Sell] Successfully sold second rafflesia ID: "..id)
+                return true
+            end
+            task.wait(0.05)
+        end
+        warn("[Sell] Could not find second rafflesia ID to sell")
+        return false
     end
 
     local function startGame()
-        -- Reset unit IDs for new game
-        firstRafflesiaId = nil
-        secondRafflesiaId = nil
-        
         warn("[Game Start] Choosing Apocalypse difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place first rafflesia at 5 seconds
-        task.delay(5, function()
-            if placeUnit("unit_rafflesia", firstRafflesiaData) then
-                task.delay(1, function()
-                    findUnitId(true)
-                end)
-            end
-        end)
-        
-        -- Place second rafflesia at 8 seconds
-        task.delay(8, function()
-            if placeUnit("unit_rafflesia", secondRafflesiaData) then
-                task.delay(1, function()
-                    findUnitId(false)
-                end)
-            end
-        end)
+        -- Place units using the simple approach that worked before
+        for _, p in ipairs(placements) do
+            task.delay(p.time, function()
+                placeUnit(p.unit, p.slot, p.data)
+            end)
+        end
         
         -- Upgrade first rafflesia at 38 seconds
         task.delay(38, function()
-            if firstRafflesiaId then
-                upgradeUnit(firstRafflesiaId, "First Rafflesia")
-            else
-                warn("[Upgrade] First rafflesia ID not found, searching...")
-                findUnitId(true)
-                task.wait(1)
-                if firstRafflesiaId then
-                    upgradeUnit(firstRafflesiaId, "First Rafflesia")
-                end
-            end
+            findAndUpgradeFirstRafflesia()
         end)
         
         -- Upgrade second rafflesia at 63 seconds (1:03)
         task.delay(63, function()
-            if secondRafflesiaId then
-                upgradeUnit(secondRafflesiaId, "Second Rafflesia")
-            else
-                warn("[Upgrade] Second rafflesia ID not found, searching...")
-                findUnitId(false)
-                task.wait(1)
-                if secondRafflesiaId then
-                    upgradeUnit(secondRafflesiaId, "Second Rafflesia")
-                end
-            end
+            findAndUpgradeSecondRafflesia()
         end)
         
         -- Sell second rafflesia at 80 seconds (1:20)
         task.delay(80, function()
-            if secondRafflesiaId then
-                sellUnit(secondRafflesiaId, "Second Rafflesia")
-            else
-                warn("[Sell] Second rafflesia ID not found, searching...")
-                findUnitId(false)
-                task.wait(1)
-                if secondRafflesiaId then
-                    sellUnit(secondRafflesiaId, "Second Rafflesia")
-                end
-            end
+            findAndSellSecondRafflesia()
         end)
         
         -- Auto-restart at 98 seconds (1:35 + 3 seconds wait)
@@ -298,7 +248,7 @@ function load3xScript()
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
             task.wait(2)
-            startGame()
+            startGame() -- Recursive call for infinite loop
         end)
     end
 
