@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - SMART Single Upgrade System
+--// Garden Tower Defense Script - HYPER FAST Upgrade Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== SMART SINGLE UPGRADE SYSTEM ===--
+--=== HYPER FAST UPGRADE STRATEGY ===--
 
-function loadSmartUpgradeScript()
-    warn("[System] Loaded SMART Single Upgrade System")
+function loadHyperFastScript()
+    warn("[System] Loaded HYPER FAST Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -227,40 +227,58 @@ function loadSmartUpgradeScript()
         end)
     end
 
-    -- SMART SINGLE UPGRADE SYSTEM
-    local function smartSingleUpgrade()
-        warn("[SMART SYSTEM] Starting SMART single upgrade system...")
+    -- HYPER FAST UPGRADE FUNCTIONS
+    local function hyperFastUpgradeTomatoes()
+        warn("[HYPER FAST] Starting TOMATO upgrades (1-50)")
         
         while true do
-            local gameTime = os.clock()
-            
-            -- PHASE 1: Early Game - Focus on Tomatoes (1-50)
-            if gameTime < 85 then
-                for id = 1, 50 do
-                    upgradeUnit(id)
-                    upgradeUnit(id) -- Double call
-                end
-            
-            -- PHASE 2: Mid Game - Focus on Metal Flowers (20-80)  
-            elseif gameTime < 185 then
-                for id = 20, 80 do
-                    upgradeUnit(id)
-                    upgradeUnit(id) -- Double call
-                    upgradeUnit(id) -- Triple call
-                end
-            
-            -- PHASE 3: Late Game - Focus on Golems (250-480)
-            else
-                for id = 250, 480 do
-                    upgradeUnit(id)
-                    upgradeUnit(id) -- Double call
-                    upgradeUnit(id) -- Triple call
-                    upgradeUnit(id) -- Quadruple call
-                end
+            -- MAXIMUM SPEED: 5x calls per ID + NO delays between IDs
+            for id = 1, 50 do
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id) -- 5x calls
             end
-            
-            -- Small delay to prevent crashing but keep it fast
-            task.wait(0.02)
+            -- TINY delay between cycles
+            task.wait(0.005)
+        end
+    end
+
+    local function hyperFastUpgradeMetalFlowers()
+        warn("[HYPER FAST] Starting METAL FLOWER upgrades (20-80)")
+        
+        while true do
+            -- MAXIMUM SPEED: 6x calls per ID + NO delays between IDs
+            for id = 20, 80 do
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id) -- 6x calls
+            end
+            -- TINY delay between cycles
+            task.wait(0.005)
+        end
+    end
+
+    local function hyperFastUpgradeGolems()
+        warn("[HYPER FAST] Starting GOLEM upgrades (250-480) - ULTRA SPEED")
+        
+        while true do
+            -- ULTRA SPEED: 8x calls per ID + NO delays between IDs + NO cycle delay
+            for id = 250, 480 do
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id)
+                upgradeUnit(id) -- 8x calls
+            end
+            -- ABSOLUTELY NO DELAY - MAXIMUM POSSIBLE SPEED
         end
     end
 
@@ -275,10 +293,22 @@ function loadSmartUpgradeScript()
             end)
         end
         
-        -- Start SINGLE smart upgrade system at 6 seconds
+        -- Start HYPER FAST TOMATO upgrades at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning SMART SINGLE upgrade system!")
-            smartSingleUpgrade()
+            warn("[Starting] Beginning HYPER FAST TOMATO upgrades!")
+            hyperFastUpgradeTomatoes()
+        end)
+        
+        -- Start HYPER FAST METAL FLOWER upgrades at 86 seconds
+        task.delay(86, function()
+            warn("[Starting] Beginning HYPER FAST METAL FLOWER upgrades!")
+            hyperFastUpgradeMetalFlowers()
+        end)
+        
+        -- Start HYPER FAST GOLEM upgrades at 186 seconds
+        task.delay(186, function()
+            warn("[Starting] Beginning HYPER FAST GOLEM upgrades - ULTRA SPEED!")
+            hyperFastUpgradeGolems()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -301,8 +331,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "SMART SINGLE UPGRADE"
-    SubTitle.Text = "No Competition - Consistent Upgrades"
+    Title.Text = "HYPER FAST UPGRADES"
+    SubTitle.Text = "Maximum Possible Speed"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -312,39 +342,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 SMART SINGLE UPGRADE SYSTEM\n• ONE upgrade loop - NO competition\n• Phase 1 (0-1:25): Tomatoes 1-50\n• Phase 2 (1:25-3:05): Metal Flowers 20-80\n• Phase 3 (3:05+): Golems 250-480\n• Consistent upgrades every game"
+    Instructions.Text = "⚡ HYPER FAST UPGRADES ⚡\n• Tomatoes: 1-50 (5x calls, 0.005s delay)\n• Metal Flowers: 20-80 (6x calls, 0.005s delay)\n• Golems: 250-480 (8x calls, NO DELAY)\n• Maximum possible upgrade speed\n• All units upgrade FAST"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
+    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Smart Button
-    local btnSmart = Instance.new("TextButton")
-    btnSmart.Size = UDim2.new(1, -40, 0, 120)
-    btnSmart.Position = UDim2.new(0, 20, 0, 200)
-    btnSmart.Text = "SMART SINGLE UPGRADE\nOne Loop - No Competition\nConsistent Every Game"
-    btnSmart.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnSmart.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnSmart.Font = Enum.Font.GothamBold
-    btnSmart.TextSize = 18
-    btnSmart.BorderSizePixel = 0
-    btnSmart.Parent = Frame
+    -- Hyper Fast Button
+    local btnHyper = Instance.new("TextButton")
+    btnHyper.Size = UDim2.new(1, -40, 0, 120)
+    btnHyper.Position = UDim2.new(0, 20, 0, 200)
+    btnHyper.Text = "⚡ HYPER FAST UPGRADES ⚡\n5x-8x Calls Per ID\nMaximum Possible Speed"
+    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnHyper.Font = Enum.Font.GothamBold
+    btnHyper.TextSize = 18
+    btnHyper.BorderSizePixel = 0
+    btnHyper.Parent = Frame
 
-    local btnSmartCorner = Instance.new("UICorner")
-    btnSmartCorner.CornerRadius = UDim.new(0, 10)
-    btnSmartCorner.Parent = btnSmart
+    local btnHyperCorner = Instance.new("UICorner")
+    btnHyperCorner.CornerRadius = UDim.new(0, 10)
+    btnHyperCorner.Parent = btnHyper
 
-    btnSmart.MouseButton1Click:Connect(function()
+    btnHyper.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadSmartUpgradeScript()
+        loadHyperFastScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading SMART system..."
+        Label.Text = "✅ Key Verified! Loading HYPER FAST..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
