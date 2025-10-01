@@ -123,24 +123,26 @@ function load3xScript()
     local firstRafflesiaId = nil
     local secondRafflesiaId = nil
     
-    local placements = {
-        {
-            time = 5, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
-                DistanceAlongPath=5.6959664442733,
-                CF=CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
-                Rotation=180}
-        },
-        {
-            time = 8, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
-                DistanceAlongPath=46.379028904084905,
-                CF=CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
-                Rotation=180}
-        }
+    -- Define placements locally within the function
+    local firstRafflesiaData = {
+        Valid = true,
+        PathIndex = 1,
+        Position = Vector3.new(51.70485305786133,-21.75,-54.78313446044922),
+        DistanceAlongPath = 5.6959664442733,
+        CF = CFrame.new(51.70485305786133,-21.75,-54.78313446044922,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
+        Rotation = 180
+    }
+    
+    local secondRafflesiaData = {
+        Valid = true,
+        PathIndex = 2,
+        Position = Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
+        DistanceAlongPath = 46.379028904084905,
+        CF = CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
+        Rotation = 180
     }
 
-    local function placeUnit(unitName, slot, data, isFirstRafflesia)
+    local function placeUnit(unitName, data, isFirstRafflesia)
         local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
@@ -236,10 +238,14 @@ function load3xScript()
         warn("[Game Start] Choosing Apocalypse difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place units
-        placeUnit(placements[1].unit, placements[1].slot, placements[1].data, true) -- First rafflesia
-        task.delay(3, function() -- 8-5=3 second delay for second rafflesia
-            placeUnit(placements[2].unit, placements[2].slot, placements[2].data, false) -- Second rafflesia
+        -- Place first rafflesia at 5 seconds
+        task.delay(5, function()
+            placeUnit("unit_rafflesia", firstRafflesiaData, true)
+        end)
+        
+        -- Place second rafflesia at 8 seconds
+        task.delay(8, function()
+            placeUnit("unit_rafflesia", secondRafflesiaData, false)
         end)
         
         -- Upgrade first rafflesia at 38 seconds
