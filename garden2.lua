@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Find IDs First, Then Upgrade
+--// Garden Tower Defense Script - Dual Rafflesia Upgrade
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - FIND IDs FIRST, THEN UPGRADE ===--
+--=== GAME SCRIPTS - DUAL RAFFLESIA UPGRADE ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Find IDs First")
+    warn("[System] Loaded 3x Speed Script - Dual Rafflesia Upgrade")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
@@ -131,9 +131,9 @@ function load3xScript()
         },
         {
             time = 15, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-31.92138671875,-21.75,-9.259031295776367),
-                DistanceAlongPath=59.0626757144928,
-                CF=CFrame.new(-31.92138671875,-21.75,-9.259031295776367,1,0,-0,-0,1,-0,-0,0,1),
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-39.27058029174805,-21.749000549316406,39.21887969970703),
+                DistanceAlongPath=108.87929081916809,
+                CF=CFrame.new(-39.27058029174805,-21.749000549316406,39.21887969970703,1,0,-0,-0,1,-0,-0,0,1),
                 Rotation=180}
         }
     }
@@ -150,63 +150,49 @@ function load3xScript()
         end
     end
 
-    local function checkIfUnitExists(unitId)
-        -- Just check if unit exists without upgrading it
-        local success, result = pcall(function()
-            return remotes.UpgradeUnit:InvokeServer(unitId)
-        end)
-        return success and result == true
-    end
-
     local function upgradeUnit(unitId)
         local success, result = pcall(function()
             return remotes.UpgradeUnit:InvokeServer(unitId)
         end)
-        if success and result == true then
-            warn("[Upgrade SUCCESS] Unit ID: "..unitId)
+        if success then
+            warn("[Upgrading] Unit ID: "..unitId.." - Success: "..tostring(result))
             return true
-        end
-        return false
-    end
-
-    local function sellUnit(unitId)
-        local success, result = pcall(function()
-            return remotes.SellUnit:InvokeServer(unitId)
-        end)
-        if success and result == true then
-            warn("[Sell SUCCESS] Unit ID: "..unitId)
-            return true
-        end
-        return false
-    end
-
-    local function findRafflesiaIds()
-        warn("[Find] Searching for rafflesia IDs...")
-        local foundIds = {}
-        
-        -- Just FIND the IDs without upgrading
-        for id = 1, 500 do
-            if checkIfUnitExists(id) then
-                table.insert(foundIds, id)
-                warn("[Found Rafflesia] ID: "..id.." - Total: "..#foundIds)
-            end
-            if #foundIds >= 2 then break end
-        end
-        
-        if #foundIds == 0 then
-            warn("[Find] No rafflesias found")
-            return nil, nil
-        elseif #foundIds == 1 then
-            warn("[Find] Only found 1 rafflesia: "..foundIds[1])
-            return foundIds[1], nil
         else
-            -- Sort by ID - first placed gets lower ID
-            table.sort(foundIds)
-            local firstRafflesiaId = foundIds[1]
-            local secondRafflesiaId = foundIds[2]
-            
-            warn("[Find Order] First rafflesia ID: "..firstRafflesiaId..", Second rafflesia ID: "..secondRafflesiaId)
-            return firstRafflesiaId, secondRafflesiaId
+            warn("[Upgrading] Unit ID: "..unitId.." - Failed")
+            return false
+        end
+    end
+
+    local function findAndUpgradeRafflesia(isFirstRafflesia)
+        warn("[Upgrade] Searching for "..(isFirstRafflesia and "FIRST" or "SECOND").." rafflesia ID...")
+        
+        local found = false
+        local startId = isFirstRafflesia and 1 or 50
+        local endId = isFirstRafflesia and 50 or 150
+        
+        for id = startId, endId do
+            if upgradeUnit(id) then
+                warn("[Upgrade] Successfully upgraded "..(isFirstRafflesia and "FIRST" or "SECOND").." rafflesia ID: "..id)
+                found = true
+                break
+            end
+            task.wait(0.05) -- Small delay between attempts
+        end
+        
+        if not found then
+            -- Try extended range if not found in primary range
+            for id = 500, 600 do
+                if upgradeUnit(id) then
+                    warn("[Upgrade] Successfully upgraded "..(isFirstRafflesia and "FIRST" or "SECOND").." rafflesia ID: "..id)
+                    found = true
+                    break
+                end
+                task.wait(0.05)
+            end
+        end
+        
+        if not found then
+            warn("[Upgrade] Could not find "..(isFirstRafflesia and "first" or "second").." rafflesia ID")
         end
     end
 
@@ -221,41 +207,14 @@ function load3xScript()
             end)
         end
         
-        local firstRafflesiaId, secondRafflesiaId = nil, nil
-        
-        -- FIND IDs at 40 seconds (without upgrading)
-        task.delay(40, function()
-            firstRafflesiaId, secondRafflesiaId = findRafflesiaIds()
-        end)
-        
-        -- UPGRADE FIRST rafflesia at 43 seconds
+        -- Upgrade FIRST rafflesia at 43 seconds
         task.delay(43, function()
-            if firstRafflesiaId then
-                warn("[Upgrade FIRST] Upgrading first rafflesia ID: "..firstRafflesiaId)
-                upgradeUnit(firstRafflesiaId)
-            else
-                warn("[Upgrade FIRST] No first rafflesia ID found")
-            end
+            findAndUpgradeRafflesia(true) -- true = first rafflesia
         end)
         
-        -- UPGRADE SECOND rafflesia at 68 seconds
+        -- Upgrade SECOND rafflesia at 68 seconds  
         task.delay(68, function()
-            if secondRafflesiaId then
-                warn("[Upgrade SECOND] Upgrading second rafflesia ID: "..secondRafflesiaId)
-                upgradeUnit(secondRafflesiaId)
-            else
-                warn("[Upgrade SECOND] No second rafflesia ID found")
-            end
-        end)
-        
-        -- SELL SECOND rafflesia at 85 seconds
-        task.delay(85, function()
-            if secondRafflesiaId then
-                warn("[Sell SECOND] Selling second rafflesia ID: "..secondRafflesiaId)
-                sellUnit(secondRafflesiaId)
-            else
-                warn("[Sell SECOND] No second rafflesia ID found")
-            end
+            findAndUpgradeRafflesia(false) -- false = second rafflesia
         end)
         
         -- Auto-restart at 103 seconds
@@ -279,7 +238,7 @@ local function showSpeedMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT SPEED MODE"
-    SubTitle.Text = "Complete Automation"
+    SubTitle.Text = "Dual Rafflesia Upgrade"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -289,7 +248,7 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 7s & 15s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Sell 2nd: 85s\n• Auto-restart: 103s"
+    Instructions.Text = "⚠️ Dual Rafflesia Upgrade\n• Place Rafflesias: 7s & 15s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Auto-restart: 103s"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -300,7 +259,7 @@ local function showSpeedMenu()
     local btn3x = Instance.new("TextButton")
     btn3x.Size = UDim2.new(1, -40, 0, 120)
     btn3x.Position = UDim2.new(0, 20, 0, 160)
-    btn3x.Text = "3× SPEED\nComplete Automation\nFull Cycle: 103s"
+    btn3x.Text = "3× SPEED\nDual Rafflesia Upgrade\nFull Cycle: 103s"
     btn3x.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
     btn3x.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn3x.Font = Enum.Font.GothamBold
