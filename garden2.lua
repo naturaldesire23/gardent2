@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Optimized ID Ranges
+--// Garden Tower Defense Script - Optimized Placement & Upgrade Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,15 +113,16 @@ task.delay(2, function()
     end)
 end)
 
---=== OPTIMIZED ID RANGES ===--
+--=== OPTIMIZED PLACEMENT & UPGRADE STRATEGY ===--
 
 function loadOptimizedScript()
-    warn("[System] Loaded Optimized ID Range Strategy")
+    warn("[System] Loaded Optimized Placement & Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
     
     local unitPlacements = {
+        -- Rainbow Tomato
         {
             time = 5,
             unit = "unit_tomato_rainbow",
@@ -132,54 +133,66 @@ function loadOptimizedScript()
                 Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
             }
         },
+        -- Metal Flowers
         {
-            time = 55,
-            unit = "unit_tomato_rainbow", 
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
-            }
-        },
-        {
-            time = 90,
+            time = 85, -- 1:25
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
                 Rotation = 180,
-                CF = CFrame.new(-848.3375244140625, 61.93030548095703, -150.70787048339844, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-848.3375244140625, 61.93030548095703, -150.70787048339844)
+                CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
             }
         },
         {
-            time = 170,
+            time = 100, -- 1:40
+            unit = "unit_metal_flower",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
+            }
+        },
+        {
+            time = 115, -- 1:55
+            unit = "unit_metal_flower",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
+            }
+        },
+        -- Golem Dragons
+        {
+            time = 195, -- 3:15
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
                 Rotation = 180,
-                CF = CFrame.new(-857.5816040039062, 61.93030548095703, -159.4305419921875, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-857.5816040039062, 61.93030548095703, -159.4305419921875)
+                CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
             }
         },
         {
-            time = 175,
+            time = 225, -- 3:45
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
                 Rotation = 180,
-                CF = CFrame.new(-857.4984130859375, 61.93030548095703, -152.04917907714844, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-857.4984130859375, 61.93030548095703, -152.04917907714844)
+                CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
             }
         },
         {
-            time = 180,
+            time = 240, -- 4:00
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
                 Rotation = 180,
-                CF = CFrame.new(-856.130615234375, 61.93030548095703, -146.03330993652344, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-856.130615234375, 61.93030548095703, -146.03330993652344)
+                CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
             }
         }
     }
@@ -204,24 +217,23 @@ function loadOptimizedScript()
         end)
     end
 
-    -- OPTIMIZED UPGRADE FUNCTIONS
+    -- ULTRA FAST UPGRADE FUNCTIONS
     local function ultraFastUpgradeTomatoes()
         warn("[ULTRA FAST] Starting TOMATO upgrades (1-50)")
         
         while true do
             for id = 1, 50 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call
+                upgradeUnit(id) -- Double call for speed
             end
             task.wait(0.01)
         end
     end
 
-    local function ultraFastUpgradeMetalFlower()
+    local function ultraFastUpgradeMetalFlowers()
         warn("[ULTRA FAST] Starting METAL FLOWER upgrades (20-80)")
         
         while true do
-            -- OPTIMIZED RANGE: 20-80 for metal flower
             for id = 20, 80 do
                 upgradeUnit(id)
                 upgradeUnit(id) -- Double call
@@ -232,10 +244,10 @@ function loadOptimizedScript()
     end
 
     local function ultraFastUpgradeGolems()
-        warn("[ULTRA FAST] Starting GOLEM upgrades (400-450)")
+        warn("[ULTRA FAST] Starting GOLEM upgrades (200-450)")
         
         while true do
-            for id = 400, 450 do
+            for id = 200, 450 do
                 upgradeUnit(id)
                 upgradeUnit(id) -- Double call
                 upgradeUnit(id) -- Triple call for MAX speed
@@ -261,20 +273,20 @@ function loadOptimizedScript()
             ultraFastUpgradeTomatoes()
         end)
         
-        -- Start ULTRA FAST METAL FLOWER upgrades at 91 seconds
-        task.delay(91, function()
+        -- Start ULTRA FAST METAL FLOWER upgrades at 116 seconds (after 3rd metal flower)
+        task.delay(116, function()
             warn("[Starting] Beginning ULTRA FAST METAL FLOWER upgrades!")
-            ultraFastUpgradeMetalFlower()
+            ultraFastUpgradeMetalFlowers()
         end)
         
-        -- Start ULTRA FAST GOLEM upgrades at 181 seconds
-        task.delay(181, function()
+        -- Start ULTRA FAST GOLEM upgrades at 241 seconds (after 3rd golem)
+        task.delay(241, function()
             warn("[Starting] Beginning ULTRA FAST GOLEM upgrades!")
             ultraFastUpgradeGolems()
         end)
         
-        -- Auto-restart at 240 seconds (4 minutes)
-        task.delay(240, function()
+        -- Auto-restart at 300 seconds (5 minutes)
+        task.delay(300, function()
             warn("[Restart] Game ended, restarting in 2 seconds...")
             task.wait(2)
             remotes.RestartGame:InvokeServer()
@@ -294,17 +306,17 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Optimized ID Ranges"
+    SubTitle.Text = "Optimized Placement & Upgrade"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
 
     -- Instructions
     local Instructions = Instance.new("TextLabel")
-    Instructions.Size = UDim2.new(1, -40, 0, 100)
+    Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 OPTIMIZED ID RANGES\n• Tomatoes: IDs 1-50 (2x calls)\n• Metal Flower: IDs 20-80 (3x calls)\n• Golems: IDs 400-450 (3x calls)\n• Smaller ranges = FASTER upgrades\n• MAXIMUM SPEED"
+    Instructions.Text = "🎯 OPTIMIZED STRATEGY\n• Rainbow Tomato: 5s (IDs 1-50)\n• Metal Flowers: 1:25, 1:40, 1:55 (IDs 20-80)\n• Golem Dragons: 3:15, 3:45, 4:00 (IDs 200-450)\n• Upgrades start AFTER all units placed\n• ULTRA FAST upgrade cycles"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -314,8 +326,8 @@ local function showStrategyMenu()
     -- Optimized Button
     local btnOptimized = Instance.new("TextButton")
     btnOptimized.Size = UDim2.new(1, -40, 0, 120)
-    btnOptimized.Position = UDim2.new(0, 20, 0, 180)
-    btnOptimized.Text = "OPTIMIZED RANGES\nMetal Flower: 20-80\nFASTER UPGRADES"
+    btnOptimized.Position = UDim2.new(0, 20, 0, 200)
+    btnOptimized.Text = "OPTIMIZED STRATEGY\nPlace First → Upgrade After\nULTRA FAST UPGRADES"
     btnOptimized.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
     btnOptimized.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnOptimized.Font = Enum.Font.GothamBold
