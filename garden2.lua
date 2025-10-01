@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Dual Rainbow Tomato Fast Upgrade
+--// Garden Tower Defense Script - Triple Unit Ultra Fast Upgrade
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,15 +113,15 @@ task.delay(2, function()
     end)
 end)
 
---=== DUAL RAINBOW TOMATO FAST UPGRADE ===--
+--=== TRIPLE UNIT ULTRA FAST UPGRADE ===--
 
-function loadRainbowTomatoScript()
-    warn("[System] Loaded Dual Rainbow Tomato - Fast Upgrade Strategy")
+function loadUltraFastScript()
+    warn("[System] Loaded Triple Unit - Ultra Fast Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
     
-    local tomatoPlacements = {
+    local unitPlacements = {
         {
             time = 5,
             unit = "unit_tomato_rainbow",
@@ -141,45 +141,49 @@ function loadRainbowTomatoScript()
                 CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
                 Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
             }
+        },
+        {
+            time = 90, -- 1:30 minutes
+            unit = "unit_metal_flower",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-848.3375244140625, 61.93030548095703, -150.70787048339844, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-848.3375244140625, 61.93030548095703, -150.70787048339844)
+            }
         }
     }
 
-    local function placeTomato(unitName, data)
+    local function placeUnit(unitName, data)
         local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
-            warn("[Placing] Rainbow Tomato at "..os.clock())
+            warn("[Placing] " .. unitName .. " at " .. os.clock())
             return true
         else
-            warn("[Placing] Rainbow Tomato - Failed")
+            warn("[Placing] " .. unitName .. " - Failed")
             return false
         end
     end
 
     local function upgradeUnit(unitId)
-        local success, result = pcall(function()
-            return remotes.UpgradeUnit:InvokeServer(unitId)
+        pcall(function()
+            remotes.UpgradeUnit:InvokeServer(unitId)
         end)
-        if success then
-            return true
-        else
-            return false
-        end
     end
 
-    local function fastInfiniteUpgrade()
-        warn("[Fast Upgrade] Starting infinite fast upgrades...")
+    local function ultraFastInfiniteUpgrade()
+        warn("[Ultra Fast Upgrade] Starting MAXIMUM SPEED upgrades...")
         
         while true do
-            -- Rapidly upgrade all IDs from 1 to 100
+            -- MAXIMUM SPEED: Upgrade all IDs from 1 to 100 with ZERO delays
             for id = 1, 100 do
                 upgradeUnit(id)
-                -- No delay between upgrades for maximum speed
+                -- NO DELAYS - ABSOLUTE MAXIMUM SPEED
             end
-            -- Very small delay between full cycles
-            task.wait(0.1)
+            -- NO DELAY BETWEEN CYCLES - INSTANT RESTART
         end
     end
 
@@ -187,26 +191,26 @@ function loadRainbowTomatoScript()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place both tomatoes at their times
-        for _, placement in ipairs(tomatoPlacements) do
+        -- Place all units at their times
+        for _, placement in ipairs(unitPlacements) do
             task.delay(placement.time, function()
-                placeTomato(placement.unit, placement.data)
+                placeUnit(placement.unit, placement.data)
             end)
         end
         
-        -- Start fast infinite upgrades at 8 seconds (after first tomato)
-        task.delay(8, function()
-            warn("[Starting] Beginning fast infinite upgrades!")
-            fastInfiniteUpgrade()
+        -- Start ULTRA FAST infinite upgrades at 6 seconds (immediately after first tomato)
+        task.delay(6, function()
+            warn("[Starting] Beginning ULTRA FAST infinite upgrades - MAXIMUM SPEED!")
+            ultraFastInfiniteUpgrade()
         end)
         
         -- Auto-restart at 180 seconds (3 minutes)
         task.delay(180, function()
-            warn("[Restart] Game ended, restarting in 3 seconds...")
-            task.wait(3)
+            warn("[Restart] Game ended, restarting in 2 seconds...")
+            task.wait(2)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(2)
+            task.wait(1)
             startGame()
         end)
     end
@@ -221,42 +225,42 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Dual Rainbow Tomato Fast Upgrade"
+    SubTitle.Text = "Triple Unit Ultra Fast Upgrade"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
 
     -- Instructions
     local Instructions = Instance.new("TextLabel")
-    Instructions.Size = UDim2.new(1, -40, 0, 80)
+    Instructions.Size = UDim2.new(1, -40, 0, 90)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Dual Rainbow Tomato\n• Hard Difficulty\n• Place 1st: 5s\n• Place 2nd: 42s\n• Fast Infinite Upgrades\n• IDs 1-100 Rapid Fire"
+    Instructions.Text = "⚠️ Triple Unit MAX SPEED\n• Hard Difficulty\n• Tomato 1: 5s\n• Tomato 2: 42s\n• Metal Flower: 90s\n• ULTRA FAST Upgrades\n• ZERO Delays - MAX SPEED"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Rainbow Tomato Button
-    local btnRainbow = Instance.new("TextButton")
-    btnRainbow.Size = UDim2.new(1, -40, 0, 120)
-    btnRainbow.Position = UDim2.new(0, 20, 0, 160)
-    btnRainbow.Text = "DUAL RAINBOW TOMATO\nFast Infinite Upgrades\nRapid Fire IDs 1-100"
-    btnRainbow.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnRainbow.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnRainbow.Font = Enum.Font.GothamBold
-    btnRainbow.TextSize = 18
-    btnRainbow.BorderSizePixel = 0
-    btnRainbow.Parent = Frame
+    -- Ultra Fast Button
+    local btnUltra = Instance.new("TextButton")
+    btnUltra.Size = UDim2.new(1, -40, 0, 120)
+    btnUltra.Position = UDim2.new(0, 20, 0, 170)
+    btnUltra.Text = "ULTRA FAST UPGRADE\nTriple Unit Strategy\nMAXIMUM SPEED - ZERO DELAYS"
+    btnUltra.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+    btnUltra.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnUltra.Font = Enum.Font.GothamBold
+    btnUltra.TextSize = 16
+    btnUltra.BorderSizePixel = 0
+    btnUltra.Parent = Frame
 
-    local btnRainbowCorner = Instance.new("UICorner")
-    btnRainbowCorner.CornerRadius = UDim.new(0, 10)
-    btnRainbowCorner.Parent = btnRainbow
+    local btnUltraCorner = Instance.new("UICorner")
+    btnUltraCorner.CornerRadius = UDim.new(0, 10)
+    btnUltraCorner.Parent = btnUltra
 
-    btnRainbow.MouseButton1Click:Connect(function()
+    btnUltra.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadRainbowTomatoScript()
+        loadUltraFastScript()
     end)
 end
 
