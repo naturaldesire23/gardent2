@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Fixed Upgrade System
+--// Garden Tower Defense Script - Fixed Position & ID Range
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - FIXED UPGRADE SYSTEM ===--
+--=== GAME SCRIPTS - FIXED POSITION & ID RANGE ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Fixed Upgrade System")
+    warn("[System] Loaded 3x Speed Script - Fixed Position & ID Range")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
@@ -131,9 +131,9 @@ function load3xScript()
         },
         {
             time = 15, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-39.27058029174805,-21.749000549316406,39.21887969970703),
-                DistanceAlongPath=108.87929081916809,
-                CF=CFrame.new(-39.27058029174805,-21.749000549316406,39.21887969970703,1,0,-0,-0,1,-0,-0,0,1),
+            data = {Valid=true,PathIndex=2,Position=Vector3.new(-31.92138671875,-21.75,-9.259031295776367),
+                DistanceAlongPath=59.0626757144928,
+                CF=CFrame.new(-31.92138671875,-21.75,-9.259031295776367,1,0,-0,-0,1,-0,-0,0,1),
                 Rotation=180}
         }
     }
@@ -176,8 +176,8 @@ function load3xScript()
         warn("[Upgrade] Searching for ALL rafflesias to upgrade...")
         local upgradedCount = 0
         
-        -- Try wider range for both rafflesias
-        for id = 1, 200 do
+        -- Try much wider range for upgrades
+        for id = 1, 500 do
             if tryUpgradeUnit(id) then
                 upgradedCount = upgradedCount + 1
                 warn("[Upgrade SUCCESS] Unit ID: "..id.." - Total: "..upgradedCount)
@@ -195,16 +195,16 @@ function load3xScript()
     local function sellSecondRafflesia()
         warn("[Sell] Searching for second rafflesia to sell...")
         
-        -- Try to sell in the likely second rafflesia ID range
-        for id = 100, 200 do
+        -- Try wider range for selling
+        for id = 200, 500 do
             if trySellUnit(id) then
                 warn("[Sell SUCCESS] Second rafflesia ID: "..id)
                 return true
             end
         end
         
-        -- If not found, try broader range
-        for id = 50, 300 do
+        -- If not found, try even broader range
+        for id = 100, 600 do
             if trySellUnit(id) then
                 warn("[Sell SUCCESS] Second rafflesia ID: "..id)
                 return true
