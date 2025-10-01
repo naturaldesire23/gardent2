@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Back to Working Version
+--// Garden Tower Defense Script - Updated Timing
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - WORKING VERSION ===--
+--=== GAME SCRIPTS - UPDATED TIMING ===--
 
 function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Working Version")
+    warn("[System] Loaded 3x Speed Script - Updated Timing")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_apocalypse"
@@ -134,9 +134,9 @@ function load3xScript()
     local secondRaffData = {
         Valid = true,
         PathIndex = 2,
-        Position = Vector3.new(-33.59211730957031,-21.749000549316406,-21.671918869018555),
-        DistanceAlongPath = 46.379028904084905,
-        CF = CFrame.new(-33.59211730957031,-21.749000549316406,-21.671918869018555,0.9244806170463562,0,0.38122913241386414,-0,1,-0,-0.38122913241386414,0,0.9244806170463562),
+        Position = Vector3.new(-31.92138671875,-21.75,-6.635912895202637),
+        DistanceAlongPath = 61.68579411506653,
+        CF = CFrame.new(-31.92138671875,-21.75,-6.635912895202637,1,0,-0,-0,1,-0,-0,0,1),
         Rotation = 180
     }
 
@@ -213,8 +213,8 @@ function load3xScript()
             placeUnit("unit_rafflesia", firstRaffData)
         end)
         
-        -- Place second rafflesia at 8 seconds  
-        task.delay(8, function()
+        -- Place second rafflesia at 11 seconds (updated from 8s to 11s)
+        task.delay(11, function()
             placeUnit("unit_rafflesia", secondRaffData)
         end)
         
@@ -264,7 +264,7 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 5s & 8s\n• Upgrade 1st: 38s\n• Upgrade 2nd: 63s\n• Sell 2nd: 80s\n• Auto-restart: 98s"
+    Instructions.Text = "⚠️ Complete Automation\n• Place Rafflesias: 5s & 11s\n• Upgrade 1st: 38s\n• Upgrade 2nd: 63s\n• Sell 2nd: 80s\n• Auto-restart: 98s"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
