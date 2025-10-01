@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Fast Golem Upgrade Strategy
+--// Garden Tower Defense Script - Sequential Upgrade Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,11 +113,11 @@ task.delay(2, function()
     end)
 end)
 
---=== FAST GOLEM UPGRADE STRATEGY ===--
+--=== SEQUENTIAL UPGRADE STRATEGY ===--
 
-function loadFastGolemScript()
-    warn("[System] Loaded Fast Golem Upgrade Strategy")
-    remotes.ChangeTickSpeed:InvokeServer(3) -- Force 3x speed
+function loadSequentialScript()
+    warn("[System] Loaded Sequential Upgrade Strategy")
+    remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
     
@@ -174,9 +174,9 @@ function loadFastGolemScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Golem Dragons (10 seconds earlier)
+        -- Golem Dragons
         {
-            time = 185, -- 3:05 (was 3:15)
+            time = 185,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -186,7 +186,7 @@ function loadFastGolemScript()
             }
         },
         {
-            time = 215, -- 3:35 (was 3:45)
+            time = 215,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -196,7 +196,7 @@ function loadFastGolemScript()
             }
         },
         {
-            time = 230, -- 3:50 (was 4:00)
+            time = 230,
             unit = "unit_golem_dragon",
             data = {
                 Valid = true,
@@ -227,44 +227,33 @@ function loadFastGolemScript()
         end)
     end
 
-    -- ULTRA FAST UPGRADE FUNCTIONS
-    local function ultraFastUpgradeTomatoes()
-        warn("[ULTRA FAST] Starting TOMATO upgrades (1-50)")
+    -- SINGLE UPGRADE LOOP THAT CHANGES RANGES OVER TIME
+    local function smartSequentialUpgrade()
+        warn("[SMART UPGRADE] Starting sequential upgrade system...")
+        
+        local currentRange = {1, 50} -- Start with tomatoes
         
         while true do
-            for id = 1, 50 do
+            -- Upgrade current range
+            for id = currentRange[1], currentRange[2] do
                 upgradeUnit(id)
                 upgradeUnit(id) -- Double call
             end
+            
+            -- Switch ranges based on game time
+            local gameTime = os.clock()
+            
+            if gameTime > 185 then -- After first golem
+                currentRange = {250, 480} -- Switch to golems ONLY
+                warn("[SMART UPGRADE] Switched to GOLEM range (250-480)")
+            elseif gameTime > 115 then -- After metal flowers
+                currentRange = {20, 80} -- Switch to metal flowers
+                warn("[SMART UPGRADE] Switched to METAL FLOWER range (20-80)")
+            else
+                currentRange = {1, 50} -- Default to tomatoes
+            end
+            
             task.wait(0.01)
-        end
-    end
-
-    local function ultraFastUpgradeMetalFlowers()
-        warn("[ULTRA FAST] Starting METAL FLOWER upgrades (20-80)")
-        
-        while true do
-            for id = 20, 80 do
-                upgradeUnit(id)
-                upgradeUnit(id) -- Double call
-                upgradeUnit(id) -- Triple call
-            end
-            task.wait(0.01)
-        end
-    end
-
-    local function ultraFastUpgradeGolems()
-        warn("[ULTRA FAST] Starting GOLEM upgrades (250-480) - MAXIMUM SPEED")
-        
-        while true do
-            -- OPTIMIZED GOLEM RANGE: 250-480
-            for id = 250, 480 do
-                upgradeUnit(id)
-                upgradeUnit(id) -- Double call
-                upgradeUnit(id) -- Triple call
-                upgradeUnit(id) -- QUADRUPLE call for MAXIMUM speed
-            end
-            -- NO DELAY - ABSOLUTE MAXIMUM SPEED
         end
     end
 
@@ -279,22 +268,10 @@ function loadFastGolemScript()
             end)
         end
         
-        -- Start ULTRA FAST TOMATO upgrades at 6 seconds
+        -- Start SINGLE sequential upgrade system at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning ULTRA FAST TOMATO upgrades!")
-            ultraFastUpgradeTomatoes()
-        end)
-        
-        -- Start ULTRA FAST METAL FLOWER upgrades at 86 seconds (after 1st metal flower)
-        task.delay(86, function()
-            warn("[Starting] Beginning ULTRA FAST METAL FLOWER upgrades!")
-            ultraFastUpgradeMetalFlowers()
-        end)
-        
-        -- Start ULTRA FAST GOLEM upgrades at 186 seconds (after 1st golem)
-        task.delay(186, function()
-            warn("[Starting] Beginning ULTRA FAST GOLEM upgrades - MAXIMUM SPEED!")
-            ultraFastUpgradeGolems()
+            warn("[Starting] Beginning SMART SEQUENTIAL upgrades!")
+            smartSequentialUpgrade()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -317,8 +294,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "ULTRA SPEED STRATEGY"
-    SubTitle.Text = "3x Speed - Fast Golem Upgrades"
+    Title.Text = "SMART SEQUENTIAL UPGRADES"
+    SubTitle.Text = "No Interference - Golems Priority"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -328,39 +305,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ ULTRA SPEED - 3X GAME SPEED ⚡\n• Tomatoes: IDs 1-50 (2x calls)\n• Metal Flowers: IDs 20-80 (3x calls)\n• Golems: IDs 250-480 (4x calls)\n• Golems placed 10s earlier\n• MAXIMUM SPEED - NO DELAYS"
+    Instructions.Text = "🎯 SMART SEQUENTIAL UPGRADES\n• Single upgrade loop - NO INTERFERENCE\n• Tomatoes: 1-50 (early game)\n• Metal Flowers: 20-80 (mid game)\n• Golems: 250-480 (late game - PRIORITY)\n• Automatically switches ranges"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
+    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Ultra Speed Button (Only Option)
-    local btnUltra = Instance.new("TextButton")
-    btnUltra.Size = UDim2.new(1, -40, 0, 120)
-    btnUltra.Position = UDim2.new(0, 20, 0, 200)
-    btnUltra.Text = "⚡ ULTRA SPEED - 3X ⚡\nFast Golem Upgrades (250-480)\nMAXIMUM SPEED - NO DELAYS"
-    btnUltra.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnUltra.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnUltra.Font = Enum.Font.GothamBold
-    btnUltra.TextSize = 18
-    btnUltra.BorderSizePixel = 0
-    btnUltra.Parent = Frame
+    -- Smart Button
+    local btnSmart = Instance.new("TextButton")
+    btnSmart.Size = UDim2.new(1, -40, 0, 120)
+    btnSmart.Position = UDim2.new(0, 20, 0, 200)
+    btnSmart.Text = "SMART SEQUENTIAL\nNo Interference Between Units\nGolems Get Priority"
+    btnSmart.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnSmart.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnSmart.Font = Enum.Font.GothamBold
+    btnSmart.TextSize = 18
+    btnSmart.BorderSizePixel = 0
+    btnSmart.Parent = Frame
 
-    local btnUltraCorner = Instance.new("UICorner")
-    btnUltraCorner.CornerRadius = UDim.new(0, 10)
-    btnUltraCorner.Parent = btnUltra
+    local btnSmartCorner = Instance.new("UICorner")
+    btnSmartCorner.CornerRadius = UDim.new(0, 10)
+    btnSmartCorner.Parent = btnSmart
 
-    btnUltra.MouseButton1Click:Connect(function()
+    btnSmart.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFastGolemScript()
+        loadSequentialScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading ULTRA SPEED..."
+        Label.Text = "✅ Key Verified! Loading SMART upgrades..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
