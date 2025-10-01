@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - ULTRA FAST Targeted Upgrades
+--// Garden Tower Defense Script - Optimized ID Ranges
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== ULTRA FAST TARGETED UPGRADES ===--
+--=== OPTIMIZED ID RANGES ===--
 
-function loadUltraFastScript()
-    warn("[System] Loaded ULTRA FAST Targeted Upgrade Strategy")
+function loadOptimizedScript()
+    warn("[System] Loaded Optimized ID Range Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -204,32 +204,29 @@ function loadUltraFastScript()
         end)
     end
 
-    -- ULTRA FAST UPGRADE FUNCTIONS
+    -- OPTIMIZED UPGRADE FUNCTIONS
     local function ultraFastUpgradeTomatoes()
         warn("[ULTRA FAST] Starting TOMATO upgrades (1-50)")
         
         while true do
-            -- MAXIMUM SPEED: No delays, rapid fire
             for id = 1, 50 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call for speed
+                upgradeUnit(id) -- Double call
             end
-            -- TINY delay to prevent crashing
             task.wait(0.01)
         end
     end
 
     local function ultraFastUpgradeMetalFlower()
-        warn("[ULTRA FAST] Starting METAL FLOWER upgrades (1-100)")
+        warn("[ULTRA FAST] Starting METAL FLOWER upgrades (20-80)")
         
         while true do
-            -- MAXIMUM SPEED for metal flower
-            for id = 1, 100 do
+            -- OPTIMIZED RANGE: 20-80 for metal flower
+            for id = 20, 80 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call for speed
-                upgradeUnit(id) -- Triple call for MAXIMUM speed
+                upgradeUnit(id) -- Double call
+                upgradeUnit(id) -- Triple call for MAX speed
             end
-            -- TINY delay to prevent crashing
             task.wait(0.01)
         end
     end
@@ -238,13 +235,11 @@ function loadUltraFastScript()
         warn("[ULTRA FAST] Starting GOLEM upgrades (400-450)")
         
         while true do
-            -- MAXIMUM SPEED for golems
             for id = 400, 450 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call for speed
-                upgradeUnit(id) -- Triple call for MAXIMUM speed
+                upgradeUnit(id) -- Double call
+                upgradeUnit(id) -- Triple call for MAX speed
             end
-            -- TINY delay to prevent crashing
             task.wait(0.01)
         end
     end
@@ -299,7 +294,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "ULTRA FAST Upgrades"
+    SubTitle.Text = "Optimized ID Ranges"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -309,32 +304,32 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 100)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ ULTRA FAST UPGRADES ⚡\n• Tomatoes: IDs 1-50 (2x calls)\n• Metal Flower: IDs 1-100 (3x calls)\n• Golems: IDs 400-450 (3x calls)\n• 0.01s delays between cycles\n• MAXIMUM POSSIBLE SPEED"
+    Instructions.Text = "🎯 OPTIMIZED ID RANGES\n• Tomatoes: IDs 1-50 (2x calls)\n• Metal Flower: IDs 20-80 (3x calls)\n• Golems: IDs 400-450 (3x calls)\n• Smaller ranges = FASTER upgrades\n• MAXIMUM SPEED"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
+    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Ultra Fast Button
-    local btnUltra = Instance.new("TextButton")
-    btnUltra.Size = UDim2.new(1, -40, 0, 120)
-    btnUltra.Position = UDim2.new(0, 20, 0, 180)
-    btnUltra.Text = "⚡ ULTRA FAST ⚡\n3x Upgrade Calls\nMAXIMUM SPEED"
-    btnUltra.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnUltra.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnUltra.Font = Enum.Font.GothamBold
-    btnUltra.TextSize = 18
-    btnUltra.BorderSizePixel = 0
-    btnUltra.Parent = Frame
+    -- Optimized Button
+    local btnOptimized = Instance.new("TextButton")
+    btnOptimized.Size = UDim2.new(1, -40, 0, 120)
+    btnOptimized.Position = UDim2.new(0, 20, 0, 180)
+    btnOptimized.Text = "OPTIMIZED RANGES\nMetal Flower: 20-80\nFASTER UPGRADES"
+    btnOptimized.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnOptimized.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnOptimized.Font = Enum.Font.GothamBold
+    btnOptimized.TextSize = 18
+    btnOptimized.BorderSizePixel = 0
+    btnOptimized.Parent = Frame
 
-    local btnUltraCorner = Instance.new("UICorner")
-    btnUltraCorner.CornerRadius = UDim.new(0, 10)
-    btnUltraCorner.Parent = btnUltra
+    local btnOptimizedCorner = Instance.new("UICorner")
+    btnOptimizedCorner.CornerRadius = UDim.new(0, 10)
+    btnOptimizedCorner.Parent = btnOptimized
 
-    btnUltra.MouseButton1Click:Connect(function()
+    btnOptimized.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadUltraFastScript()
+        loadOptimizedScript()
     end)
 end
 
