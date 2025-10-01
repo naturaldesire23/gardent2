@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - HYPER SPEED UPGRADES
+--// Garden Tower Defense Script - Targeted Fast Upgrades
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== HYPER SPEED UPGRADES ===--
+--=== TARGETED FAST UPGRADES ===--
 
-function loadHyperSpeedScript()
-    warn("[System] Loaded HYPER SPEED Upgrade Strategy")
+function loadTargetedScript()
+    warn("[System] Loaded Targeted Fast Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -199,46 +199,46 @@ function loadHyperSpeedScript()
     end
 
     local function upgradeUnit(unitId)
-        pcall(function()
-            remotes.UpgradeUnit:InvokeServer(unitId)
+        local success, result = pcall(function()
+            return remotes.UpgradeUnit:InvokeServer(unitId)
         end)
+        if success and result == true then
+            return true
+        end
+        return false
     end
 
-    -- HYPER SPEED UPGRADE FUNCTIONS
-    local function hyperSpeedUpgradeLow()
-        warn("[HYPER SPEED] Starting LOW RANGE upgrades (1-100)")
+    -- TARGETED UPGRADE FUNCTIONS
+    local function upgradeTomatoes()
+        warn("[Upgrade] Starting TOMATO upgrades (1-50)")
         
-        -- MULTI-THREADED UPGRADES - Run multiple ranges simultaneously
-        for rangeStart = 1, 100, 25 do
-            local rangeEnd = math.min(rangeStart + 24, 100)
-            task.spawn(function()
-                while true do
-                    for id = rangeStart, rangeEnd do
-                        upgradeUnit(id)
-                        upgradeUnit(id) -- DOUBLE UPGRADE CALL
-                        upgradeUnit(id) -- TRIPLE UPGRADE CALL
-                    end
-                end
-            end)
+        while true do
+            for id = 1, 50 do
+                upgradeUnit(id)
+            end
+            task.wait(0.1) -- Small delay between cycles
         end
     end
 
-    local function hyperSpeedUpgradeHigh()
-        warn("[HYPER SPEED] Starting HIGH RANGE upgrades (200-450)")
+    local function upgradeMetalFlower()
+        warn("[Upgrade] Starting METAL FLOWER upgrades (1-100)")
         
-        -- MULTI-THREADED UPGRADES - Run multiple ranges simultaneously
-        for rangeStart = 200, 450, 50 do
-            local rangeEnd = math.min(rangeStart + 49, 450)
-            task.spawn(function()
-                while true do
-                    for id = rangeStart, rangeEnd do
-                        upgradeUnit(id)
-                        upgradeUnit(id) -- DOUBLE UPGRADE CALL
-                        upgradeUnit(id) -- TRIPLE UPGRADE CALL
-                        upgradeUnit(id) -- QUADRUPLE UPGRADE CALL
-                    end
-                end
-            end)
+        while true do
+            for id = 1, 100 do
+                upgradeUnit(id)
+            end
+            task.wait(0.1) -- Small delay between cycles
+        end
+    end
+
+    local function upgradeGolems()
+        warn("[Upgrade] Starting GOLEM upgrades (400-450)")
+        
+        while true do
+            for id = 400, 450 do
+                upgradeUnit(id)
+            end
+            task.wait(0.1) -- Small delay between cycles
         end
     end
 
@@ -253,25 +253,31 @@ function loadHyperSpeedScript()
             end)
         end
         
-        -- Start HYPER SPEED upgrades at 6 seconds
+        -- Start TOMATO upgrades at 6 seconds (IDs 1-50)
         task.delay(6, function()
-            warn("[Starting] Beginning HYPER SPEED upgrades - MAXIMUM POSSIBLE SPEED!")
-            hyperSpeedUpgradeLow()
+            warn("[Starting] Beginning TOMATO upgrades (1-50)!")
+            upgradeTomatoes()
         end)
         
-        -- Start HYPER SPEED golem upgrades at 181 seconds
+        -- Start METAL FLOWER upgrades at 91 seconds (IDs 1-100)
+        task.delay(91, function()
+            warn("[Starting] Beginning METAL FLOWER upgrades (1-100)!")
+            upgradeMetalFlower()
+        end)
+        
+        -- Start GOLEM upgrades at 181 seconds (IDs 400-450)
         task.delay(181, function()
-            warn("[Starting] Beginning HYPER SPEED golem upgrades!")
-            hyperSpeedUpgradeHigh()
+            warn("[Starting] Beginning GOLEM upgrades (400-450)!")
+            upgradeGolems()
         end)
         
         -- Auto-restart at 240 seconds (4 minutes)
         task.delay(240, function()
-            warn("[Restart] Game ended, restarting in 1 second...")
-            task.wait(1)
+            warn("[Restart] Game ended, restarting in 3 seconds...")
+            task.wait(3)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(0.5)
+            task.wait(2)
             startGame()
         end)
     end
@@ -286,7 +292,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "HYPER SPEED UPGRADES"
+    SubTitle.Text = "Targeted Fast Upgrades"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -296,32 +302,32 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 100)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ HYPER SPEED UPGRADES ⚡\n• Multi-threaded upgrades\n• Multiple upgrade calls per ID\n• Parallel range processing\n• MAXIMUM POSSIBLE SPEED\n• 3x faster than before"
+    Instructions.Text = "🎯 TARGETED UPGRADES\n• Tomatoes: IDs 1-50 (starts 6s)\n• Metal Flower: IDs 1-100 (starts 91s)\n• Golems: IDs 400-450 (starts 181s)\n• Fast continuous upgrades\n• No multi-threading issues"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
+    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Hyper Speed Button
-    local btnHyper = Instance.new("TextButton")
-    btnHyper.Size = UDim2.new(1, -40, 0, 120)
-    btnHyper.Position = UDim2.new(0, 20, 0, 180)
-    btnHyper.Text = "⚡ HYPER SPEED ⚡\nMulti-Threaded Upgrades\nMAXIMUM POSSIBLE SPEED"
-    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnHyper.Font = Enum.Font.GothamBold
-    btnHyper.TextSize = 18
-    btnHyper.BorderSizePixel = 0
-    btnHyper.Parent = Frame
+    -- Targeted Button
+    local btnTargeted = Instance.new("TextButton")
+    btnTargeted.Size = UDim2.new(1, -40, 0, 120)
+    btnTargeted.Position = UDim2.new(0, 20, 0, 180)
+    btnTargeted.Text = "TARGETED UPGRADES\nSpecific ID Ranges\nReliable & Fast"
+    btnTargeted.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnTargeted.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnTargeted.Font = Enum.Font.GothamBold
+    btnTargeted.TextSize = 18
+    btnTargeted.BorderSizePixel = 0
+    btnTargeted.Parent = Frame
 
-    local btnHyperCorner = Instance.new("UICorner")
-    btnHyperCorner.CornerRadius = UDim.new(0, 10)
-    btnHyperCorner.Parent = btnHyper
+    local btnTargetedCorner = Instance.new("UICorner")
+    btnTargetedCorner.CornerRadius = UDim.new(0, 10)
+    btnTargetedCorner.Parent = btnTargeted
 
-    btnHyper.MouseButton1Click:Connect(function()
+    btnTargeted.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadHyperSpeedScript()
+        loadTargetedScript()
     end)
 end
 
