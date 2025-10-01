@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Optimized Placement & Upgrade Strategy
+--// Garden Tower Defense Script - Complete Placement & Upgrade Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,16 +113,16 @@ task.delay(2, function()
     end)
 end)
 
---=== OPTIMIZED PLACEMENT & UPGRADE STRATEGY ===--
+--=== COMPLETE PLACEMENT & UPGRADE STRATEGY ===--
 
-function loadOptimizedScript()
-    warn("[System] Loaded Optimized Placement & Upgrade Strategy")
+function loadCompleteScript()
+    warn("[System] Loaded Complete Placement & Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
     
     local unitPlacements = {
-        -- Rainbow Tomato
+        -- Rainbow Tomatoes
         {
             time = 5,
             unit = "unit_tomato_rainbow",
@@ -131,6 +131,16 @@ function loadOptimizedScript()
                 Rotation = 180,
                 CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
                 Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
+            }
+        },
+        {
+            time = 55, -- Second tomato at 55 seconds
+            unit = "unit_tomato_rainbow", 
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
             }
         },
         -- Metal Flowers
@@ -306,7 +316,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Optimized Placement & Upgrade"
+    SubTitle.Text = "Complete Placement Strategy"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -316,32 +326,32 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 OPTIMIZED STRATEGY\n• Rainbow Tomato: 5s (IDs 1-50)\n• Metal Flowers: 1:25, 1:40, 1:55 (IDs 20-80)\n• Golem Dragons: 3:15, 3:45, 4:00 (IDs 200-450)\n• Upgrades start AFTER all units placed\n• ULTRA FAST upgrade cycles"
+    Instructions.Text = "🎯 COMPLETE STRATEGY\n• Rainbow Tomatoes: 5s & 55s (IDs 1-50)\n• Metal Flowers: 1:25, 1:40, 1:55 (IDs 20-80)\n• Golem Dragons: 3:15, 3:45, 4:00 (IDs 200-450)\n• Upgrades start AFTER all units placed\n• ULTRA FAST upgrade cycles"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Optimized Button
-    local btnOptimized = Instance.new("TextButton")
-    btnOptimized.Size = UDim2.new(1, -40, 0, 120)
-    btnOptimized.Position = UDim2.new(0, 20, 0, 200)
-    btnOptimized.Text = "OPTIMIZED STRATEGY\nPlace First → Upgrade After\nULTRA FAST UPGRADES"
-    btnOptimized.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnOptimized.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnOptimized.Font = Enum.Font.GothamBold
-    btnOptimized.TextSize = 18
-    btnOptimized.BorderSizePixel = 0
-    btnOptimized.Parent = Frame
+    -- Complete Button
+    local btnComplete = Instance.new("TextButton")
+    btnComplete.Size = UDim2.new(1, -40, 0, 120)
+    btnComplete.Position = UDim2.new(0, 20, 0, 200)
+    btnComplete.Text = "COMPLETE STRATEGY\n2 Tomatoes + 3 Metal + 3 Golems\nULTRA FAST UPGRADES"
+    btnComplete.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnComplete.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnComplete.Font = Enum.Font.GothamBold
+    btnComplete.TextSize = 18
+    btnComplete.BorderSizePixel = 0
+    btnComplete.Parent = Frame
 
-    local btnOptimizedCorner = Instance.new("UICorner")
-    btnOptimizedCorner.CornerRadius = UDim.new(0, 10)
-    btnOptimizedCorner.Parent = btnOptimized
+    local btnCompleteCorner = Instance.new("UICorner")
+    btnCompleteCorner.CornerRadius = UDim.new(0, 10)
+    btnCompleteCorner.Parent = btnComplete
 
-    btnOptimized.MouseButton1Click:Connect(function()
+    btnComplete.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadOptimizedScript()
+        loadCompleteScript()
     end)
 end
 
