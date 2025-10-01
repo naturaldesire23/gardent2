@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Triple Unit Ultra Fast Upgrade
+--// Garden Tower Defense Script - Triple Unit + Golem Dragons Ultra Fast Upgrade
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== TRIPLE UNIT ULTRA FAST UPGRADE ===--
+--=== TRIPLE UNIT + GOLEM DRAGONS ULTRA FAST UPGRADE ===--
 
 function loadUltraFastScript()
-    warn("[System] Loaded Triple Unit - Ultra Fast Upgrade Strategy")
+    warn("[System] Loaded Triple Unit + Golem Dragons - Ultra Fast Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -133,7 +133,7 @@ function loadUltraFastScript()
             }
         },
         {
-            time = 42,
+            time = 55, -- Fixed to 55 seconds
             unit = "unit_tomato_rainbow", 
             data = {
                 Valid = true,
@@ -150,6 +150,36 @@ function loadUltraFastScript()
                 Rotation = 180,
                 CF = CFrame.new(-848.3375244140625, 61.93030548095703, -150.70787048339844, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
                 Position = Vector3.new(-848.3375244140625, 61.93030548095703, -150.70787048339844)
+            }
+        },
+        {
+            time = 170, -- 2:50 minutes
+            unit = "unit_golem_dragon",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-857.5816040039062, 61.93030548095703, -159.4305419921875, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-857.5816040039062, 61.93030548095703, -159.4305419921875)
+            }
+        },
+        {
+            time = 175, -- 2:55 minutes
+            unit = "unit_golem_dragon",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-857.4984130859375, 61.93030548095703, -152.04917907714844, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-857.4984130859375, 61.93030548095703, -152.04917907714844)
+            }
+        },
+        {
+            time = 180, -- 3:00 minutes
+            unit = "unit_golem_dragon",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-856.130615234375, 61.93030548095703, -146.03330993652344, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-856.130615234375, 61.93030548095703, -146.03330993652344)
             }
         }
     }
@@ -187,6 +217,19 @@ function loadUltraFastScript()
         end
     end
 
+    local function ultraFastGolemUpgrade()
+        warn("[Golem Upgrade] Starting FAST GOLEM upgrades (200-450)...")
+        
+        while true do
+            -- Fast upgrades for golem range (200-450)
+            for id = 200, 450 do
+                upgradeUnit(id)
+                -- NO DELAYS - MAXIMUM SPEED
+            end
+            -- NO DELAY BETWEEN CYCLES - INSTANT RESTART
+        end
+    end
+
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
@@ -204,8 +247,14 @@ function loadUltraFastScript()
             ultraFastInfiniteUpgrade()
         end)
         
-        -- Auto-restart at 180 seconds (3 minutes)
-        task.delay(180, function()
+        -- Start Golem upgrades at 181 seconds (after placing all 3 golems)
+        task.delay(181, function()
+            warn("[Starting] Beginning GOLEM upgrades (200-450) - MAXIMUM SPEED!")
+            ultraFastGolemUpgrade()
+        end)
+        
+        -- Auto-restart at 240 seconds (4 minutes)
+        task.delay(240, function()
             warn("[Restart] Game ended, restarting in 2 seconds...")
             task.wait(2)
             remotes.RestartGame:InvokeServer()
@@ -225,17 +274,17 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Triple Unit Ultra Fast Upgrade"
+    SubTitle.Text = "Triple Unit + Golem Dragons"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
 
     -- Instructions
     local Instructions = Instance.new("TextLabel")
-    Instructions.Size = UDim2.new(1, -40, 0, 90)
+    Instructions.Size = UDim2.new(1, -40, 0, 100)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Triple Unit MAX SPEED\n• Hard Difficulty\n• Tomato 1: 5s\n• Tomato 2: 42s\n• Metal Flower: 90s\n• ULTRA FAST Upgrades\n• ZERO Delays - MAX SPEED"
+    Instructions.Text = "⚠️ Complete Strategy\n• Hard Difficulty\n• Tomato 1: 5s\n• Tomato 2: 55s\n• Metal Flower: 90s\n• Golems: 2:50, 2:55, 3:00\n• Ultra Fast Upgrades 1-100\n• Golem Upgrades 200-450"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -245,8 +294,8 @@ local function showStrategyMenu()
     -- Ultra Fast Button
     local btnUltra = Instance.new("TextButton")
     btnUltra.Size = UDim2.new(1, -40, 0, 120)
-    btnUltra.Position = UDim2.new(0, 20, 0, 170)
-    btnUltra.Text = "ULTRA FAST UPGRADE\nTriple Unit Strategy\nMAXIMUM SPEED - ZERO DELAYS"
+    btnUltra.Position = UDim2.new(0, 20, 0, 180)
+    btnUltra.Text = "COMPLETE STRATEGY\nTomatoes + Metal Flower + Golems\nULTRA FAST UPGRADES"
     btnUltra.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
     btnUltra.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnUltra.Font = Enum.Font.GothamBold
