@@ -1,6 +1,12 @@
+--// Garden Tower Defense Script - Punch Potato Strategy
+wait(3) -- Wait for game to fully load
 
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
+
+-- Wait for player to be ready
+repeat wait() until plr
+repeat wait() until plr:FindFirstChild("PlayerGui")
 
 print(plr.Name .. " loaded the script. Waiting for key...")
 
@@ -117,7 +123,9 @@ end)
 
 function loadPunchPotatoScript()
     warn("[System] Loaded Punch Potato Strategy")
-    remotes.ChangeTickSpeed:InvokeServer(3)
+    pcall(function()
+        remotes.ChangeTickSpeed:InvokeServer(3)
+    end)
 
     local difficulty = "dif_hard"
     
@@ -264,7 +272,9 @@ function loadPunchPotatoScript()
 
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
-        remotes.PlaceDifficultyVote:InvokeServer(difficulty)
+        pcall(function()
+            remotes.PlaceDifficultyVote:InvokeServer(difficulty)
+        end)
         
         -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
@@ -295,7 +305,9 @@ function loadPunchPotatoScript()
         task.delay(300, function()
             warn("[Restart] Game ended, restarting in 2 seconds...")
             task.wait(2)
-            remotes.RestartGame:InvokeServer()
+            pcall(function()
+                remotes.RestartGame:InvokeServer()
+            end)
             warn("[Restart] Game restarted, starting new cycle...")
             task.wait(1)
             startGame()
@@ -371,7 +383,7 @@ CheckBtn.MouseButton1Click:Connect(function()
             CheckBtn.Text = "VERIFY KEY"
         end)
     end
-end
+end)
 
 -- Add some visual effects
 TextBox.Focused:Connect(function()
@@ -383,12 +395,13 @@ TextBox.FocusLost:Connect(function()
 end)
 
 -- Load anti-afk scripts
-loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+pcall(function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+end)
 
 -- Force GUI to be on top
 ScreenGui.DisplayOrder = 999
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 print("GUI setup complete - Should be visible now!")
-
