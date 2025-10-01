@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Dual Rafflesia Upgrade
+--// Garden Tower Defense Script - Rainbow Tomato Infinite Upgrade
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,40 +113,35 @@ task.delay(2, function()
     end)
 end)
 
---=== GAME SCRIPTS - DUAL RAFFLESIA UPGRADE ===--
+--=== RAINBOW TOMATO INFINITE UPGRADE ===--
 
-function load3xScript()
-    warn("[System] Loaded 3x Speed Script - Dual Rafflesia Upgrade")
+function loadRainbowTomatoScript()
+    warn("[System] Loaded Rainbow Tomato - Infinite Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
-    local difficulty = "dif_apocalypse"
+    local difficulty = "dif_hard"
     
-    local placements = {
-        {
-            time = 7, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=1,Position=Vector3.new(49.52396774291992,-21.75,-52.60224914550781),
-                DistanceAlongPath=8.780204010731204,
-                CF=CFrame.new(49.52396774291992,-21.75,-52.60224914550781,0.7071068286895752,0,-0.7071067690849304,-0,1,-0,0.7071068286895752,0,0.7071067690849304),
-                Rotation=180}
-        },
-        {
-            time = 15, unit = "unit_rafflesia", slot = "2",
-            data = {Valid=true,PathIndex=2,Position=Vector3.new(-39.27058029174805,-21.749000549316406,39.21887969970703),
-                DistanceAlongPath=108.87929081916809,
-                CF=CFrame.new(-39.27058029174805,-21.749000549316406,39.21887969970703,1,0,-0,-0,1,-0,-0,0,1),
-                Rotation=180}
+    local rainbowTomatoPlacement = {
+        unit = "unit_tomato_rainbow",
+        data = {
+            Valid = true,
+            Rotation = 180,
+            CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+            Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
         }
     }
 
-    local function placeUnit(unitName, slot, data)
+    local function placeRainbowTomato()
         local success = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(unitName, data)
+            return remotes.PlaceUnit:InvokeServer(rainbowTomatoPlacement.unit, rainbowTomatoPlacement.data)
         end)
         
         if success then
-            warn("[Placing] "..unitName.." at "..os.clock())
+            warn("[Placing] Rainbow Tomato at "..os.clock())
+            return true
         else
-            warn("[Placing] "..unitName.." at "..os.clock().." - Failed")
+            warn("[Placing] Rainbow Tomato - Failed")
+            return false
         end
     end
 
@@ -163,67 +158,42 @@ function load3xScript()
         end
     end
 
-    local function findAndUpgradeRafflesia(isFirstRafflesia)
-        warn("[Upgrade] Searching for "..(isFirstRafflesia and "FIRST" or "SECOND").." rafflesia ID...")
+    local function infiniteUpgradeRainbowTomato()
+        warn("[Upgrade] Starting infinite upgrade loop for Rainbow Tomato...")
         
-        local found = false
-        local startId = isFirstRafflesia and 1 or 50
-        local endId = isFirstRafflesia and 50 or 150
-        
-        for id = startId, endId do
-            if upgradeUnit(id) then
-                warn("[Upgrade] Successfully upgraded "..(isFirstRafflesia and "FIRST" or "SECOND").." rafflesia ID: "..id)
-                found = true
-                break
-            end
-            task.wait(0.05) -- Small delay between attempts
-        end
-        
-        if not found then
-            -- Try extended range if not found in primary range
-            for id = 500, 600 do
+        while true do
+            -- Try to find and upgrade the rainbow tomato continuously
+            for id = 1, 100 do
                 if upgradeUnit(id) then
-                    warn("[Upgrade] Successfully upgraded "..(isFirstRafflesia and "FIRST" or "SECOND").." rafflesia ID: "..id)
-                    found = true
-                    break
+                    warn("[Upgrade SUCCESS] Rainbow Tomato ID: "..id.." - Continuing upgrades...")
+                    -- Small delay between upgrade attempts
+                    task.wait(0.5)
                 end
-                task.wait(0.05)
             end
-        end
-        
-        if not found then
-            warn("[Upgrade] Could not find "..(isFirstRafflesia and "first" or "second").." rafflesia ID")
+            task.wait(1) -- Wait before scanning again
         end
     end
 
     local function startGame()
-        warn("[Game Start] Choosing Apocalypse difficulty")
+        warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Place units
-        for _, p in ipairs(placements) do
-            task.delay(p.time, function()
-                placeUnit(p.unit, p.slot, p.data)
-            end)
-        end
-        
-        -- Upgrade FIRST rafflesia at 43 seconds
-        task.delay(43, function()
-            findAndUpgradeRafflesia(true) -- true = first rafflesia
+        -- Place rainbow tomato at 5 seconds
+        task.delay(5, function()
+            if placeRainbowTomato() then
+                warn("[Success] Rainbow Tomato placed, starting upgrades in 2 seconds...")
+                -- Start infinite upgrades 2 seconds after placement
+                task.delay(2, infiniteUpgradeRainbowTomato)
+            end
         end)
         
-        -- Upgrade SECOND rafflesia at 68 seconds  
-        task.delay(68, function()
-            findAndUpgradeRafflesia(false) -- false = second rafflesia
-        end)
-        
-        -- Auto-restart at 103 seconds
-        task.delay(103, function()
-            warn("[Restart] Game ended, restarting in 3 seconds...")
-            task.wait(3)
+        -- Auto-restart at 180 seconds (3 minutes)
+        task.delay(180, function()
+            warn("[Restart] Game ended, restarting in 5 seconds...")
+            task.wait(5)
             remotes.RestartGame:InvokeServer()
             warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(2)
+            task.wait(3)
             startGame()
         end)
     end
@@ -232,13 +202,13 @@ function load3xScript()
     startGame()
 end
 
---=== SIMPLIFIED SPEED MENU ===--
-local function showSpeedMenu()
+--=== SIMPLIFIED MENU ===--
+local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "SELECT SPEED MODE"
-    SubTitle.Text = "Dual Rafflesia Upgrade"
+    Title.Text = "SELECT STRATEGY"
+    SubTitle.Text = "Rainbow Tomato Infinite Upgrade"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -248,44 +218,44 @@ local function showSpeedMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Dual Rafflesia Upgrade\n• Place Rafflesias: 7s & 15s\n• Upgrade 1st: 43s\n• Upgrade 2nd: 68s\n• Auto-restart: 103s"
+    Instructions.Text = "⚠️ Rainbow Tomato Strategy\n• Hard Difficulty\n• Place Tomato: 5s\n• Infinite Upgrades\n• Auto-restart: 180s"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Only 3x Speed Button
-    local btn3x = Instance.new("TextButton")
-    btn3x.Size = UDim2.new(1, -40, 0, 120)
-    btn3x.Position = UDim2.new(0, 20, 0, 160)
-    btn3x.Text = "3× SPEED\nDual Rafflesia Upgrade\nFull Cycle: 103s"
-    btn3x.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btn3x.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn3x.Font = Enum.Font.GothamBold
-    btn3x.TextSize = 18
-    btn3x.BorderSizePixel = 0
-    btn3x.Parent = Frame
+    -- Rainbow Tomato Button
+    local btnRainbow = Instance.new("TextButton")
+    btnRainbow.Size = UDim2.new(1, -40, 0, 120)
+    btnRainbow.Position = UDim2.new(0, 20, 0, 160)
+    btnRainbow.Text = "RAINBOW TOMATO\nInfinite Upgrade Strategy\nHard Difficulty"
+    btnRainbow.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnRainbow.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnRainbow.Font = Enum.Font.GothamBold
+    btnRainbow.TextSize = 18
+    btnRainbow.BorderSizePixel = 0
+    btnRainbow.Parent = Frame
 
-    local btn3xCorner = Instance.new("UICorner")
-    btn3xCorner.CornerRadius = UDim.new(0, 10)
-    btn3xCorner.Parent = btn3x
+    local btnRainbowCorner = Instance.new("UICorner")
+    btnRainbowCorner.CornerRadius = UDim.new(0, 10)
+    btnRainbowCorner.Parent = btnRainbow
 
-    btn3x.MouseButton1Click:Connect(function()
+    btnRainbow.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        load3xScript()
+        loadRainbowTomatoScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading speed selection..."
+        Label.Text = "✅ Key Verified! Loading strategy selection..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
         
-        task.delay(1.5, showSpeedMenu)
+        task.delay(1.5, showStrategyMenu)
     else
         TextBox.Text = ""
         Label.Text = "❌ Invalid Key! Please try again."
