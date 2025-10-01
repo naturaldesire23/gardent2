@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Rainbow Tomato Infinite Upgrade
+--// Garden Tower Defense Script - Rainbow Tomato Smart Upgrade
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,13 +113,14 @@ task.delay(2, function()
     end)
 end)
 
---=== RAINBOW TOMATO INFINITE UPGRADE ===--
+--=== RAINBOW TOMATO SMART UPGRADE ===--
 
 function loadRainbowTomatoScript()
-    warn("[System] Loaded Rainbow Tomato - Infinite Upgrade Strategy")
+    warn("[System] Loaded Rainbow Tomato - Smart Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
+    local rainbowTomatoId = nil -- This will store the found ID
     
     local rainbowTomatoPlacement = {
         unit = "unit_tomato_rainbow",
@@ -158,19 +159,59 @@ function loadRainbowTomatoScript()
         end
     end
 
-    local function infiniteUpgradeRainbowTomato()
-        warn("[Upgrade] Starting infinite upgrade loop for Rainbow Tomato...")
+    local function findRainbowTomatoId()
+        warn("[Find] Searching for Rainbow Tomato ID...")
+        
+        -- Search in common ID ranges
+        for id = 1, 100 do
+            if upgradeUnit(id) then
+                warn("[FOUND] Rainbow Tomato ID: "..id.." - Remembering this ID!")
+                return id -- Return the found ID
+            end
+            task.wait(0.05) -- Small delay between attempts
+        end
+        
+        -- Extended range if not found
+        for id = 500, 600 do
+            if upgradeUnit(id) then
+                warn("[FOUND] Rainbow Tomato ID: "..id.." - Remembering this ID!")
+                return id -- Return the found ID
+            end
+            task.wait(0.05)
+        end
+        
+        warn("[Find] Could not find Rainbow Tomato ID")
+        return nil
+    end
+
+    local function smartUpgradeRainbowTomato()
+        warn("[Smart Upgrade] Starting smart upgrade system...")
         
         while true do
-            -- Try to find and upgrade the rainbow tomato continuously
-            for id = 1, 100 do
-                if upgradeUnit(id) then
-                    warn("[Upgrade SUCCESS] Rainbow Tomato ID: "..id.." - Continuing upgrades...")
-                    -- Small delay between upgrade attempts
-                    task.wait(0.5)
+            if rainbowTomatoId then
+                -- We found the ID, upgrade it infinitely
+                if upgradeUnit(rainbowTomatoId) then
+                    warn("[Smart Upgrade] Successfully upgraded ID: "..rainbowTomatoId)
+                    task.wait(0.5) -- Wait 0.5 seconds between upgrades
+                else
+                    warn("[Smart Upgrade] Failed to upgrade ID: "..rainbowTomatoId.." - Unit may be max level or sold")
+                    -- If upgrade fails, try to find the ID again
+                    rainbowTomatoId = findRainbowTomatoId()
+                    if not rainbowTomatoId then
+                        warn("[Smart Upgrade] Could not find Rainbow Tomato, waiting before retry...")
+                        task.wait(2)
+                    end
+                end
+            else
+                -- Haven't found the ID yet, search for it
+                rainbowTomatoId = findRainbowTomatoId()
+                if not rainbowTomatoId then
+                    warn("[Smart Upgrade] Still searching for Rainbow Tomato ID...")
+                    task.wait(1) -- Wait 1 second before searching again
+                else
+                    warn("[Smart Upgrade] Now upgrading ID: "..rainbowTomatoId.." infinitely!")
                 end
             end
-            task.wait(1) -- Wait before scanning again
         end
     end
 
@@ -178,12 +219,15 @@ function loadRainbowTomatoScript()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
+        -- Reset ID for new game
+        rainbowTomatoId = nil
+        
         -- Place rainbow tomato at 5 seconds
         task.delay(5, function()
             if placeRainbowTomato() then
-                warn("[Success] Rainbow Tomato placed, starting upgrades in 2 seconds...")
-                -- Start infinite upgrades 2 seconds after placement
-                task.delay(2, infiniteUpgradeRainbowTomato)
+                warn("[Success] Rainbow Tomato placed, starting smart upgrades in 3 seconds...")
+                -- Start smart upgrades 3 seconds after placement
+                task.delay(3, smartUpgradeRainbowTomato)
             end
         end)
         
@@ -208,7 +252,7 @@ local function showStrategyMenu()
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
     Title.Text = "SELECT STRATEGY"
-    SubTitle.Text = "Rainbow Tomato Infinite Upgrade"
+    SubTitle.Text = "Rainbow Tomato Smart Upgrade"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -218,7 +262,7 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 80)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚠️ Rainbow Tomato Strategy\n• Hard Difficulty\n• Place Tomato: 5s\n• Infinite Upgrades\n• Auto-restart: 180s"
+    Instructions.Text = "⚠️ Smart Rainbow Tomato\n• Hard Difficulty\n• Place Tomato: 5s\n• Finds & Remembers ID\n• Infinite Targeted Upgrades"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -229,7 +273,7 @@ local function showStrategyMenu()
     local btnRainbow = Instance.new("TextButton")
     btnRainbow.Size = UDim2.new(1, -40, 0, 120)
     btnRainbow.Position = UDim2.new(0, 20, 0, 160)
-    btnRainbow.Text = "RAINBOW TOMATO\nInfinite Upgrade Strategy\nHard Difficulty"
+    btnRainbow.Text = "SMART RAINBOW TOMATO\nFinds & Remembers ID\nInfinite Targeted Upgrades"
     btnRainbow.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
     btnRainbow.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnRainbow.Font = Enum.Font.GothamBold
