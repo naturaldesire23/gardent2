@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Full Range After Golems
+--// Garden Tower Defense Script - Punch Potato Strategy
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== FULL RANGE AFTER GOLEMS ===--
+--=== PUNCH POTATO STRATEGY ===--
 
-function loadFullRangeScript()
-    warn("[System] Loaded Full Range After Golems Strategy")
+function loadPunchPotatoScript()
+    warn("[System] Loaded Punch Potato Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -174,10 +174,10 @@ function loadFullRangeScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Golem Dragons
+        -- Punch Potatoes (replaced golem dragons)
         {
             time = 185,
-            unit = "unit_golem_dragon",
+            unit = "unit_punch_potato",
             data = {
                 Valid = true,
                 Rotation = 180,
@@ -187,7 +187,7 @@ function loadFullRangeScript()
         },
         {
             time = 215,
-            unit = "unit_golem_dragon",
+            unit = "unit_punch_potato",
             data = {
                 Valid = true,
                 Rotation = 180,
@@ -197,7 +197,7 @@ function loadFullRangeScript()
         },
         {
             time = 230,
-            unit = "unit_golem_dragon",
+            unit = "unit_punch_potato",
             data = {
                 Valid = true,
                 Rotation = 180,
@@ -250,12 +250,12 @@ function loadFullRangeScript()
         end
     end
 
-    local function upgradeFullRange()
-        warn("[UPGRADE] Starting FULL RANGE upgrades (1-500)")
+    local function upgradePunchPotatoes()
+        warn("[UPGRADE] Starting PUNCH POTATO upgrades (130-350)")
         
         while true do
-            -- Upgrade ALL IDs from 1 to 500
-            for id = 1, 500 do
+            -- PUNCH POTATO RANGE: 130-350
+            for id = 130, 350 do
                 upgradeUnit(id)
             end
             -- NO DELAY - MAXIMUM SPEED
@@ -285,11 +285,10 @@ function loadFullRangeScript()
             upgradeMetalFlowers()
         end)
         
-        -- STOP other upgrades and START FULL RANGE upgrades at 186 seconds
+        -- Start PUNCH POTATO upgrades at 186 seconds
         task.delay(186, function()
-            warn("[FULL RANGE] First golem placed - SWITCHING TO FULL RANGE 1-500!")
-            -- All previous loops continue running, but now we add FULL RANGE
-            upgradeFullRange()
+            warn("[Starting] Beginning PUNCH POTATO upgrades!")
+            upgradePunchPotatoes()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -312,8 +311,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FULL RANGE STRATEGY"
-    SubTitle.Text = "1-500 After Golems"
+    Title.Text = "PUNCH POTATO STRATEGY"
+    SubTitle.Text = "3x Speed - Punch Potato Range 130-350"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -323,39 +322,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 FULL RANGE STRATEGY\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• After Golems: FULL RANGE 1-500\n• Upgrades ALL units including golems\n• No missing any IDs"
+    Instructions.Text = "🎯 PUNCH POTATO STRATEGY\n• Tomatoes: IDs 1-50\n• Metal Flowers: IDs 20-80\n• Punch Potatoes: IDs 130-350\n• Same positions, new unit\n• Optimized ID range"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Full Range Button
-    local btnFull = Instance.new("TextButton")
-    btnFull.Size = UDim2.new(1, -40, 0, 120)
-    btnFull.Position = UDim2.new(0, 20, 0, 200)
-    btnFull.Text = "FULL RANGE STRATEGY\nAfter Golems: Upgrades 1-500\nCatches ALL Units"
-    btnFull.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnFull.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnFull.Font = Enum.Font.GothamBold
-    btnFull.TextSize = 18
-    btnFull.BorderSizePixel = 0
-    btnFull.Parent = Frame
+    -- Punch Potato Button
+    local btnPunch = Instance.new("TextButton")
+    btnPunch.Size = UDim2.new(1, -40, 0, 120)
+    btnPunch.Position = UDim2.new(0, 20, 0, 200)
+    btnPunch.Text = "PUNCH POTATO STRATEGY\nNew Unit - Range 130-350\nSame Positions & Timing"
+    btnPunch.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnPunch.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnPunch.Font = Enum.Font.GothamBold
+    btnPunch.TextSize = 18
+    btnPunch.BorderSizePixel = 0
+    btnPunch.Parent = Frame
 
-    local btnFullCorner = Instance.new("UICorner")
-    btnFullCorner.CornerRadius = UDim.new(0, 10)
-    btnFullCorner.Parent = btnFull
+    local btnPunchCorner = Instance.new("UICorner")
+    btnPunchCorner.CornerRadius = UDim.new(0, 10)
+    btnPunchCorner.Parent = btnPunch
 
-    btnFull.MouseButton1Click:Connect(function()
+    btnPunch.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFullRangeScript()
+        loadPunchPotatoScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FULL RANGE..."
+        Label.Text = "✅ Key Verified! Loading PUNCH POTATO..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
@@ -372,7 +371,7 @@ CheckBtn.MouseButton1Click:Connect(function()
             CheckBtn.Text = "VERIFY KEY"
         end)
     end
-end)
+end
 
 -- Add some visual effects
 TextBox.Focused:Connect(function()
