@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - FIXED RESTART SYSTEM
+--// Garden Tower Defense Script - PERMANENT UPGRADE SYSTEM
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,23 +113,83 @@ task.delay(2, function()
     end)
 end)
 
---=== FIXED RESTART SYSTEM ===--
+--=== PERMANENT UPGRADE SYSTEM ===--
 
-function loadFixedRestartSystem()
-    warn("[System] Loaded FIXED RESTART SYSTEM")
+function loadPermanentUpgradeSystem()
+    warn("[System] Loaded PERMANENT UPGRADE SYSTEM")
     
-    -- Make these GLOBAL so we can control them across restarts
-    _G.UpgradeTomatoesActive = true
-    _G.UpgradeMetalFlowersActive = true
-    _G.UpgradePotatoesActive = false
-    _G.CurrentGameRunning = true
+    -- Create a permanent upgrade manager that never gets destroyed
+    local UpgradeManager = {}
+    UpgradeManager.Active = true
+    UpgradeManager.CurrentPhase = "waiting" -- waiting, tomatoes, metal_flowers, potatoes
+    
+    -- Function to upgrade units
+    local function upgradeUnit(unitId)
+        pcall(function()
+            remotes.UpgradeUnit:InvokeServer(unitId)
+        end)
+    end
 
-    local function setupGame()
-        warn("[Game Setup] Starting new game cycle...")
-        remotes.ChangeTickSpeed:InvokeServer(3)
-
-        local difficulty = "dif_hard"
+    -- Permanent upgrade loops that run forever
+    local function startPermanentUpgradeLoops()
+        warn("[PERMANENT] Starting permanent upgrade loops...")
         
+        -- Tomato upgrade loop (runs when phase is "tomatoes")
+        task.spawn(function()
+            while UpgradeManager.Active do
+                if UpgradeManager.CurrentPhase == "tomatoes" then
+                    for id = 1, 50 do
+                        upgradeUnit(id)
+                        upgradeUnit(id) -- Double call
+                    end
+                end
+                task.wait(0.01)
+            end
+        end)
+        
+        -- Metal Flower upgrade loop (runs when phase is "metal_flowers")
+        task.spawn(function()
+            while UpgradeManager.Active do
+                if UpgradeManager.CurrentPhase == "metal_flowers" then
+                    for id = 20, 80 do
+                        upgradeUnit(id)
+                        upgradeUnit(id) -- Double call
+                    end
+                end
+                task.wait(0.01)
+            end
+        end)
+        
+        -- Potato upgrade loop (runs when phase is "potatoes")
+        task.spawn(function()
+            while UpgradeManager.Active do
+                if UpgradeManager.CurrentPhase == "potatoes" then
+                    -- Split the range 230-280 across multiple cycles
+                    for id = 230, 280 do
+                        upgradeUnit(id)
+                        upgradeUnit(id) -- Double call
+                        upgradeUnit(id) -- Triple call
+                    end
+                end
+                task.wait(0.001) -- Faster for potatoes
+            end
+        end)
+        
+        warn("[PERMANENT] All permanent upgrade loops started!")
+    end
+
+    -- Start the permanent loops immediately
+    startPermanentUpgradeLoops()
+
+    -- Game cycle function
+    local function startGameCycle()
+        warn("[CYCLE] Starting new game cycle...")
+        
+        -- Reset game settings
+        remotes.ChangeTickSpeed:InvokeServer(3)
+        remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
+        
+        -- Unit placements
         local unitPlacements = {
             -- Rainbow Tomatoes
             {
@@ -216,6 +276,7 @@ function loadFixedRestartSystem()
             }
         }
 
+        -- Function to place units
         local function placeUnit(unitName, data)
             local success = pcall(function()
                 return remotes.PlaceUnit:InvokeServer(unitName, data)
@@ -230,137 +291,61 @@ function loadFixedRestartSystem()
             end
         end
 
-        local function upgradeUnit(unitId)
-            pcall(function()
-                remotes.UpgradeUnit:InvokeServer(unitId)
-            end)
-        end
-
-        -- UPGRADE FUNCTIONS - Check global flags
-        local function upgradeTomatoes()
-            warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
-            
-            task.spawn(function()
-                while _G.UpgradeTomatoesActive and _G.CurrentGameRunning do
-                    for id = 1, 50 do
-                        upgradeUnit(id)
-                    end
-                    task.wait(0.01)
-                end
-                warn("[UPGRADE] Tomato upgrades STOPPED")
-            end)
-        end
-
-        local function upgradeMetalFlowers()
-            warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
-            
-            task.spawn(function()
-                while _G.UpgradeMetalFlowersActive and _G.CurrentGameRunning do
-                    for id = 20, 80 do
-                        upgradeUnit(id)
-                    end
-                    task.wait(0.01)
-                end
-                warn("[UPGRADE] Metal Flower upgrades STOPPED")
-            end)
-        end
-
-        local function hyperFastUpgradePunchPotatoes()
-            warn("[HYPER FAST] Starting PUNCH POTATO upgrades (230-280) - MAXIMUM SPEED")
-            
-            _G.UpgradePotatoesActive = true
-            
-            -- Split the range 230-280 across 3 threads
-            local totalIds = 51 -- 230 to 280 inclusive
-            local idsPerThread = math.ceil(totalIds / 3)
-            
-            for thread = 1, 3 do
-                task.spawn(function()
-                    while _G.UpgradePotatoesActive and _G.CurrentGameRunning do
-                        -- Calculate range for this thread
-                        local startId = 230 + ((thread - 1) * idsPerThread)
-                        local endId = math.min(startId + idsPerThread - 1, 280)
-                        
-                        for id = startId, endId do
-                            upgradeUnit(id)
-                            upgradeUnit(id) -- Double call
-                            upgradeUnit(id) -- Triple call
-                        end
-                    end
-                end)
-            end
-        end
-
-        -- Start the actual game
-        warn("[Game Start] Choosing Hard difficulty")
-        remotes.PlaceDifficultyVote:InvokeServer(difficulty)
-        
-        -- Reset upgrade states for new game
-        _G.UpgradeTomatoesActive = true
-        _G.UpgradeMetalFlowersActive = true
-        _G.UpgradePotatoesActive = false
-        
-        -- Place all units at their times
+        -- Place all units
         for _, placement in ipairs(unitPlacements) do
             task.delay(placement.time, function()
-                if _G.CurrentGameRunning then
+                if UpgradeManager.Active then
                     placeUnit(placement.unit, placement.data)
                 end
             end)
         end
-        
-        -- Start TOMATO upgrades at 6 seconds
+
+        -- Phase 1: Tomato upgrades (6s - 86s)
         task.delay(6, function()
-            if _G.CurrentGameRunning then
-                warn("[Starting] Beginning TOMATO upgrades!")
-                upgradeTomatoes()
+            if UpgradeManager.Active then
+                warn("[PHASE 1] Starting TOMATO upgrades!")
+                UpgradeManager.CurrentPhase = "tomatoes"
             end
         end)
-        
-        -- Start METAL FLOWER upgrades at 86 seconds
+
+        -- Phase 2: Metal Flower upgrades (86s - 186s)  
         task.delay(86, function()
-            if _G.CurrentGameRunning then
-                warn("[Starting] Beginning METAL FLOWER upgrades!")
-                upgradeMetalFlowers()
+            if UpgradeManager.Active then
+                warn("[PHASE 2] Starting METAL FLOWER upgrades!")
+                UpgradeManager.CurrentPhase = "metal_flowers"
             end
         end)
-        
-        -- STOP other upgrades and START HYPER FAST PUNCH POTATO upgrades at 186 seconds
+
+        -- Phase 3: Potato upgrades (186s - end)
         task.delay(186, function()
-            if _G.CurrentGameRunning then
-                warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
-                _G.UpgradeTomatoesActive = false
-                _G.UpgradeMetalFlowersActive = false
-                task.wait(0.1)
-                hyperFastUpgradePunchPotatoes()
+            if UpgradeManager.Active then
+                warn("[PHASE 3] Starting POTATO upgrades - MAXIMUM SPEED!")
+                UpgradeManager.CurrentPhase = "potatoes"
             end
         end)
-        
-        -- Auto-restart at 300 seconds (5 minutes)
+
+        -- Auto-restart at 300 seconds
         task.delay(300, function()
-            if _G.CurrentGameRunning then
-                warn("[Restart] Game ended, preparing restart...")
+            if UpgradeManager.Active then
+                warn("[RESTART] Game cycle ending, restarting in 3 seconds...")
                 
-                -- Stop all upgrades for this game
-                _G.UpgradeTomatoesActive = false
-                _G.UpgradeMetalFlowersActive = false
-                _G.UpgradePotatoesActive = false
+                -- Stop current upgrades briefly
+                UpgradeManager.CurrentPhase = "waiting"
                 
-                task.wait(2)
+                task.wait(3)
                 remotes.RestartGame:InvokeServer()
-                warn("[Restart] Game restarted, waiting 5 seconds for full reset...")
                 
-                -- Wait longer for complete game reset
+                warn("[RESTART] Game restarted, starting new cycle in 5 seconds...")
                 task.wait(5)
                 
-                -- Start new game cycle
-                setupGame()
+                -- Start the next game cycle
+                startGameCycle()
             end
         end)
     end
 
-    -- Start the first game
-    setupGame()
+    -- Start the first game cycle
+    startGameCycle()
 end
 
 --=== SIMPLIFIED MENU ===--
@@ -368,8 +353,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FIXED RESTART SYSTEM"
-    SubTitle.Text = "Upgrades work every game cycle"
+    Title.Text = "PERMANENT UPGRADE SYSTEM"
+    SubTitle.Text = "Upgrades never stop working"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -379,39 +364,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🔄 FIXED RESTART SYSTEM\n• Global upgrade control\n• Proper game cycle management\n• Tomatoes upgrade every game\n• Metal Flowers upgrade every game\n• Potatoes get MAX speed\n• 5 second reset wait for stability"
+    Instructions.Text = "🔄 PERMANENT UPGRADE SYSTEM\n• Upgrade loops run FOREVER\n• Phase-based system\n• Tomatoes: 6s-86s\n• Metal Flowers: 86s-186s\n• Potatoes: 186s-end\n• Never stops between games"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Fixed Restart Button
-    local btnFixed = Instance.new("TextButton")
-    btnFixed.Size = UDim2.new(1, -40, 0, 120)
-    btnFixed.Position = UDim2.new(0, 20, 0, 200)
-    btnFixed.Text = "FIXED RESTART SYSTEM\nUpgrades Work Every Game\nProper Cycle Management"
-    btnFixed.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnFixed.Font = Enum.Font.GothamBold
-    btnFixed.TextSize = 18
-    btnFixed.BorderSizePixel = 0
-    btnFixed.Parent = Frame
+    -- Permanent System Button
+    local btnPermanent = Instance.new("TextButton")
+    btnPermanent.Size = UDim2.new(1, -40, 0, 120)
+    btnPermanent.Position = UDim2.new(0, 20, 0, 200)
+    btnPermanent.Text = "PERMANENT UPGRADE SYSTEM\nUpgrades Never Stop\nPhase-Based Control"
+    btnPermanent.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnPermanent.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnPermanent.Font = Enum.Font.GothamBold
+    btnPermanent.TextSize = 18
+    btnPermanent.BorderSizePixel = 0
+    btnPermanent.Parent = Frame
 
-    local btnFixedCorner = Instance.new("UICorner")
-    btnFixedCorner.CornerRadius = UDim.new(0, 10)
-    btnFixedCorner.Parent = btnFixed
+    local btnPermanentCorner = Instance.new("UICorner")
+    btnPermanentCorner.CornerRadius = UDim.new(0, 10)
+    btnPermanentCorner.Parent = btnPermanent
 
-    btnFixed.MouseButton1Click:Connect(function()
+    btnPermanent.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFixedRestartSystem()
+        loadPermanentUpgradeSystem()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FIXED RESTART..."
+        Label.Text = "✅ Key Verified! Loading PERMANENT SYSTEM..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
