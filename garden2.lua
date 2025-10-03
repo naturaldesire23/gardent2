@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - PERMANENT UPGRADE SYSTEM
+--// Garden Tower Defense Script - RELATIVE TIMING SYSTEM
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,16 +113,17 @@ task.delay(2, function()
     end)
 end)
 
---=== PERMANENT UPGRADE SYSTEM ===--
+--=== RELATIVE TIMING SYSTEM ===--
 
-function loadPermanentUpgradeSystem()
-    warn("[System] Loaded PERMANENT UPGRADE SYSTEM")
+function loadRelativeTimingSystem()
+    warn("[System] Loaded RELATIVE TIMING SYSTEM")
     
-    -- Create a permanent upgrade manager that never gets destroyed
+    -- Create upgrade manager
     local UpgradeManager = {}
     UpgradeManager.Active = true
-    UpgradeManager.CurrentPhase = "waiting" -- waiting, tomatoes, metal_flowers, potatoes
-    
+    UpgradeManager.CurrentPhase = "waiting"
+    UpgradeManager.GameStartTime = 0
+
     -- Function to upgrade units
     local function upgradeUnit(unitId)
         pcall(function()
@@ -130,11 +131,11 @@ function loadPermanentUpgradeSystem()
         end)
     end
 
-    -- Permanent upgrade loops that run forever
+    -- Start permanent upgrade loops
     local function startPermanentUpgradeLoops()
         warn("[PERMANENT] Starting permanent upgrade loops...")
         
-        -- Tomato upgrade loop (runs when phase is "tomatoes")
+        -- Tomato upgrade loop
         task.spawn(function()
             while UpgradeManager.Active do
                 if UpgradeManager.CurrentPhase == "tomatoes" then
@@ -147,7 +148,7 @@ function loadPermanentUpgradeSystem()
             end
         end)
         
-        -- Metal Flower upgrade loop (runs when phase is "metal_flowers")
+        -- Metal Flower upgrade loop
         task.spawn(function()
             while UpgradeManager.Active do
                 if UpgradeManager.CurrentPhase == "metal_flowers" then
@@ -160,11 +161,10 @@ function loadPermanentUpgradeSystem()
             end
         end)
         
-        -- Potato upgrade loop (runs when phase is "potatoes")
+        -- Potato upgrade loop
         task.spawn(function()
             while UpgradeManager.Active do
                 if UpgradeManager.CurrentPhase == "potatoes" then
-                    -- Split the range 230-280 across multiple cycles
                     for id = 230, 280 do
                         upgradeUnit(id)
                         upgradeUnit(id) -- Double call
@@ -174,178 +174,181 @@ function loadPermanentUpgradeSystem()
                 task.wait(0.001) -- Faster for potatoes
             end
         end)
-        
-        warn("[PERMANENT] All permanent upgrade loops started!")
     end
 
-    -- Start the permanent loops immediately
+    -- Start the permanent loops
     startPermanentUpgradeLoops()
 
-    -- Game cycle function
-    local function startGameCycle()
-        warn("[CYCLE] Starting new game cycle...")
+    -- Function to place units
+    local function placeUnit(unitName, data)
+        local success = pcall(function()
+            return remotes.PlaceUnit:InvokeServer(unitName, data)
+        end)
         
-        -- Reset game settings
-        remotes.ChangeTickSpeed:InvokeServer(3)
-        remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
-        
-        -- Unit placements
-        local unitPlacements = {
-            -- Rainbow Tomatoes
-            {
-                time = 5,
-                unit = "unit_tomato_rainbow",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
-                }
-            },
-            {
-                time = 55,
-                unit = "unit_tomato_rainbow", 
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
-                }
-            },
-            -- Metal Flowers
-            {
-                time = 85,
-                unit = "unit_metal_flower",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
-                }
-            },
-            {
-                time = 100,
-                unit = "unit_metal_flower",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
-                }
-            },
-            {
-                time = 115,
-                unit = "unit_metal_flower",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
-                }
-            },
-            -- Punch Potatoes
-            {
-                time = 185,
-                unit = "unit_punch_potato",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
-                }
-            },
-            {
-                time = 190,
-                unit = "unit_punch_potato",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
-                }
-            },
-            {
-                time = 195,
-                unit = "unit_punch_potato",
-                data = {
-                    Valid = true,
-                    Rotation = 180,
-                    CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                    Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
-                }
-            }
-        }
-
-        -- Function to place units
-        local function placeUnit(unitName, data)
-            local success = pcall(function()
-                return remotes.PlaceUnit:InvokeServer(unitName, data)
-            end)
-            
-            if success then
-                warn("[Placing] " .. unitName .. " at " .. os.clock())
-                return true
-            else
-                warn("[Placing] " .. unitName .. " - Failed")
-                return false
-            end
+        if success then
+            warn("[Placing] " .. unitName .. " at " .. os.clock())
+            return true
+        else
+            warn("[Placing] " .. unitName .. " - Failed")
+            return false
         end
-
-        -- Place all units
-        for _, placement in ipairs(unitPlacements) do
-            task.delay(placement.time, function()
-                if UpgradeManager.Active then
-                    placeUnit(placement.unit, placement.data)
-                end
-            end)
-        end
-
-        -- Phase 1: Tomato upgrades (6s - 86s)
-        task.delay(6, function()
-            if UpgradeManager.Active then
-                warn("[PHASE 1] Starting TOMATO upgrades!")
-                UpgradeManager.CurrentPhase = "tomatoes"
-            end
-        end)
-
-        -- Phase 2: Metal Flower upgrades (86s - 186s)  
-        task.delay(86, function()
-            if UpgradeManager.Active then
-                warn("[PHASE 2] Starting METAL FLOWER upgrades!")
-                UpgradeManager.CurrentPhase = "metal_flowers"
-            end
-        end)
-
-        -- Phase 3: Potato upgrades (186s - end)
-        task.delay(186, function()
-            if UpgradeManager.Active then
-                warn("[PHASE 3] Starting POTATO upgrades - MAXIMUM SPEED!")
-                UpgradeManager.CurrentPhase = "potatoes"
-            end
-        end)
-
-        -- Auto-restart at 300 seconds
-        task.delay(300, function()
-            if UpgradeManager.Active then
-                warn("[RESTART] Game cycle ending, restarting in 3 seconds...")
-                
-                -- Stop current upgrades briefly
-                UpgradeManager.CurrentPhase = "waiting"
-                
-                task.wait(3)
-                remotes.RestartGame:InvokeServer()
-                
-                warn("[RESTART] Game restarted, starting new cycle in 5 seconds...")
-                task.wait(5)
-                
-                -- Start the next game cycle
-                startGameCycle()
-            end
-        end)
     end
 
-    -- Start the first game cycle
-    startGameCycle()
+    -- Unit placement data
+    local unitPlacements = {
+        -- Rainbow Tomatoes
+        {
+            time = 5,
+            unit = "unit_tomato_rainbow",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
+            }
+        },
+        {
+            time = 55,
+            unit = "unit_tomato_rainbow", 
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
+            }
+        },
+        -- Metal Flowers
+        {
+            time = 85,
+            unit = "unit_metal_flower",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
+            }
+        },
+        {
+            time = 100,
+            unit = "unit_metal_flower",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
+            }
+        },
+        {
+            time = 115,
+            unit = "unit_metal_flower",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
+            }
+        },
+        -- Punch Potatoes
+        {
+            time = 185,
+            unit = "unit_punch_potato",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
+            }
+        },
+        {
+            time = 190,
+            unit = "unit_punch_potato",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
+            }
+        },
+        {
+            time = 195,
+            unit = "unit_punch_potato",
+            data = {
+                Valid = true,
+                Rotation = 180,
+                CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
+            }
+        }
+    }
+
+    -- Main game loop
+    local function startGameLoop()
+        while UpgradeManager.Active do
+            warn("[GAME START] Beginning new game cycle...")
+            
+            -- Reset game settings
+            UpgradeManager.GameStartTime = os.clock()
+            UpgradeManager.CurrentPhase = "waiting"
+            
+            remotes.ChangeTickSpeed:InvokeServer(3)
+            remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
+            
+            -- Schedule unit placements
+            for _, placement in ipairs(unitPlacements) do
+                local placementTime = placement.time
+                task.delay(placementTime, function()
+                    if UpgradeManager.Active then
+                        placeUnit(placement.unit, placement.data)
+                    end
+                end)
+            end
+            
+            -- Schedule phase changes
+            -- Phase 1: Tomato upgrades (6s)
+            task.delay(6, function()
+                if UpgradeManager.Active then
+                    warn("[PHASE 1] Starting TOMATO upgrades!")
+                    UpgradeManager.CurrentPhase = "tomatoes"
+                end
+            end)
+
+            -- Phase 2: Metal Flower upgrades (86s)  
+            task.delay(86, function()
+                if UpgradeManager.Active then
+                    warn("[PHASE 2] Starting METAL FLOWER upgrades!")
+                    UpgradeManager.CurrentPhase = "metal_flowers"
+                end
+            end)
+
+            -- Phase 3: Potato upgrades (186s)
+            task.delay(186, function()
+                if UpgradeManager.Active then
+                    warn("[PHASE 3] Starting POTATO upgrades - MAXIMUM SPEED!")
+                    UpgradeManager.CurrentPhase = "potatoes"
+                end
+            end)
+
+            -- Wait for game to complete (300 seconds = 5 minutes)
+            local gameDuration = 300
+            warn("[GAME] Waiting " .. gameDuration .. " seconds for game completion...")
+            task.wait(gameDuration)
+            
+            -- Restart game
+            if UpgradeManager.Active then
+                warn("[RESTART] Restarting game...")
+                UpgradeManager.CurrentPhase = "waiting"
+                
+                remotes.RestartGame:InvokeServer()
+                
+                -- Wait for game to fully reset
+                warn("[RESTART] Waiting 5 seconds for game reset...")
+                task.wait(5)
+            end
+        end
+    end
+
+    -- Start the main game loop
+    startGameLoop()
 end
 
 --=== SIMPLIFIED MENU ===--
@@ -353,8 +356,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "PERMANENT UPGRADE SYSTEM"
-    SubTitle.Text = "Upgrades never stop working"
+    Title.Text = "RELATIVE TIMING SYSTEM"
+    SubTitle.Text = "No timing issues between games"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -364,39 +367,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🔄 PERMANENT UPGRADE SYSTEM\n• Upgrade loops run FOREVER\n• Phase-based system\n• Tomatoes: 6s-86s\n• Metal Flowers: 86s-186s\n• Potatoes: 186s-end\n• Never stops between games"
+    Instructions.Text = "⏱️ RELATIVE TIMING SYSTEM\n• Uses task.wait() instead of absolute time\n• No timing drift between games\n• Perfect 5-minute cycles\n• Upgrades work every game\n• No 10-second delays"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Permanent System Button
-    local btnPermanent = Instance.new("TextButton")
-    btnPermanent.Size = UDim2.new(1, -40, 0, 120)
-    btnPermanent.Position = UDim2.new(0, 20, 0, 200)
-    btnPermanent.Text = "PERMANENT UPGRADE SYSTEM\nUpgrades Never Stop\nPhase-Based Control"
-    btnPermanent.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnPermanent.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnPermanent.Font = Enum.Font.GothamBold
-    btnPermanent.TextSize = 18
-    btnPermanent.BorderSizePixel = 0
-    btnPermanent.Parent = Frame
+    -- Relative Timing Button
+    local btnRelative = Instance.new("TextButton")
+    btnRelative.Size = UDim2.new(1, -40, 0, 120)
+    btnRelative.Position = UDim2.new(0, 20, 0, 200)
+    btnRelative.Text = "RELATIVE TIMING SYSTEM\nNo Timing Issues\nPerfect 5-Minute Cycles"
+    btnRelative.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnRelative.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnRelative.Font = Enum.Font.GothamBold
+    btnRelative.TextSize = 18
+    btnRelative.BorderSizePixel = 0
+    btnRelative.Parent = Frame
 
-    local btnPermanentCorner = Instance.new("UICorner")
-    btnPermanentCorner.CornerRadius = UDim.new(0, 10)
-    btnPermanentCorner.Parent = btnPermanent
+    local btnRelativeCorner = Instance.new("UICorner")
+    btnRelativeCorner.CornerRadius = UDim.new(0, 10)
+    btnRelativeCorner.Parent = btnRelative
 
-    btnPermanent.MouseButton1Click:Connect(function()
+    btnRelative.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadPermanentUpgradeSystem()
+        loadRelativeTimingSystem()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading PERMANENT SYSTEM..."
+        Label.Text = "✅ Key Verified! Loading RELATIVE TIMING..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
