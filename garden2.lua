@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - FIXED METAL FLOWER TIMING
+--// Garden Tower Defense Script - HYPER FAST Punch Potatoes
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== FIXED METAL FLOWER TIMING ===--
+--=== HYPER FAST PUNCH POTATOES ===--
 
-function loadFixedMetalFlowerScript()
-    warn("[System] Loaded FIXED METAL FLOWER Timing Strategy")
+function loadHyperFastPotatoScript()
+    warn("[System] Loaded HYPER FAST Punch Potato Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -143,9 +143,9 @@ function loadFixedMetalFlowerScript()
                 Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
             }
         },
-        -- Metal Flowers - FIXED TIMING: 90s, 110s, 115s
+        -- Metal Flowers
         {
-            time = 90,
+            time = 85,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -155,7 +155,7 @@ function loadFixedMetalFlowerScript()
             }
         },
         {
-            time = 110, -- 20 seconds after first
+            time = 100,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -165,7 +165,7 @@ function loadFixedMetalFlowerScript()
             }
         },
         {
-            time = 115, -- 5 seconds after second
+            time = 115,
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -174,7 +174,7 @@ function loadFixedMetalFlowerScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Punch Potatoes - 5 second intervals
+        -- Punch Potatoes
         {
             time = 185,
             unit = "unit_punch_potato",
@@ -186,7 +186,7 @@ function loadFixedMetalFlowerScript()
             }
         },
         {
-            time = 190, -- 5 seconds after first potato
+            time = 190,
             unit = "unit_punch_potato",
             data = {
                 Valid = true,
@@ -196,7 +196,7 @@ function loadFixedMetalFlowerScript()
             }
         },
         {
-            time = 195, -- 5 seconds after second potato
+            time = 195,
             unit = "unit_punch_potato",
             data = {
                 Valid = true,
@@ -208,27 +208,16 @@ function loadFixedMetalFlowerScript()
     }
 
     local function placeUnit(unitName, data)
-        local success, result = pcall(function()
+        local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
-        if success and result == true then
-            warn("[SUCCESS] Placed " .. unitName .. " at " .. os.clock())
+        if success then
+            warn("[Placing] " .. unitName .. " at " .. os.clock())
             return true
         else
-            warn("[FAILED] Could not place " .. unitName .. " - Retrying in 1 second...")
-            -- Retry after 1 second
-            task.wait(1)
-            local retrySuccess, retryResult = pcall(function()
-                return remotes.PlaceUnit:InvokeServer(unitName, data)
-            end)
-            if retrySuccess and retryResult == true then
-                warn("[RETRY SUCCESS] Placed " .. unitName)
-                return true
-            else
-                warn("[FINAL FAIL] Could not place " .. unitName)
-                return false
-            end
+            warn("[Placing] " .. unitName .. " - Failed")
+            return false
         end
     end
 
@@ -240,7 +229,7 @@ function loadFixedMetalFlowerScript()
 
     -- Variables to control upgrade loops
     local upgradeTomatoesActive = true
-    local upgradeMetalFlowersActive = false -- Start as false, will be enabled after all metal flowers placed
+    local upgradeMetalFlowersActive = true
 
     -- UPGRADE FUNCTIONS
     local function upgradeTomatoes()
@@ -249,7 +238,6 @@ function loadFixedMetalFlowerScript()
         while upgradeTomatoesActive do
             for id = 1, 50 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call for speed
             end
             task.wait(0.01)
         end
@@ -262,28 +250,28 @@ function loadFixedMetalFlowerScript()
         while upgradeMetalFlowersActive do
             for id = 20, 80 do
                 upgradeUnit(id)
-                upgradeUnit(id) -- Double call for speed
             end
             task.wait(0.01)
         end
         warn("[UPGRADE] Metal Flower upgrades STOPPED")
     end
 
-    local function ultraFastUpgradePunchPotatoes()
-        warn("[ULTRA FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
+    local function hyperFastUpgradePunchPotatoes()
+        warn("[HYPER FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
         
         -- Run multiple parallel loops for maximum speed
-        for thread = 1, 4 do
+        for thread = 1, 3 do
             task.spawn(function()
                 while true do
-                    local startId = 100 + ((thread - 1) * 75)
-                    local endId = math.min(startId + 74, 400)
+                    -- Different ranges for each thread to cover more ground
+                    local startId = 100 + ((thread - 1) * 100)
+                    local endId = math.min(startId + 99, 400)
                     
                     for id = startId, endId do
                         upgradeUnit(id)
-                        upgradeUnit(id) -- Double call
-                        upgradeUnit(id) -- Triple call for MAXIMUM speed
+                        upgradeUnit(id) -- Double call for speed
                     end
+                    -- NO DELAY - MAXIMUM SPEED
                 end
             end)
         end
@@ -301,46 +289,14 @@ function loadFixedMetalFlowerScript()
         
         -- Reset upgrade states
         upgradeTomatoesActive = true
-        upgradeMetalFlowersActive = false -- Metal flowers start disabled
+        upgradeMetalFlowersActive = true
         
-        -- Track metal flower placements
-        local metalFlowersPlaced = 0
-        local totalMetalFlowers = 3
-        
-        -- Place all units at their times with better error handling
-        local placedCount = {
-            tomatoes = 0,
-            metal_flowers = 0,
-            punch_potatoes = 0
-        }
-        
+        -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
             task.delay(placement.time, function()
-                if placeUnit(placement.unit, placement.data) then
-                    -- Track successful placements
-                    if placement.unit == "unit_tomato_rainbow" then
-                        placedCount.tomatoes = placedCount.tomatoes + 1
-                    elseif placement.unit == "unit_metal_flower" then
-                        placedCount.metal_flowers = placedCount.metal_flowers + 1
-                        metalFlowersPlaced = metalFlowersPlaced + 1
-                        
-                        -- Start metal flower upgrades only after ALL 3 are placed
-                        if metalFlowersPlaced == totalMetalFlowers then
-                            warn("[METAL FLOWERS] All 3 placed! Starting upgrades now!")
-                            upgradeMetalFlowersActive = true
-                            upgradeMetalFlowers()
-                        end
-                    elseif placement.unit == "unit_punch_potato" then
-                        placedCount.punch_potatoes = placedCount.punch_potatoes + 1
-                    end
-                end
+                placeUnit(placement.unit, placement.data)
             end)
         end
-        
-        -- Log placement summary after all placements should be done
-        task.delay(200, function()
-            warn("[PLACEMENT SUMMARY] Tomatoes: "..placedCount.tomatoes.."/2, Metal Flowers: "..placedCount.metal_flowers.."/3, Punch Potatoes: "..placedCount.punch_potatoes.."/3")
-        end)
         
         -- Start TOMATO upgrades at 6 seconds
         task.delay(6, function()
@@ -348,12 +304,18 @@ function loadFixedMetalFlowerScript()
             upgradeTomatoes()
         end)
         
-        -- STOP other upgrades and START ULTRA FAST PUNCH POTATO upgrades at 186 seconds
+        -- Start METAL FLOWER upgrades at 86 seconds
+        task.delay(86, function()
+            warn("[Starting] Beginning METAL FLOWER upgrades!")
+            upgradeMetalFlowers()
+        end)
+        
+        -- STOP other upgrades and START HYPER FAST PUNCH POTATO upgrades at 186 seconds
         task.delay(186, function()
-            warn("[ULTRA FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
+            warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
             stopOtherUpgrades()
             task.wait(0.1) -- Let other loops stop
-            ultraFastUpgradePunchPotatoes()
+            hyperFastUpgradePunchPotatoes()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -376,8 +338,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FIXED METAL FLOWER TIMING"
-    SubTitle.Text = "Metal: 90s, 110s, 115s | Potatoes: 5s intervals"
+    Title.Text = "HYPER FAST PUNCH POTATOES"
+    SubTitle.Text = "3x Speed - Maximum Potato Upgrades"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -387,39 +349,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 FIXED METAL FLOWER TIMING\n• Metal Flowers: 90s, 110s, 115s\n• Metal upgrades start AFTER all 3 placed\n• Punch Potatoes: 185s, 190s, 195s (5s intervals)\n• Auto-retry failed placements\n• 4 upgrade threads for potatoes"
+    Instructions.Text = "⚡ HYPER FAST PUNCH POTATOES ⚡\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• Punch Potatoes: IDs 100-400 (LATE GAME)\n• Stops other upgrades for MAXIMUM speed\n• 3 parallel threads + double calls"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
+    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Fixed Timing Button
-    local btnFixed = Instance.new("TextButton")
-    btnFixed.Size = UDim2.new(1, -40, 0, 120)
-    btnFixed.Position = UDim2.new(0, 20, 0, 200)
-    btnFixed.Text = "FIXED METAL FLOWER TIMING\nMetals: 90s, 110s, 115s\nUpgrades after all 3 placed"
-    btnFixed.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnFixed.Font = Enum.Font.GothamBold
-    btnFixed.TextSize = 18
-    btnFixed.BorderSizePixel = 0
-    btnFixed.Parent = Frame
+    -- Hyper Fast Button
+    local btnHyper = Instance.new("TextButton")
+    btnHyper.Size = UDim2.new(1, -40, 0, 120)
+    btnHyper.Position = UDim2.new(0, 20, 0, 200)
+    btnHyper.Text = "⚡ HYPER FAST POTATOES ⚡\nStops Other Upgrades\n3x Threads + Double Calls"
+    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnHyper.Font = Enum.Font.GothamBold
+    btnHyper.TextSize = 18
+    btnHyper.BorderSizePixel = 0
+    btnHyper.Parent = Frame
 
-    local btnFixedCorner = Instance.new("UICorner")
-    btnFixedCorner.CornerRadius = UDim.new(0, 10)
-    btnFixedCorner.Parent = btnFixed
+    local btnHyperCorner = Instance.new("UICorner")
+    btnHyperCorner.CornerRadius = UDim.new(0, 10)
+    btnHyperCorner.Parent = btnHyper
 
-    btnFixed.MouseButton1Click:Connect(function()
+    btnHyper.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFixedMetalFlowerScript()
+        loadHyperFastPotatoScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FIXED TIMING..."
+        Label.Text = "✅ Key Verified! Loading HYPER FAST..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
