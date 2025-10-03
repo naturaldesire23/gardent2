@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - HYPER FAST Punch Potatoes
+--// Garden Tower Defense Script - OPTIMIZED Punch Potato Placement
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== HYPER FAST PUNCH POTATOES ===--
+--=== OPTIMIZED PUNCH POTATO PLACEMENT ===--
 
-function loadHyperFastPotatoScript()
-    warn("[System] Loaded HYPER FAST Punch Potato Strategy")
+function loadOptimizedPotatoScript()
+    warn("[System] Loaded Optimized Punch Potato Placement")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -143,7 +143,7 @@ function loadHyperFastPotatoScript()
                 Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
             }
         },
-        -- Metal Flowers
+        -- Metal Flowers (ALL 3 with better timing)
         {
             time = 85,
             unit = "unit_metal_flower",
@@ -155,7 +155,7 @@ function loadHyperFastPotatoScript()
             }
         },
         {
-            time = 100,
+            time = 90, -- 5 seconds after first metal flower
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -165,7 +165,7 @@ function loadHyperFastPotatoScript()
             }
         },
         {
-            time = 115,
+            time = 95, -- 5 seconds after second metal flower
             unit = "unit_metal_flower",
             data = {
                 Valid = true,
@@ -174,7 +174,7 @@ function loadHyperFastPotatoScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Punch Potatoes
+        -- Punch Potatoes (5 second intervals)
         {
             time = 185,
             unit = "unit_punch_potato",
@@ -186,7 +186,7 @@ function loadHyperFastPotatoScript()
             }
         },
         {
-            time = 215,
+            time = 190, -- 5 seconds after first potato
             unit = "unit_punch_potato",
             data = {
                 Valid = true,
@@ -196,7 +196,7 @@ function loadHyperFastPotatoScript()
             }
         },
         {
-            time = 230,
+            time = 195, -- 5 seconds after second potato
             unit = "unit_punch_potato",
             data = {
                 Valid = true,
@@ -208,16 +208,27 @@ function loadHyperFastPotatoScript()
     }
 
     local function placeUnit(unitName, data)
-        local success = pcall(function()
+        local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
-        if success then
-            warn("[Placing] " .. unitName .. " at " .. os.clock())
+        if success and result == true then
+            warn("[SUCCESS] Placed " .. unitName .. " at " .. os.clock())
             return true
         else
-            warn("[Placing] " .. unitName .. " - Failed")
-            return false
+            warn("[FAILED] Could not place " .. unitName .. " - Retrying in 1 second...")
+            -- Retry after 1 second
+            task.wait(1)
+            local retrySuccess = pcall(function()
+                return remotes.PlaceUnit:InvokeServer(unitName, data)
+            end)
+            if retrySuccess then
+                warn("[RETRY SUCCESS] Placed " .. unitName)
+                return true
+            else
+                warn("[FINAL FAIL] Could not place " .. unitName)
+                return false
+            end
         end
     end
 
@@ -256,20 +267,21 @@ function loadHyperFastPotatoScript()
         warn("[UPGRADE] Metal Flower upgrades STOPPED")
     end
 
-    local function hyperFastUpgradePunchPotatoes()
-        warn("[HYPER FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
+    local function ultraFastUpgradePunchPotatoes()
+        warn("[ULTRA FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
         
         -- Run multiple parallel loops for maximum speed
-        for thread = 1, 3 do
+        for thread = 1, 4 do -- Increased to 4 threads
             task.spawn(function()
                 while true do
                     -- Different ranges for each thread to cover more ground
-                    local startId = 100 + ((thread - 1) * 100)
-                    local endId = math.min(startId + 99, 400)
+                    local startId = 100 + ((thread - 1) * 75)
+                    local endId = math.min(startId + 74, 400)
                     
                     for id = startId, endId do
                         upgradeUnit(id)
-                        upgradeUnit(id) -- Double call for speed
+                        upgradeUnit(id) -- Double call
+                        upgradeUnit(id) -- Triple call for MAXIMUM speed
                     end
                     -- NO DELAY - MAXIMUM SPEED
                 end
@@ -291,12 +303,32 @@ function loadHyperFastPotatoScript()
         upgradeTomatoesActive = true
         upgradeMetalFlowersActive = true
         
-        -- Place all units at their times
+        -- Place all units at their times with better error handling
+        local placedCount = {
+            tomatoes = 0,
+            metal_flowers = 0,
+            punch_potatoes = 0
+        }
+        
         for _, placement in ipairs(unitPlacements) do
             task.delay(placement.time, function()
-                placeUnit(placement.unit, placement.data)
+                if placeUnit(placement.unit, placement.data) then
+                    -- Track successful placements
+                    if placement.unit == "unit_tomato_rainbow" then
+                        placedCount.tomatoes = placedCount.tomatoes + 1
+                    elseif placement.unit == "unit_metal_flower" then
+                        placedCount.metal_flowers = placedCount.metal_flowers + 1
+                    elseif placement.unit == "unit_punch_potato" then
+                        placedCount.punch_potatoes = placedCount.punch_potatoes + 1
+                    end
+                end
             end)
         end
+        
+        -- Log placement summary after all placements should be done
+        task.delay(200, function()
+            warn("[PLACEMENT SUMMARY] Tomatoes: "..placedCount.tomatoes.."/2, Metal Flowers: "..placedCount.metal_flowers.."/3, Punch Potatoes: "..placedCount.punch_potatoes.."/3")
+        end)
         
         -- Start TOMATO upgrades at 6 seconds
         task.delay(6, function()
@@ -310,12 +342,12 @@ function loadHyperFastPotatoScript()
             upgradeMetalFlowers()
         end)
         
-        -- STOP other upgrades and START HYPER FAST PUNCH POTATO upgrades at 186 seconds
+        -- STOP other upgrades and START ULTRA FAST PUNCH POTATO upgrades at 186 seconds
         task.delay(186, function()
-            warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
+            warn("[ULTRA FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
             stopOtherUpgrades()
             task.wait(0.1) -- Let other loops stop
-            hyperFastUpgradePunchPotatoes()
+            ultraFastUpgradePunchPotatoes()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -338,8 +370,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "HYPER FAST PUNCH POTATOES"
-    SubTitle.Text = "3x Speed - Maximum Potato Upgrades"
+    Title.Text = "OPTIMIZED POTATO PLACEMENT"
+    SubTitle.Text = "Better Timing + Retry System"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -349,39 +381,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ HYPER FAST PUNCH POTATOES ⚡\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• Punch Potatoes: IDs 100-400 (LATE GAME)\n• Stops other upgrades for MAXIMUM speed\n• 3 parallel threads + double calls"
+    Instructions.Text = "🎯 OPTIMIZED PLACEMENT\n• Metal Flowers: 85s, 90s, 95s\n• Punch Potatoes: 185s, 190s, 195s\n• Auto-retry failed placements\n• 4 upgrade threads + triple calls\n• Placement tracking"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
+    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Hyper Fast Button
-    local btnHyper = Instance.new("TextButton")
-    btnHyper.Size = UDim2.new(1, -40, 0, 120)
-    btnHyper.Position = UDim2.new(0, 20, 0, 200)
-    btnHyper.Text = "⚡ HYPER FAST POTATOES ⚡\nStops Other Upgrades\n3x Threads + Double Calls"
-    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnHyper.Font = Enum.Font.GothamBold
-    btnHyper.TextSize = 18
-    btnHyper.BorderSizePixel = 0
-    btnHyper.Parent = Frame
+    -- Optimized Button
+    local btnOptimized = Instance.new("TextButton")
+    btnOptimized.Size = UDim2.new(1, -40, 0, 120)
+    btnOptimized.Position = UDim2.new(0, 20, 0, 200)
+    btnOptimized.Text = "OPTIMIZED PLACEMENT\n5s Intervals + Auto-Retry\n4 Threads + Triple Calls"
+    btnOptimized.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnOptimized.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnOptimized.Font = Enum.Font.GothamBold
+    btnOptimized.TextSize = 18
+    btnOptimized.BorderSizePixel = 0
+    btnOptimized.Parent = Frame
 
-    local btnHyperCorner = Instance.new("UICorner")
-    btnHyperCorner.CornerRadius = UDim.new(0, 10)
-    btnHyperCorner.Parent = btnHyper
+    local btnOptimizedCorner = Instance.new("UICorner")
+    btnOptimizedCorner.CornerRadius = UDim.new(0, 10)
+    btnOptimizedCorner.Parent = btnOptimized
 
-    btnHyper.MouseButton1Click:Connect(function()
+    btnOptimized.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadHyperFastPotatoScript()
+        loadOptimizedPotatoScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading HYPER FAST..."
+        Label.Text = "✅ Key Verified! Loading OPTIMIZED..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
