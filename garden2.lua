@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - Punch Potato Strategy
+--// Garden Tower Defense Script - HYPER FAST Punch Potatoes
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== PUNCH POTATO STRATEGY ===--
+--=== HYPER FAST PUNCH POTATOES ===--
 
-function loadPunchPotatoScript()
-    warn("[System] Loaded Punch Potato Strategy")
+function loadHyperFastPotatoScript()
+    warn("[System] Loaded HYPER FAST Punch Potato Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -174,7 +174,7 @@ function loadPunchPotatoScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Punch Potatoes (replaced golem dragons)
+        -- Punch Potatoes
         {
             time = 185,
             unit = "unit_punch_potato",
@@ -227,44 +227,69 @@ function loadPunchPotatoScript()
         end)
     end
 
+    -- Variables to control upgrade loops
+    local upgradeTomatoesActive = true
+    local upgradeMetalFlowersActive = true
+
     -- UPGRADE FUNCTIONS
     local function upgradeTomatoes()
         warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
         
-        while true do
+        while upgradeTomatoesActive do
             for id = 1, 50 do
                 upgradeUnit(id)
             end
             task.wait(0.01)
         end
+        warn("[UPGRADE] Tomato upgrades STOPPED")
     end
 
     local function upgradeMetalFlowers()
         warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
         
-        while true do
+        while upgradeMetalFlowersActive do
             for id = 20, 80 do
                 upgradeUnit(id)
             end
             task.wait(0.01)
         end
+        warn("[UPGRADE] Metal Flower upgrades STOPPED")
     end
 
-    local function upgradePunchPotatoes()
-        warn("[UPGRADE] Starting PUNCH POTATO upgrades (130-350)")
+    local function hyperFastUpgradePunchPotatoes()
+        warn("[HYPER FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
         
-        while true do
-            -- PUNCH POTATO RANGE: 130-350
-            for id = 130, 350 do
-                upgradeUnit(id)
-            end
-            -- NO DELAY - MAXIMUM SPEED
+        -- Run multiple parallel loops for maximum speed
+        for thread = 1, 3 do
+            task.spawn(function()
+                while true do
+                    -- Different ranges for each thread to cover more ground
+                    local startId = 100 + ((thread - 1) * 100)
+                    local endId = math.min(startId + 99, 400)
+                    
+                    for id = startId, endId do
+                        upgradeUnit(id)
+                        upgradeUnit(id) -- Double call for speed
+                    end
+                    -- NO DELAY - MAXIMUM SPEED
+                end
+            end)
         end
+    end
+
+    local function stopOtherUpgrades()
+        warn("[PRIORITY] Stopping tomato and metal flower upgrades for MAXIMUM potato speed!")
+        upgradeTomatoesActive = false
+        upgradeMetalFlowersActive = false
     end
 
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
+        
+        -- Reset upgrade states
+        upgradeTomatoesActive = true
+        upgradeMetalFlowersActive = true
         
         -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
@@ -285,10 +310,12 @@ function loadPunchPotatoScript()
             upgradeMetalFlowers()
         end)
         
-        -- Start PUNCH POTATO upgrades at 186 seconds
+        -- STOP other upgrades and START HYPER FAST PUNCH POTATO upgrades at 186 seconds
         task.delay(186, function()
-            warn("[Starting] Beginning PUNCH POTATO upgrades!")
-            upgradePunchPotatoes()
+            warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
+            stopOtherUpgrades()
+            task.wait(0.1) -- Let other loops stop
+            hyperFastUpgradePunchPotatoes()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
@@ -311,8 +338,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "PUNCH POTATO STRATEGY"
-    SubTitle.Text = "3x Speed - Punch Potato Range 130-350"
+    Title.Text = "HYPER FAST PUNCH POTATOES"
+    SubTitle.Text = "3x Speed - Maximum Potato Upgrades"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -322,39 +349,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 PUNCH POTATO STRATEGY\n• Tomatoes: IDs 1-50\n• Metal Flowers: IDs 20-80\n• Punch Potatoes: IDs 130-350\n• Same positions, new unit\n• Optimized ID range"
+    Instructions.Text = "⚡ HYPER FAST PUNCH POTATOES ⚡\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• Punch Potatoes: IDs 100-400 (LATE GAME)\n• Stops other upgrades for MAXIMUM speed\n• 3 parallel threads + double calls"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
+    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Punch Potato Button
-    local btnPunch = Instance.new("TextButton")
-    btnPunch.Size = UDim2.new(1, -40, 0, 120)
-    btnPunch.Position = UDim2.new(0, 20, 0, 200)
-    btnPunch.Text = "PUNCH POTATO STRATEGY\nNew Unit - Range 130-350\nSame Positions & Timing"
-    btnPunch.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnPunch.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnPunch.Font = Enum.Font.GothamBold
-    btnPunch.TextSize = 18
-    btnPunch.BorderSizePixel = 0
-    btnPunch.Parent = Frame
+    -- Hyper Fast Button
+    local btnHyper = Instance.new("TextButton")
+    btnHyper.Size = UDim2.new(1, -40, 0, 120)
+    btnHyper.Position = UDim2.new(0, 20, 0, 200)
+    btnHyper.Text = "⚡ HYPER FAST POTATOES ⚡\nStops Other Upgrades\n3x Threads + Double Calls"
+    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnHyper.Font = Enum.Font.GothamBold
+    btnHyper.TextSize = 18
+    btnHyper.BorderSizePixel = 0
+    btnHyper.Parent = Frame
 
-    local btnPunchCorner = Instance.new("UICorner")
-    btnPunchCorner.CornerRadius = UDim.new(0, 10)
-    btnPunchCorner.Parent = btnPunch
+    local btnHyperCorner = Instance.new("UICorner")
+    btnHyperCorner.CornerRadius = UDim.new(0, 10)
+    btnHyperCorner.Parent = btnHyper
 
-    btnPunch.MouseButton1Click:Connect(function()
+    btnHyper.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadPunchPotatoScript()
+        loadHyperFastPotatoScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading PUNCH POTATO..."
+        Label.Text = "✅ Key Verified! Loading HYPER FAST..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
