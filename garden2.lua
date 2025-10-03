@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - FIXED RESTART UPGRADES
+--// Garden Tower Defense Script - FIXED POTATO RANGE
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== FIXED RESTART UPGRADES ===--
+--=== FIXED POTATO RANGE 230-280 ===--
 
-function loadFixedRestartScript()
-    warn("[System] Loaded FIXED RESTART Upgrade Strategy")
+function loadFixedPotatoRangeScript()
+    warn("[System] Loaded FIXED POTATO RANGE Strategy (230-280)")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -227,7 +227,7 @@ function loadFixedRestartScript()
         end)
     end
 
-    -- Variables to control upgrade loops - make them GLOBAL so they persist
+    -- Variables to control upgrade loops
     local upgradeTomatoesActive = true
     local upgradeMetalFlowersActive = true
     local upgradePotatoesActive = false
@@ -269,19 +269,21 @@ function loadFixedRestartScript()
     end
 
     local function hyperFastUpgradePunchPotatoes()
-        warn("[HYPER FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
+        warn("[HYPER FAST] Starting PUNCH POTATO upgrades (230-280) - MAXIMUM SPEED")
         
         upgradePotatoesActive = true
         
         for thread = 1, 3 do
             local t = task.spawn(function()
                 while upgradePotatoesActive do
-                    local startId = 100 + ((thread - 1) * 100)
-                    local endId = math.min(startId + 99, 400)
+                    -- FIXED RANGE: 230-280 (only 50 IDs total)
+                    local startId = 230
+                    local endId = 280
                     
                     for id = startId, endId do
                         upgradeUnit(id)
                         upgradeUnit(id) -- Double call for speed
+                        upgradeUnit(id) -- Triple call for MAXIMUM speed
                     end
                 end
             end)
@@ -360,8 +362,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FIXED RESTART UPGRADES"
-    SubTitle.Text = "Upgrades work after restart"
+    Title.Text = "FIXED POTATO RANGE 230-280"
+    SubTitle.Text = "Potatoes upgrade IDs 230-280 only"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -371,18 +373,18 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🔄 FIXED RESTART UPGRADES\n• Tomatoes upgrade every game\n• Metal Flowers upgrade every game\n• Punch Potatoes get MAX speed\n• Proper thread management\n• No more dead upgrades after restart"
+    Instructions.Text = "🎯 FIXED POTATO RANGE 230-280\n• Tomatoes: IDs 1-50\n• Metal Flowers: IDs 20-80\n• Punch Potatoes: IDs 230-280 ONLY\n• 3 threads + triple calls\n• Upgrades work every restart"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Fixed Restart Button
+    -- Fixed Range Button
     local btnFixed = Instance.new("TextButton")
     btnFixed.Size = UDim2.new(1, -40, 0, 120)
     btnFixed.Position = UDim2.new(0, 20, 0, 200)
-    btnFixed.Text = "FIXED RESTART UPGRADES\nUpgrades Work Every Game\nProper Thread Management"
+    btnFixed.Text = "FIXED POTATO RANGE 230-280\nOnly IDs 230-280\n3 Threads + Triple Calls"
     btnFixed.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
     btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnFixed.Font = Enum.Font.GothamBold
@@ -396,14 +398,14 @@ local function showStrategyMenu()
 
     btnFixed.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFixedRestartScript()
+        loadFixedPotatoRangeScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FIXED RESTART..."
+        Label.Text = "✅ Key Verified! Loading FIXED RANGE..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
