@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - FIXED POTATO RANGE
+--// Garden Tower Defense Script - FIXED POTATO UPGRADE DISTRIBUTION
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== FIXED POTATO RANGE 230-280 ===--
+--=== FIXED POTATO UPGRADE DISTRIBUTION ===--
 
-function loadFixedPotatoRangeScript()
-    warn("[System] Loaded FIXED POTATO RANGE Strategy (230-280)")
+function loadFixedPotatoUpgradeScript()
+    warn("[System] Loaded FIXED POTATO UPGRADE Distribution")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -235,7 +235,7 @@ function loadFixedPotatoRangeScript()
     -- Store the upgrade threads so we can stop them properly
     local upgradeThreads = {}
 
-    -- UPGRADE FUNCTIONS - return the thread so we can manage it
+    -- UPGRADE FUNCTIONS
     local function upgradeTomatoes()
         warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
         
@@ -273,17 +273,23 @@ function loadFixedPotatoRangeScript()
         
         upgradePotatoesActive = true
         
+        -- FIXED: Split the range 230-280 across 3 threads
+        local totalIds = 51 -- 230 to 280 inclusive
+        local idsPerThread = math.ceil(totalIds / 3)
+        
         for thread = 1, 3 do
             local t = task.spawn(function()
                 while upgradePotatoesActive do
-                    -- FIXED RANGE: 230-280 (only 50 IDs total)
-                    local startId = 230
-                    local endId = 280
+                    -- Calculate range for this thread
+                    local startId = 230 + ((thread - 1) * idsPerThread)
+                    local endId = math.min(startId + idsPerThread - 1, 280)
+                    
+                    warn(string.format("[Thread %d] Upgrading potatoes %d-%d", thread, startId, endId))
                     
                     for id = startId, endId do
                         upgradeUnit(id)
-                        upgradeUnit(id) -- Double call for speed
-                        upgradeUnit(id) -- Triple call for MAXIMUM speed
+                        upgradeUnit(id) -- Double call
+                        upgradeUnit(id) -- Triple call
                     end
                 end
             end)
@@ -362,8 +368,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FIXED POTATO RANGE 230-280"
-    SubTitle.Text = "Potatoes upgrade IDs 230-280 only"
+    Title.Text = "FIXED POTATO UPGRADE DISTRIBUTION"
+    SubTitle.Text = "Proper thread splitting for 230-280 range"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -373,18 +379,18 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 FIXED POTATO RANGE 230-280\n• Tomatoes: IDs 1-50\n• Metal Flowers: IDs 20-80\n• Punch Potatoes: IDs 230-280 ONLY\n• 3 threads + triple calls\n• Upgrades work every restart"
+    Instructions.Text = "🔧 FIXED POTATO UPGRADE DISTRIBUTION\n• Tomatoes: IDs 1-50\n• Metal Flowers: IDs 20-80\n• Punch Potatoes: IDs 230-280\n• 3 threads properly split the range\n• Each thread upgrades different IDs\n• Triple calls per ID"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Fixed Range Button
+    -- Fixed Distribution Button
     local btnFixed = Instance.new("TextButton")
     btnFixed.Size = UDim2.new(1, -40, 0, 120)
     btnFixed.Position = UDim2.new(0, 20, 0, 200)
-    btnFixed.Text = "FIXED POTATO RANGE 230-280\nOnly IDs 230-280\n3 Threads + Triple Calls"
+    btnFixed.Text = "FIXED POTATO UPGRADE DISTRIBUTION\nProper Thread Splitting\nIDs 230-280 with Triple Calls"
     btnFixed.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
     btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnFixed.Font = Enum.Font.GothamBold
@@ -398,14 +404,14 @@ local function showStrategyMenu()
 
     btnFixed.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFixedPotatoRangeScript()
+        loadFixedPotatoUpgradeScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FIXED RANGE..."
+        Label.Text = "✅ Key Verified! Loading FIXED DISTRIBUTION..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
