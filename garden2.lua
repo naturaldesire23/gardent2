@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - HYPER FAST Punch Potatoes
+--// Garden Tower Defense Script - FIXED RESTART UPGRADES
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,10 @@ task.delay(2, function()
     end)
 end)
 
---=== HYPER FAST PUNCH POTATOES ===--
+--=== FIXED RESTART UPGRADES ===--
 
-function loadHyperFastPotatoScript()
-    warn("[System] Loaded HYPER FAST Punch Potato Strategy")
+function loadFixedRestartScript()
+    warn("[System] Loaded FIXED RESTART Upgrade Strategy")
     remotes.ChangeTickSpeed:InvokeServer(3)
 
     local difficulty = "dif_hard"
@@ -227,43 +227,55 @@ function loadHyperFastPotatoScript()
         end)
     end
 
-    -- Variables to control upgrade loops
+    -- Variables to control upgrade loops - make them GLOBAL so they persist
     local upgradeTomatoesActive = true
     local upgradeMetalFlowersActive = true
+    local upgradePotatoesActive = false
 
-    -- UPGRADE FUNCTIONS
+    -- Store the upgrade threads so we can stop them properly
+    local upgradeThreads = {}
+
+    -- UPGRADE FUNCTIONS - return the thread so we can manage it
     local function upgradeTomatoes()
         warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
         
-        while upgradeTomatoesActive do
-            for id = 1, 50 do
-                upgradeUnit(id)
+        local thread = task.spawn(function()
+            while upgradeTomatoesActive do
+                for id = 1, 50 do
+                    upgradeUnit(id)
+                end
+                task.wait(0.01)
             end
-            task.wait(0.01)
-        end
-        warn("[UPGRADE] Tomato upgrades STOPPED")
+            warn("[UPGRADE] Tomato upgrades STOPPED")
+        end)
+        table.insert(upgradeThreads, thread)
+        return thread
     end
 
     local function upgradeMetalFlowers()
         warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
         
-        while upgradeMetalFlowersActive do
-            for id = 20, 80 do
-                upgradeUnit(id)
+        local thread = task.spawn(function()
+            while upgradeMetalFlowersActive do
+                for id = 20, 80 do
+                    upgradeUnit(id)
+                end
+                task.wait(0.01)
             end
-            task.wait(0.01)
-        end
-        warn("[UPGRADE] Metal Flower upgrades STOPPED")
+            warn("[UPGRADE] Metal Flower upgrades STOPPED")
+        end)
+        table.insert(upgradeThreads, thread)
+        return thread
     end
 
     local function hyperFastUpgradePunchPotatoes()
         warn("[HYPER FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
         
-        -- Run multiple parallel loops for maximum speed
+        upgradePotatoesActive = true
+        
         for thread = 1, 3 do
-            task.spawn(function()
-                while true do
-                    -- Different ranges for each thread to cover more ground
+            local t = task.spawn(function()
+                while upgradePotatoesActive do
                     local startId = 100 + ((thread - 1) * 100)
                     local endId = math.min(startId + 99, 400)
                     
@@ -271,25 +283,33 @@ function loadHyperFastPotatoScript()
                         upgradeUnit(id)
                         upgradeUnit(id) -- Double call for speed
                     end
-                    -- NO DELAY - MAXIMUM SPEED
                 end
             end)
+            table.insert(upgradeThreads, t)
         end
     end
 
-    local function stopOtherUpgrades()
-        warn("[PRIORITY] Stopping tomato and metal flower upgrades for MAXIMUM potato speed!")
+    local function stopAllUpgrades()
+        warn("[RESTART] Stopping ALL upgrade loops for restart...")
         upgradeTomatoesActive = false
         upgradeMetalFlowersActive = false
+        upgradePotatoesActive = false
+        
+        -- Clear the threads table for new game
+        upgradeThreads = {}
+        
+        -- Wait a bit for loops to stop
+        task.wait(0.5)
     end
 
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
-        -- Reset upgrade states
+        -- Reset upgrade states for new game
         upgradeTomatoesActive = true
         upgradeMetalFlowersActive = true
+        upgradePotatoesActive = false
         
         -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
@@ -313,19 +333,21 @@ function loadHyperFastPotatoScript()
         -- STOP other upgrades and START HYPER FAST PUNCH POTATO upgrades at 186 seconds
         task.delay(186, function()
             warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
-            stopOtherUpgrades()
+            upgradeTomatoesActive = false
+            upgradeMetalFlowersActive = false
             task.wait(0.1) -- Let other loops stop
             hyperFastUpgradePunchPotatoes()
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
         task.delay(300, function()
-            warn("[Restart] Game ended, restarting in 2 seconds...")
+            warn("[Restart] Game ended, preparing restart...")
+            stopAllUpgrades()
             task.wait(2)
             remotes.RestartGame:InvokeServer()
-            warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(1)
-            startGame()
+            warn("[Restart] Game restarted, starting new cycle in 3 seconds...")
+            task.wait(3) -- Wait longer for game to fully reset
+            startGame() -- This will start the upgrades again
         end)
     end
 
@@ -338,8 +360,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "HYPER FAST PUNCH POTATOES"
-    SubTitle.Text = "3x Speed - Maximum Potato Upgrades"
+    Title.Text = "FIXED RESTART UPGRADES"
+    SubTitle.Text = "Upgrades work after restart"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -349,39 +371,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⚡ HYPER FAST PUNCH POTATOES ⚡\n• Tomatoes: IDs 1-50 (early game)\n• Metal Flowers: IDs 20-80 (mid game)\n• Punch Potatoes: IDs 100-400 (LATE GAME)\n• Stops other upgrades for MAXIMUM speed\n• 3 parallel threads + double calls"
+    Instructions.Text = "🔄 FIXED RESTART UPGRADES\n• Tomatoes upgrade every game\n• Metal Flowers upgrade every game\n• Punch Potatoes get MAX speed\n• Proper thread management\n• No more dead upgrades after restart"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 255)
+    Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Hyper Fast Button
-    local btnHyper = Instance.new("TextButton")
-    btnHyper.Size = UDim2.new(1, -40, 0, 120)
-    btnHyper.Position = UDim2.new(0, 20, 0, 200)
-    btnHyper.Text = "⚡ HYPER FAST POTATOES ⚡\nStops Other Upgrades\n3x Threads + Double Calls"
-    btnHyper.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    btnHyper.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnHyper.Font = Enum.Font.GothamBold
-    btnHyper.TextSize = 18
-    btnHyper.BorderSizePixel = 0
-    btnHyper.Parent = Frame
+    -- Fixed Restart Button
+    local btnFixed = Instance.new("TextButton")
+    btnFixed.Size = UDim2.new(1, -40, 0, 120)
+    btnFixed.Position = UDim2.new(0, 20, 0, 200)
+    btnFixed.Text = "FIXED RESTART UPGRADES\nUpgrades Work Every Game\nProper Thread Management"
+    btnFixed.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnFixed.Font = Enum.Font.GothamBold
+    btnFixed.TextSize = 18
+    btnFixed.BorderSizePixel = 0
+    btnFixed.Parent = Frame
 
-    local btnHyperCorner = Instance.new("UICorner")
-    btnHyperCorner.CornerRadius = UDim.new(0, 10)
-    btnHyperCorner.Parent = btnHyper
+    local btnFixedCorner = Instance.new("UICorner")
+    btnFixedCorner.CornerRadius = UDim.new(0, 10)
+    btnFixedCorner.Parent = btnFixed
 
-    btnHyper.MouseButton1Click:Connect(function()
+    btnFixed.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadHyperFastPotatoScript()
+        loadFixedRestartScript()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading HYPER FAST..."
+        Label.Text = "✅ Key Verified! Loading FIXED RESTART..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
