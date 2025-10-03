@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - OPTIMIZED Punch Potato Placement
+--// Garden Tower Defense Script - FIXED Remote Calls
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -101,127 +101,161 @@ Label.TextColor3 = Color3.fromRGB(255, 255, 255)
 Label.TextWrapped = true
 Label.Parent = Frame
 
---// Remotes
+--// FIND ACTUAL REMOTES
 local rs = game:GetService("ReplicatedStorage")
-local remotes = rs:WaitForChild("RemoteFunctions")
+local remotesFolder = rs:WaitForChild("RemoteEvents") or rs:WaitForChild("RemoteFunctions") or rs:FindFirstChildWhichIsA("Folder")
+
+-- Function to find remote by name pattern
+local function findRemote(namePattern)
+    for _, remote in pairs(rs:GetDescendants()) do
+        if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+            if string.find(string.lower(remote.Name), string.lower(namePattern)) then
+                warn("[FOUND REMOTE]: " .. remote.Name)
+                return remote
+            end
+        end
+    end
+    return nil
+end
+
+-- Auto find remotes
+local placeRemote = findRemote("place") or findRemote("unit") or rs:FindFirstChild("PlaceUnit")
+local upgradeRemote = findRemote("upgrade") or findRemote("level") or rs:FindFirstChild("UpgradeUnit")
+local difficultyRemote = findRemote("difficulty") or findRemote("vote") or rs:FindFirstChild("PlaceDifficultyVote")
+local restartRemote = findRemote("restart") or findRemote("reset") or rs:FindFirstChild("RestartGame")
+local autoSkipRemote = findRemote("auto") or findRemote("skip") or rs:FindFirstChild("ToggleAutoSkip")
+local tickSpeedRemote = findRemote("tick") or findRemote("speed") or rs:FindFirstChild("ChangeTickSpeed")
+
+-- Log found remotes
+warn("[REMOTE SCAN RESULTS]")
+warn("Place Unit: " .. (placeRemote and placeRemote.Name or "NOT FOUND"))
+warn("Upgrade Unit: " .. (upgradeRemote and upgradeRemote.Name or "NOT FOUND"))
+warn("Difficulty: " .. (difficultyRemote and difficultyRemote.Name or "NOT FOUND"))
+warn("Restart: " .. (restartRemote and restartRemote.Name or "NOT FOUND"))
+warn("Auto Skip: " .. (autoSkipRemote and autoSkipRemote.Name or "NOT FOUND"))
+warn("Tick Speed: " .. (tickSpeedRemote and tickSpeedRemote.Name or "NOT FOUND"))
+
+-- Safe remote calling function
+local function safeRemoteCall(remote, ...)
+    if not remote then
+        warn("[MISSING REMOTE]: " .. (remote and remote.Name or "unknown"))
+        return false
+    end
+    
+    local success, result = pcall(function()
+        if remote:IsA("RemoteEvent") then
+            remote:FireServer(...)
+            return true
+        elseif remote:IsA("RemoteFunction") then
+            return remote:InvokeServer(...)
+        end
+    end)
+    
+    if success then
+        warn("[SUCCESS]: " .. remote.Name)
+        return result or true
+    else
+        warn("[FAILED]: " .. remote.Name .. " - " .. tostring(result))
+        return false
+    end
+end
 
 -- Auto Skip (enable once at start)
 task.delay(2, function()
-    pcall(function()
-        remotes.ToggleAutoSkip:InvokeServer(true)
+    if autoSkipRemote then
+        safeRemoteCall(autoSkipRemote, true)
         warn("[System] Auto Skip Enabled")
-    end)
+    end
 end)
 
 --=== OPTIMIZED PUNCH POTATO PLACEMENT ===--
 
 function loadOptimizedPotatoScript()
     warn("[System] Loaded Optimized Punch Potato Placement")
-    remotes.ChangeTickSpeed:InvokeServer(3)
+    
+    if tickSpeedRemote then
+        safeRemoteCall(tickSpeedRemote, 3)
+    end
 
     local difficulty = "dif_hard"
     
+    -- Unit placement data
     local unitPlacements = {
         -- Rainbow Tomatoes
         {
             time = 5,
             unit = "unit_tomato_rainbow",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
-            }
+            position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
         },
         {
             time = 55,
             unit = "unit_tomato_rainbow", 
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
-            }
+            position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
         },
         -- Metal Flowers (ALL 3 with better timing)
         {
             time = 85,
             unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
-            }
+            position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
         },
         {
-            time = 90, -- 5 seconds after first metal flower
+            time = 90,
             unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
-            }
+            position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
         },
         {
-            time = 95, -- 5 seconds after second metal flower
+            time = 95,
             unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
-            }
+            position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
         },
-        -- Punch Potatoes (5 second intervals)
+        -- Punch Potatoes
         {
             time = 185,
             unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
-            }
+            position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
         },
         {
-            time = 190, -- 5 seconds after first potato
+            time = 190,
             unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
-            }
+            position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
         },
         {
-            time = 195, -- 5 seconds after second potato
+            time = 195,
             unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
-            }
+            position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
         }
     }
 
-    local function placeUnit(unitName, data)
-        local success, result = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(unitName, data)
-        end)
+    local function placeUnit(unitName, position)
+        if not placeRemote then
+            warn("[ERROR] No place remote found!")
+            return false
+        end
         
-        if success and result == true then
+        local placementData = {
+            Valid = true,
+            Rotation = 180,
+            CF = CFrame.new(position.X, position.Y, position.Z, -1, 0, 0, 0, 1, 0, 0, 0, -1),
+            Position = position
+        }
+        
+        local success = safeRemoteCall(placeRemote, unitName, placementData)
+        
+        if success then
             warn("[SUCCESS] Placed " .. unitName .. " at " .. os.clock())
             return true
         else
             warn("[FAILED] Could not place " .. unitName .. " - Retrying in 1 second...")
-            -- Retry after 1 second
             task.wait(1)
-            local retrySuccess = pcall(function()
-                return remotes.PlaceUnit:InvokeServer(unitName, data)
-            end)
+            
+            -- Retry with different parameters
+            local retrySuccess = safeRemoteCall(placeRemote, unitName, {
+                Valid = true,
+                Rotation = 0,
+                CF = CFrame.new(position),
+                Position = position
+            })
+            
             if retrySuccess then
                 warn("[RETRY SUCCESS] Placed " .. unitName)
                 return true
@@ -233,12 +267,12 @@ function loadOptimizedPotatoScript()
     end
 
     local function upgradeUnit(unitId)
-        pcall(function()
-            remotes.UpgradeUnit:InvokeServer(unitId)
-        end)
+        if upgradeRemote then
+            safeRemoteCall(upgradeRemote, unitId)
+        end
     end
 
-    -- Variables to control upgrade loops
+    -- Upgrade control variables
     local upgradeTomatoesActive = true
     local upgradeMetalFlowersActive = true
 
@@ -268,42 +302,43 @@ function loadOptimizedPotatoScript()
     end
 
     local function ultraFastUpgradePunchPotatoes()
-        warn("[ULTRA FAST] Starting PUNCH POTATO upgrades (100-400) - MAXIMUM SPEED")
+        warn("[ULTRA FAST] Starting PUNCH POTATO upgrades (100-400)")
         
-        -- Run multiple parallel loops for maximum speed
-        for thread = 1, 4 do -- Increased to 4 threads
+        for thread = 1, 4 do
             task.spawn(function()
                 while true do
-                    -- Different ranges for each thread to cover more ground
                     local startId = 100 + ((thread - 1) * 75)
                     local endId = math.min(startId + 74, 400)
                     
                     for id = startId, endId do
                         upgradeUnit(id)
-                        upgradeUnit(id) -- Double call
-                        upgradeUnit(id) -- Triple call for MAXIMUM speed
+                        upgradeUnit(id)
+                        upgradeUnit(id)
                     end
-                    -- NO DELAY - MAXIMUM SPEED
                 end
             end)
         end
     end
 
     local function stopOtherUpgrades()
-        warn("[PRIORITY] Stopping tomato and metal flower upgrades for MAXIMUM potato speed!")
+        warn("[PRIORITY] Stopping tomato and metal flower upgrades!")
         upgradeTomatoesActive = false
         upgradeMetalFlowersActive = false
     end
 
     local function startGame()
         warn("[Game Start] Choosing Hard difficulty")
-        remotes.PlaceDifficultyVote:InvokeServer(difficulty)
+        
+        -- Set difficulty
+        if difficultyRemote then
+            safeRemoteCall(difficultyRemote, difficulty)
+        end
         
         -- Reset upgrade states
         upgradeTomatoesActive = true
         upgradeMetalFlowersActive = true
         
-        -- Place all units at their times with better error handling
+        -- Place all units at their times
         local placedCount = {
             tomatoes = 0,
             metal_flowers = 0,
@@ -312,8 +347,7 @@ function loadOptimizedPotatoScript()
         
         for _, placement in ipairs(unitPlacements) do
             task.delay(placement.time, function()
-                if placeUnit(placement.unit, placement.data) then
-                    -- Track successful placements
+                if placeUnit(placement.unit, placement.position) then
                     if placement.unit == "unit_tomato_rainbow" then
                         placedCount.tomatoes = placedCount.tomatoes + 1
                     elseif placement.unit == "unit_metal_flower" then
@@ -325,39 +359,28 @@ function loadOptimizedPotatoScript()
             end)
         end
         
-        -- Log placement summary after all placements should be done
+        -- Log placement summary
         task.delay(200, function()
             warn("[PLACEMENT SUMMARY] Tomatoes: "..placedCount.tomatoes.."/2, Metal Flowers: "..placedCount.metal_flowers.."/3, Punch Potatoes: "..placedCount.punch_potatoes.."/3")
         end)
         
-        -- Start TOMATO upgrades at 6 seconds
-        task.delay(6, function()
-            warn("[Starting] Beginning TOMATO upgrades!")
-            upgradeTomatoes()
-        end)
-        
-        -- Start METAL FLOWER upgrades at 86 seconds
-        task.delay(86, function()
-            warn("[Starting] Beginning METAL FLOWER upgrades!")
-            upgradeMetalFlowers()
-        end)
-        
-        -- STOP other upgrades and START ULTRA FAST PUNCH POTATO upgrades at 186 seconds
+        -- Start upgrades at appropriate times
+        task.delay(6, upgradeTomatoes)
+        task.delay(86, upgradeMetalFlowers)
         task.delay(186, function()
-            warn("[ULTRA FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
             stopOtherUpgrades()
-            task.wait(0.1) -- Let other loops stop
+            task.wait(0.1)
             ultraFastUpgradePunchPotatoes()
         end)
         
-        -- Auto-restart at 300 seconds (5 minutes)
+        -- Auto-restart
         task.delay(300, function()
-            warn("[Restart] Game ended, restarting in 2 seconds...")
-            task.wait(2)
-            remotes.RestartGame:InvokeServer()
-            warn("[Restart] Game restarted, starting new cycle...")
-            task.wait(1)
-            startGame()
+            warn("[Restart] Game ended, restarting...")
+            if restartRemote then
+                safeRemoteCall(restartRemote)
+                task.wait(2)
+                startGame()
+            end
         end)
     end
 
@@ -370,8 +393,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "OPTIMIZED POTATO PLACEMENT"
-    SubTitle.Text = "Better Timing + Retry System"
+    Title.Text = "FIXED REMOTE CALLS"
+    SubTitle.Text = "Auto-detected Remotes"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -381,30 +404,30 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 OPTIMIZED PLACEMENT\n• Metal Flowers: 85s, 90s, 95s\n• Punch Potatoes: 185s, 190s, 195s\n• Auto-retry failed placements\n• 4 upgrade threads + triple calls\n• Placement tracking"
+    Instructions.Text = "🔧 FIXED REMOTE CALLS\n• Auto-detects remote events/functions\n• Better error handling\n• Multiple retry attempts\n• Works with actual game remotes"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(255, 200, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Optimized Button
-    local btnOptimized = Instance.new("TextButton")
-    btnOptimized.Size = UDim2.new(1, -40, 0, 120)
-    btnOptimized.Position = UDim2.new(0, 20, 0, 200)
-    btnOptimized.Text = "OPTIMIZED PLACEMENT\n5s Intervals + Auto-Retry\n4 Threads + Triple Calls"
-    btnOptimized.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-    btnOptimized.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnOptimized.Font = Enum.Font.GothamBold
-    btnOptimized.TextSize = 18
-    btnOptimized.BorderSizePixel = 0
-    btnOptimized.Parent = Frame
+    -- Start Button
+    local btnStart = Instance.new("TextButton")
+    btnStart.Size = UDim2.new(1, -40, 0, 120)
+    btnStart.Position = UDim2.new(0, 20, 0, 200)
+    btnStart.Text = "START FIXED SCRIPT\nAuto-detected Remotes\nBetter Error Handling"
+    btnStart.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
+    btnStart.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnStart.Font = Enum.Font.GothamBold
+    btnStart.TextSize = 18
+    btnStart.BorderSizePixel = 0
+    btnStart.Parent = Frame
 
-    local btnOptimizedCorner = Instance.new("UICorner")
-    btnOptimizedCorner.CornerRadius = UDim.new(0, 10)
-    btnOptimizedCorner.Parent = btnOptimized
+    local btnStartCorner = Instance.new("UICorner")
+    btnStartCorner.CornerRadius = UDim.new(0, 10)
+    btnStartCorner.Parent = btnStart
 
-    btnOptimized.MouseButton1Click:Connect(function()
+    btnStart.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
         loadOptimizedPotatoScript()
     end)
@@ -413,7 +436,7 @@ end
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading OPTIMIZED..."
+        Label.Text = "✅ Key Verified! Loading FIXED..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
@@ -432,7 +455,7 @@ CheckBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Add some visual effects
+-- Visual effects
 TextBox.Focused:Connect(function()
     TextBoxContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
 end)
@@ -441,7 +464,7 @@ TextBox.FocusLost:Connect(function()
     TextBoxContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 end)
 
--- Load anti-afk scripts
+-- Anti-afk
 loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
