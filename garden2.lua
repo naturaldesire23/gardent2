@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - FIXED POTATO UPGRADE DISTRIBUTION
+--// Garden Tower Defense Script - FIXED RESTART SYSTEM
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,254 +113,254 @@ task.delay(2, function()
     end)
 end)
 
---=== FIXED POTATO UPGRADE DISTRIBUTION ===--
+--=== FIXED RESTART SYSTEM ===--
 
-function loadFixedPotatoUpgradeScript()
-    warn("[System] Loaded FIXED POTATO UPGRADE Distribution")
-    remotes.ChangeTickSpeed:InvokeServer(3)
-
-    local difficulty = "dif_hard"
+function loadFixedRestartSystem()
+    warn("[System] Loaded FIXED RESTART SYSTEM")
     
-    local unitPlacements = {
-        -- Rainbow Tomatoes
-        {
-            time = 5,
-            unit = "unit_tomato_rainbow",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
-            }
-        },
-        {
-            time = 55,
-            unit = "unit_tomato_rainbow", 
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
-            }
-        },
-        -- Metal Flowers
-        {
-            time = 85,
-            unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
-            }
-        },
-        {
-            time = 100,
-            unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
-            }
-        },
-        {
-            time = 115,
-            unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
-            }
-        },
-        -- Punch Potatoes
-        {
-            time = 185,
-            unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
-            }
-        },
-        {
-            time = 190,
-            unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
-            }
-        },
-        {
-            time = 195,
-            unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
+    -- Make these GLOBAL so we can control them across restarts
+    _G.UpgradeTomatoesActive = true
+    _G.UpgradeMetalFlowersActive = true
+    _G.UpgradePotatoesActive = false
+    _G.CurrentGameRunning = true
+
+    local function setupGame()
+        warn("[Game Setup] Starting new game cycle...")
+        remotes.ChangeTickSpeed:InvokeServer(3)
+
+        local difficulty = "dif_hard"
+        
+        local unitPlacements = {
+            -- Rainbow Tomatoes
+            {
+                time = 5,
+                unit = "unit_tomato_rainbow",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
+                }
+            },
+            {
+                time = 55,
+                unit = "unit_tomato_rainbow", 
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
+                }
+            },
+            -- Metal Flowers
+            {
+                time = 85,
+                unit = "unit_metal_flower",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
+                }
+            },
+            {
+                time = 100,
+                unit = "unit_metal_flower",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
+                }
+            },
+            {
+                time = 115,
+                unit = "unit_metal_flower",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
+                }
+            },
+            -- Punch Potatoes
+            {
+                time = 185,
+                unit = "unit_punch_potato",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
+                }
+            },
+            {
+                time = 190,
+                unit = "unit_punch_potato",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
+                }
+            },
+            {
+                time = 195,
+                unit = "unit_punch_potato",
+                data = {
+                    Valid = true,
+                    Rotation = 180,
+                    CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
+                    Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
+                }
             }
         }
-    }
 
-    local function placeUnit(unitName, data)
-        local success = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(unitName, data)
-        end)
-        
-        if success then
-            warn("[Placing] " .. unitName .. " at " .. os.clock())
-            return true
-        else
-            warn("[Placing] " .. unitName .. " - Failed")
-            return false
-        end
-    end
-
-    local function upgradeUnit(unitId)
-        pcall(function()
-            remotes.UpgradeUnit:InvokeServer(unitId)
-        end)
-    end
-
-    -- Variables to control upgrade loops
-    local upgradeTomatoesActive = true
-    local upgradeMetalFlowersActive = true
-    local upgradePotatoesActive = false
-
-    -- Store the upgrade threads so we can stop them properly
-    local upgradeThreads = {}
-
-    -- UPGRADE FUNCTIONS
-    local function upgradeTomatoes()
-        warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
-        
-        local thread = task.spawn(function()
-            while upgradeTomatoesActive do
-                for id = 1, 50 do
-                    upgradeUnit(id)
-                end
-                task.wait(0.01)
-            end
-            warn("[UPGRADE] Tomato upgrades STOPPED")
-        end)
-        table.insert(upgradeThreads, thread)
-        return thread
-    end
-
-    local function upgradeMetalFlowers()
-        warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
-        
-        local thread = task.spawn(function()
-            while upgradeMetalFlowersActive do
-                for id = 20, 80 do
-                    upgradeUnit(id)
-                end
-                task.wait(0.01)
-            end
-            warn("[UPGRADE] Metal Flower upgrades STOPPED")
-        end)
-        table.insert(upgradeThreads, thread)
-        return thread
-    end
-
-    local function hyperFastUpgradePunchPotatoes()
-        warn("[HYPER FAST] Starting PUNCH POTATO upgrades (230-280) - MAXIMUM SPEED")
-        
-        upgradePotatoesActive = true
-        
-        -- FIXED: Split the range 230-280 across 3 threads
-        local totalIds = 51 -- 230 to 280 inclusive
-        local idsPerThread = math.ceil(totalIds / 3)
-        
-        for thread = 1, 3 do
-            local t = task.spawn(function()
-                while upgradePotatoesActive do
-                    -- Calculate range for this thread
-                    local startId = 230 + ((thread - 1) * idsPerThread)
-                    local endId = math.min(startId + idsPerThread - 1, 280)
-                    
-                    warn(string.format("[Thread %d] Upgrading potatoes %d-%d", thread, startId, endId))
-                    
-                    for id = startId, endId do
-                        upgradeUnit(id)
-                        upgradeUnit(id) -- Double call
-                        upgradeUnit(id) -- Triple call
-                    end
-                end
+        local function placeUnit(unitName, data)
+            local success = pcall(function()
+                return remotes.PlaceUnit:InvokeServer(unitName, data)
             end)
-            table.insert(upgradeThreads, t)
+            
+            if success then
+                warn("[Placing] " .. unitName .. " at " .. os.clock())
+                return true
+            else
+                warn("[Placing] " .. unitName .. " - Failed")
+                return false
+            end
         end
-    end
 
-    local function stopAllUpgrades()
-        warn("[RESTART] Stopping ALL upgrade loops for restart...")
-        upgradeTomatoesActive = false
-        upgradeMetalFlowersActive = false
-        upgradePotatoesActive = false
-        
-        -- Clear the threads table for new game
-        upgradeThreads = {}
-        
-        -- Wait a bit for loops to stop
-        task.wait(0.5)
-    end
+        local function upgradeUnit(unitId)
+            pcall(function()
+                remotes.UpgradeUnit:InvokeServer(unitId)
+            end)
+        end
 
-    local function startGame()
+        -- UPGRADE FUNCTIONS - Check global flags
+        local function upgradeTomatoes()
+            warn("[UPGRADE] Starting TOMATO upgrades (1-50)")
+            
+            task.spawn(function()
+                while _G.UpgradeTomatoesActive and _G.CurrentGameRunning do
+                    for id = 1, 50 do
+                        upgradeUnit(id)
+                    end
+                    task.wait(0.01)
+                end
+                warn("[UPGRADE] Tomato upgrades STOPPED")
+            end)
+        end
+
+        local function upgradeMetalFlowers()
+            warn("[UPGRADE] Starting METAL FLOWER upgrades (20-80)")
+            
+            task.spawn(function()
+                while _G.UpgradeMetalFlowersActive and _G.CurrentGameRunning do
+                    for id = 20, 80 do
+                        upgradeUnit(id)
+                    end
+                    task.wait(0.01)
+                end
+                warn("[UPGRADE] Metal Flower upgrades STOPPED")
+            end)
+        end
+
+        local function hyperFastUpgradePunchPotatoes()
+            warn("[HYPER FAST] Starting PUNCH POTATO upgrades (230-280) - MAXIMUM SPEED")
+            
+            _G.UpgradePotatoesActive = true
+            
+            -- Split the range 230-280 across 3 threads
+            local totalIds = 51 -- 230 to 280 inclusive
+            local idsPerThread = math.ceil(totalIds / 3)
+            
+            for thread = 1, 3 do
+                task.spawn(function()
+                    while _G.UpgradePotatoesActive and _G.CurrentGameRunning do
+                        -- Calculate range for this thread
+                        local startId = 230 + ((thread - 1) * idsPerThread)
+                        local endId = math.min(startId + idsPerThread - 1, 280)
+                        
+                        for id = startId, endId do
+                            upgradeUnit(id)
+                            upgradeUnit(id) -- Double call
+                            upgradeUnit(id) -- Triple call
+                        end
+                    end
+                end)
+            end
+        end
+
+        -- Start the actual game
         warn("[Game Start] Choosing Hard difficulty")
         remotes.PlaceDifficultyVote:InvokeServer(difficulty)
         
         -- Reset upgrade states for new game
-        upgradeTomatoesActive = true
-        upgradeMetalFlowersActive = true
-        upgradePotatoesActive = false
+        _G.UpgradeTomatoesActive = true
+        _G.UpgradeMetalFlowersActive = true
+        _G.UpgradePotatoesActive = false
         
         -- Place all units at their times
         for _, placement in ipairs(unitPlacements) do
             task.delay(placement.time, function()
-                placeUnit(placement.unit, placement.data)
+                if _G.CurrentGameRunning then
+                    placeUnit(placement.unit, placement.data)
+                end
             end)
         end
         
         -- Start TOMATO upgrades at 6 seconds
         task.delay(6, function()
-            warn("[Starting] Beginning TOMATO upgrades!")
-            upgradeTomatoes()
+            if _G.CurrentGameRunning then
+                warn("[Starting] Beginning TOMATO upgrades!")
+                upgradeTomatoes()
+            end
         end)
         
         -- Start METAL FLOWER upgrades at 86 seconds
         task.delay(86, function()
-            warn("[Starting] Beginning METAL FLOWER upgrades!")
-            upgradeMetalFlowers()
+            if _G.CurrentGameRunning then
+                warn("[Starting] Beginning METAL FLOWER upgrades!")
+                upgradeMetalFlowers()
+            end
         end)
         
         -- STOP other upgrades and START HYPER FAST PUNCH POTATO upgrades at 186 seconds
         task.delay(186, function()
-            warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
-            upgradeTomatoesActive = false
-            upgradeMetalFlowersActive = false
-            task.wait(0.1) -- Let other loops stop
-            hyperFastUpgradePunchPotatoes()
+            if _G.CurrentGameRunning then
+                warn("[HYPER FAST] First punch potato placed - MAXIMUM SPEED ACTIVATED!")
+                _G.UpgradeTomatoesActive = false
+                _G.UpgradeMetalFlowersActive = false
+                task.wait(0.1)
+                hyperFastUpgradePunchPotatoes()
+            end
         end)
         
         -- Auto-restart at 300 seconds (5 minutes)
         task.delay(300, function()
-            warn("[Restart] Game ended, preparing restart...")
-            stopAllUpgrades()
-            task.wait(2)
-            remotes.RestartGame:InvokeServer()
-            warn("[Restart] Game restarted, starting new cycle in 3 seconds...")
-            task.wait(3) -- Wait longer for game to fully reset
-            startGame() -- This will start the upgrades again
+            if _G.CurrentGameRunning then
+                warn("[Restart] Game ended, preparing restart...")
+                
+                -- Stop all upgrades for this game
+                _G.UpgradeTomatoesActive = false
+                _G.UpgradeMetalFlowersActive = false
+                _G.UpgradePotatoesActive = false
+                
+                task.wait(2)
+                remotes.RestartGame:InvokeServer()
+                warn("[Restart] Game restarted, waiting 5 seconds for full reset...")
+                
+                -- Wait longer for complete game reset
+                task.wait(5)
+                
+                -- Start new game cycle
+                setupGame()
+            end
         end)
     end
 
     -- Start the first game
-    startGame()
+    setupGame()
 end
 
 --=== SIMPLIFIED MENU ===--
@@ -368,8 +368,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FIXED POTATO UPGRADE DISTRIBUTION"
-    SubTitle.Text = "Proper thread splitting for 230-280 range"
+    Title.Text = "FIXED RESTART SYSTEM"
+    SubTitle.Text = "Upgrades work every game cycle"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -379,18 +379,18 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🔧 FIXED POTATO UPGRADE DISTRIBUTION\n• Tomatoes: IDs 1-50\n• Metal Flowers: IDs 20-80\n• Punch Potatoes: IDs 230-280\n• 3 threads properly split the range\n• Each thread upgrades different IDs\n• Triple calls per ID"
+    Instructions.Text = "🔄 FIXED RESTART SYSTEM\n• Global upgrade control\n• Proper game cycle management\n• Tomatoes upgrade every game\n• Metal Flowers upgrade every game\n• Potatoes get MAX speed\n• 5 second reset wait for stability"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Fixed Distribution Button
+    -- Fixed Restart Button
     local btnFixed = Instance.new("TextButton")
     btnFixed.Size = UDim2.new(1, -40, 0, 120)
     btnFixed.Position = UDim2.new(0, 20, 0, 200)
-    btnFixed.Text = "FIXED POTATO UPGRADE DISTRIBUTION\nProper Thread Splitting\nIDs 230-280 with Triple Calls"
+    btnFixed.Text = "FIXED RESTART SYSTEM\nUpgrades Work Every Game\nProper Cycle Management"
     btnFixed.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
     btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnFixed.Font = Enum.Font.GothamBold
@@ -404,14 +404,14 @@ local function showStrategyMenu()
 
     btnFixed.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadFixedPotatoUpgradeScript()
+        loadFixedRestartSystem()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FIXED DISTRIBUTION..."
+        Label.Text = "✅ Key Verified! Loading FIXED RESTART..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
