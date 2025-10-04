@@ -1,8 +1,8 @@
---// Garden Tower Defense Script - REAL ID INTERCEPTOR
+--// Garden Tower Defense Script - NO HOOK VERSION
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
-print(plr.Name .. " loaded the script with ID interceptor...")
+print(plr.Name .. " loaded the script...")
 
 --// Key GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -34,14 +34,13 @@ Title.Text = "GARDEN TOWER DEFENSE"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 24
-Title.TextStrokeTransparency = 0.8
 Title.Parent = Frame
 
 local SubTitle = Instance.new("TextLabel")
 SubTitle.Size = UDim2.new(1, 0, 0, 30)
 SubTitle.Position = UDim2.new(0, 0, 0, 40)
 SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "Real ID Tracking"
+SubTitle.Text = "Enter Access Key"
 SubTitle.TextColor3 = Color3.fromRGB(200, 200, 220)
 SubTitle.Font = Enum.Font.Gotham
 SubTitle.TextSize = 16
@@ -107,24 +106,17 @@ task.delay(2, function()
     end)
 end)
 
---=== REAL ID TRACKING SYSTEM ===--
-function loadRealTracking()
-    warn("[System] Loaded REAL ID TRACKING")
+--=== TRACKING SYSTEM ===--
+function loadTracking()
+    warn("[System] Loaded ID TRACKING")
     
     remotes.ChangeTickSpeed:InvokeServer(3)
 
-    -- Storage for captured IDs
     local trackedIds = {
         tomatoes = {},
         metalFlowers = {},
         potatoes = {}
     }
-    
-    local allUnitIds = {}
-    local currentPlacingUnit = nil
-
-    -- No hooking - we'll use a different method
-    -- Instead, we'll try to find units in workspace after placing them
 
     -- Upgrade function
     local function upgradeUnit(unitId)
@@ -133,59 +125,72 @@ function loadRealTracking()
         end)
     end
 
-    -- Place function with result capture
+    -- Place function with ID capture
     local function placeUnit(unitName, data)
-        local success, result = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(unitName, data)
+        local result = nil
+        local success = pcall(function()
+            result = remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
             warn("[Placed] " .. unitName)
             
-            -- Try to extract ID from result
-            local capturedId = nil
-            if type(result) == "number" then
-                capturedId = result
-            elseif type(result) == "table" then
-                capturedId = result.id or result.Id or result.ID or result.unitId or result.UnitId
-                
-                if not capturedId then
-                    warn("[DEBUG] PlaceUnit returned table:")
-                    for k, v in pairs(result) do
-                        warn("  [" .. tostring(k) .. "] = " .. tostring(v))
-                    end
-                end
-            end
+            -- Debug: Print what PlaceUnit returns
+            warn("[DEBUG] PlaceUnit returned type: " .. type(result))
             
-            if capturedId then
-                table.insert(allUnitIds, capturedId)
+            if type(result) == "number" then
+                warn("[DEBUG] Got number ID: " .. result)
                 
                 if unitName == "unit_tomato_rainbow" then
-                    table.insert(trackedIds.tomatoes, capturedId)
-                    warn("[CAPTURED] Tomato ID: " .. capturedId)
+                    table.insert(trackedIds.tomatoes, result)
+                    warn("[TRACKED] Tomato ID: " .. result)
                 elseif unitName == "unit_metal_flower" then
-                    table.insert(trackedIds.metalFlowers, capturedId)
-                    warn("[CAPTURED] Metal Flower ID: " .. capturedId)
+                    table.insert(trackedIds.metalFlowers, result)
+                    warn("[TRACKED] Metal Flower ID: " .. result)
                 elseif unitName == "unit_punch_potato" then
-                    table.insert(trackedIds.potatoes, capturedId)
-                    warn("[CAPTURED] Potato ID: " .. capturedId)
+                    table.insert(trackedIds.potatoes, result)
+                    warn("[TRACKED] Potato ID: " .. result)
+                end
+                
+            elseif type(result) == "table" then
+                warn("[DEBUG] Got table, checking keys...")
+                for k, v in pairs(result) do
+                    warn("[DEBUG]   [" .. tostring(k) .. "] = " .. tostring(v))
+                end
+                
+                local id = result.id or result.Id or result.ID or result.unitId or result.UnitId
+                if id then
+                    warn("[DEBUG] Found ID in table: " .. id)
+                    
+                    if unitName == "unit_tomato_rainbow" then
+                        table.insert(trackedIds.tomatoes, id)
+                        warn("[TRACKED] Tomato ID: " .. id)
+                    elseif unitName == "unit_metal_flower" then
+                        table.insert(trackedIds.metalFlowers, id)
+                        warn("[TRACKED] Metal Flower ID: " .. id)
+                    elseif unitName == "unit_punch_potato" then
+                        table.insert(trackedIds.potatoes, id)
+                        warn("[TRACKED] Potato ID: " .. id)
+                    end
                 end
             else
-                warn("[DEBUG] Result type: " .. type(result) .. " | Value: " .. tostring(result))
+                warn("[DEBUG] Unknown return type or nil")
             end
             
             return result
         else
-            warn("[Failed] " .. unitName .. " - Error: " .. tostring(result))
+            warn("[Failed] " .. unitName)
             return nil
         end
     end
 
-    -- Targeted upgrade loops
+    -- Upgrade loops
     local function upgradeTomatoes()
         while true do
-            for _, id in ipairs(trackedIds.tomatoes) do
-                upgradeUnit(id)
+            if #trackedIds.tomatoes > 0 then
+                for _, id in ipairs(trackedIds.tomatoes) do
+                    upgradeUnit(id)
+                end
             end
             task.wait(0.3)
         end
@@ -193,8 +198,10 @@ function loadRealTracking()
 
     local function upgradeMetalFlowers()
         while true do
-            for _, id in ipairs(trackedIds.metalFlowers) do
-                upgradeUnit(id)
+            if #trackedIds.metalFlowers > 0 then
+                for _, id in ipairs(trackedIds.metalFlowers) do
+                    upgradeUnit(id)
+                end
             end
             task.wait(0.3)
         end
@@ -202,11 +209,13 @@ function loadRealTracking()
 
     local function upgradePotatoes()
         while true do
-            for _, id in ipairs(trackedIds.potatoes) do
-                upgradeUnit(id)
-                upgradeUnit(id) -- Upgrade twice
+            if #trackedIds.potatoes > 0 then
+                for _, id in ipairs(trackedIds.potatoes) do
+                    upgradeUnit(id)
+                    upgradeUnit(id)
+                end
             end
-            task.wait(0.1) -- Faster for potatoes
+            task.wait(0.1)
         end
     end
 
@@ -225,11 +234,9 @@ function loadRealTracking()
     -- Main game loop
     local function mainGameLoop()
         while true do
-            warn("[GAME START] ========== NEW GAME ==========")
+            warn("========== GAME START ==========")
             
-            -- Reset tracking
             trackedIds = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
-            allUnitIds = {}
             
             remotes.ChangeTickSpeed:InvokeServer(3)
             remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
@@ -243,30 +250,22 @@ function loadRealTracking()
             
             -- Start upgrades
             task.delay(7, function()
-                warn("[UPGRADES] Tomatoes: " .. #trackedIds.tomatoes .. " units")
+                warn("[UPGRADES] Starting Tomatoes: " .. #trackedIds.tomatoes .. " tracked")
                 task.spawn(upgradeTomatoes)
             end)
             
             task.delay(87, function()
-                warn("[UPGRADES] Metal Flowers: " .. #trackedIds.metalFlowers .. " units")
+                warn("[UPGRADES] Starting Metal Flowers: " .. #trackedIds.metalFlowers .. " tracked")
                 task.spawn(upgradeMetalFlowers)
             end)
             
             task.delay(187, function()
-                warn("[UPGRADES] Potatoes: " .. #trackedIds.potatoes .. " units")
+                warn("[UPGRADES] Starting Potatoes: " .. #trackedIds.potatoes .. " tracked")
                 task.spawn(upgradePotatoes)
             end)
             
-            -- Debug print every 15 seconds
-            task.spawn(function()
-                for i = 1, 20 do
-                    task.wait(15)
-                    warn("[STATUS] Tomatoes: " .. #trackedIds.tomatoes .. " | Flowers: " .. #trackedIds.metalFlowers .. " | Potatoes: " .. #trackedIds.potatoes)
-                end
-            end)
-            
             task.wait(300)
-            warn("[RESTART] =============================")
+            warn("========== RESTART ==========")
             remotes.RestartGame:InvokeServer()
             task.wait(5)
         end
@@ -285,7 +284,7 @@ CheckBtn.MouseButton1Click:Connect(function()
         
         task.delay(1.5, function()
             ScreenGui:Destroy()
-            loadRealTracking()
+            loadTracking()
         end)
     else
         TextBox.Text = ""
@@ -304,4 +303,4 @@ loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
 ScreenGui.DisplayOrder = 999
-print("Real ID Tracking loaded!")
+print("Script loaded - NO HOOKS!")
