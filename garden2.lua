@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - FIXED UNIT TRACKING SYSTEM
+--// Garden Tower Defense Script - FIXED ERROR HANDLING
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -121,10 +121,10 @@ task.delay(2, function()
     end)
 end)
 
---=== FIXED UNIT TRACKING SYSTEM ===--
+--=== FIXED ERROR HANDLING SYSTEM ===--
 
 function loadFixedTracking()
-    warn("[System] Loaded FIXED UNIT TRACKING SYSTEM")
+    warn("[System] Loaded FIXED ERROR HANDLING SYSTEM")
     
     -- Clear previous units PROPERLY
     unitTracker.tomatoes = {}
@@ -141,21 +141,24 @@ function loadFixedTracking()
             return 
         end
         
-        unitTracker.allUnits[unitId] = {
+        -- Make sure unitId is a number/string, not boolean
+        local idString = tostring(unitId)
+        
+        unitTracker.allUnits[idString] = {
             name = unitName,
-            id = unitId,
+            id = idString,
             placedTime = os.clock()
         }
         
         if string.find(unitName:lower(), "tomato") then
-            table.insert(unitTracker.tomatoes, unitId)
-            warn("[TRACKER] Tomato placed - ID: " .. unitId .. " | Total: " .. #unitTracker.tomatoes)
+            table.insert(unitTracker.tomatoes, idString)
+            warn("[TRACKER] Tomato placed - ID: " .. idString .. " | Total: " .. #unitTracker.tomatoes)
         elseif string.find(unitName:lower(), "metal") then
-            table.insert(unitTracker.metalFlowers, unitId)
-            warn("[TRACKER] Metal Flower placed - ID: " .. unitId .. " | Total: " .. #unitTracker.metalFlowers)
+            table.insert(unitTracker.metalFlowers, idString)
+            warn("[TRACKER] Metal Flower placed - ID: " .. idString .. " | Total: " .. #unitTracker.metalFlowers)
         elseif string.find(unitName:lower(), "potato") then
-            table.insert(unitTracker.potatoes, unitId)
-            warn("[TRACKER] Potato placed - ID: " .. unitId .. " | Total: " .. #unitTracker.potatoes)
+            table.insert(unitTracker.potatoes, idString)
+            warn("[TRACKER] Potato placed - ID: " .. idString .. " | Total: " .. #unitTracker.potatoes)
         else
             warn("[TRACKER] Unknown unit type: " .. unitName)
         end
@@ -163,28 +166,42 @@ function loadFixedTracking()
 
     -- Smart upgrade function that only upgrades existing units
     local function upgradeUnit(unitId)
-        if unitTracker.allUnits[unitId] then
-            pcall(function()
-                remotes.UpgradeUnit:InvokeServer(unitId)
+        if unitTracker.allUnits[tostring(unitId)] then
+            local success, result = pcall(function()
+                return remotes.UpgradeUnit:InvokeServer(unitId)
             end)
-            return true
+            if success then
+                return true
+            else
+                warn("[UPGRADE FAILED] ID: " .. tostring(unitId) .. " - " .. tostring(result))
+                return false
+            end
         end
         return false
     end
 
-    -- Smart place function that tracks the returned unit ID
+    -- FIXED: Smart place function with proper error handling
     local function placeUnit(unitName, data)
         local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
-        if success and result then
-            warn("[Placed] " .. unitName .. " - Returned ID: " .. tostring(result))
-            trackUnitPlacement(unitName, result)
-            return true, result
+        if success then
+            if result then
+                -- FIXED: Convert to string to avoid boolean concatenation
+                local unitIdString = tostring(result)
+                warn("[Placed] " .. unitName .. " - Returned ID: " .. unitIdString)
+                trackUnitPlacement(unitName, unitIdString)
+                return true, unitIdString
+            else
+                warn("[Place Failed] " .. unitName .. " - No ID returned")
+                return false, "No ID returned"
+            end
         else
-            warn("[Failed] " .. unitName .. " - Error: " .. tostring(result))
-            return false
+            -- FIXED: Proper error message without concatenating boolean
+            local errorMsg = tostring(result) or "Unknown error"
+            warn("[Place Error] " .. unitName .. " - " .. errorMsg)
+            return false, errorMsg
         end
     end
 
@@ -195,6 +212,11 @@ function loadFixedTracking()
         local tomatoCount = #unitTracker.tomatoes
         warn("[FIXED TRACKING] Starting TOMATO upgrades - " .. tomatoCount .. " tomatoes to upgrade")
         
+        if tomatoCount == 0 then
+            warn("[WARNING] No tomatoes found to upgrade!")
+            return
+        end
+        
         task.spawn(function()
             while true do
                 local upgraded = 0
@@ -202,6 +224,7 @@ function loadFixedTracking()
                     if upgradeUnit(unitId) then
                         upgraded += 1
                         -- Double upgrade for faster progression
+                        task.wait(0.001)
                         upgradeUnit(unitId)
                     end
                     task.wait(0.001) -- Small delay between upgrades
@@ -219,6 +242,11 @@ function loadFixedTracking()
         local metalFlowerCount = #unitTracker.metalFlowers
         warn("[FIXED TRACKING] Starting METAL FLOWER upgrades - " .. metalFlowerCount .. " metal flowers to upgrade")
         
+        if metalFlowerCount == 0 then
+            warn("[WARNING] No metal flowers found to upgrade!")
+            return
+        end
+        
         task.spawn(function()
             while true do
                 local upgraded = 0
@@ -226,6 +254,7 @@ function loadFixedTracking()
                     if upgradeUnit(unitId) then
                         upgraded += 1
                         -- Double upgrade for faster progression
+                        task.wait(0.001)
                         upgradeUnit(unitId)
                     end
                     task.wait(0.001)
@@ -243,6 +272,11 @@ function loadFixedTracking()
         local potatoCount = #unitTracker.potatoes
         warn("[FIXED TRACKING] Starting POTATO upgrades - " .. potatoCount .. " potatoes to upgrade")
         
+        if potatoCount == 0 then
+            warn("[WARNING] No potatoes found to upgrade!")
+            return
+        end
+        
         task.spawn(function()
             while true do
                 local upgraded = 0
@@ -250,7 +284,9 @@ function loadFixedTracking()
                     if upgradeUnit(unitId) then
                         upgraded += 1
                         -- Triple upgrade for fastest progression
+                        task.wait(0.001)
                         upgradeUnit(unitId)
+                        task.wait(0.001)
                         upgradeUnit(unitId)
                     end
                     task.wait(0.001)
@@ -369,8 +405,10 @@ function loadFixedTracking()
             for _, placement in ipairs(unitPlacements) do
                 task.delay(placement.time, function()
                     local success, unitId = placeUnit(placement.unit, placement.data)
-                    if success and unitId then
+                    if success then
                         warn("[PLACEMENT TRACKED] " .. placement.unit .. " - ID: " .. tostring(unitId))
+                    else
+                        warn("[PLACEMENT FAILED] " .. placement.unit .. " - " .. tostring(unitId))
                     end
                 end)
             end
@@ -417,8 +455,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "FIXED UNIT TRACKING SYSTEM"
-    SubTitle.Text = "Now Upgrades ALL Units - Not Just First"
+    Title.Text = "FIXED ERROR HANDLING SYSTEM"
+    SubTitle.Text = "No More Boolean Concatenation Errors"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -428,7 +466,7 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 FIXED UNIT TRACKING SYSTEM\n• Tracks ALL unit IDs from placement\n• Upgrades EVERY tomato, metal flower, potato\n• Uses arrays instead of broken tables\n• Proper unit counting and logging\n• Survives rematches"
+    Instructions.Text = "🎯 FIXED ERROR HANDLING SYSTEM\n• Proper string conversion with tostring()\n• Better error handling for failed placements\n• No more boolean concatenation errors\n• Upgrades ALL units of each type\n• Detailed logging for debugging"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
@@ -439,7 +477,7 @@ local function showStrategyMenu()
     local btnFixed = Instance.new("TextButton")
     btnFixed.Size = UDim2.new(1, -40, 0, 120)
     btnFixed.Position = UDim2.new(0, 20, 0, 200)
-    btnFixed.Text = "FIXED UNIT TRACKING SYSTEM\nUpgrades ALL Units of Each Type\nProper Array Tracking"
+    btnFixed.Text = "FIXED ERROR HANDLING SYSTEM\nNo More Boolean Concatenation\nProper String Conversion"
     btnFixed.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
     btnFixed.TextColor3 = Color3.fromRGB(255, 255, 255)
     btnFixed.Font = Enum.Font.GothamBold
@@ -460,7 +498,7 @@ end
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading FIXED TRACKING SYSTEM..."
+        Label.Text = "✅ Key Verified! Loading FIXED ERROR SYSTEM..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
