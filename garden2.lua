@@ -1,10 +1,10 @@
---// Garden Tower Defense Script - WORKING VERSION
+--// Garden Tower Defense Script - SMART ID TRACKING SYSTEM
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
-print(plr.Name .. " loaded the script. Waiting for key...")
+print(plr.Name .. " loaded the script with SMART TRACKING...")
 
---// Improved Key GUI
+--// GUI Setup (same as before)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = plr:WaitForChild("PlayerGui")
 
@@ -27,10 +27,8 @@ UIStroke.Color = Color3.fromRGB(80, 120, 200)
 UIStroke.Thickness = 2
 UIStroke.Parent = Frame
 
--- Title
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 60)
-Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "GARDEN TOWER DEFENSE"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -43,13 +41,12 @@ local SubTitle = Instance.new("TextLabel")
 SubTitle.Size = UDim2.new(1, 0, 0, 30)
 SubTitle.Position = UDim2.new(0, 0, 0, 40)
 SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "Enter Access Key"
+SubTitle.Text = "Smart ID Tracking"
 SubTitle.TextColor3 = Color3.fromRGB(200, 200, 220)
 SubTitle.Font = Enum.Font.Gotham
 SubTitle.TextSize = 16
 SubTitle.Parent = Frame
 
--- Key Input
 local TextBoxContainer = Instance.new("Frame")
 TextBoxContainer.Size = UDim2.new(1, -40, 0, 50)
 TextBoxContainer.Position = UDim2.new(0, 20, 0, 90)
@@ -73,7 +70,6 @@ TextBox.BackgroundTransparency = 1
 TextBox.PlaceholderColor3 = Color3.fromRGB(180, 180, 180)
 TextBox.Parent = TextBoxContainer
 
--- Check Button
 local CheckBtn = Instance.new("TextButton")
 CheckBtn.Size = UDim2.new(1, -40, 0, 50)
 CheckBtn.Position = UDim2.new(0, 20, 0, 160)
@@ -89,7 +85,6 @@ local CheckBtnCorner = Instance.new("UICorner")
 CheckBtnCorner.CornerRadius = UDim.new(0, 8)
 CheckBtnCorner.Parent = CheckBtn
 
--- Status Label
 local Label = Instance.new("TextLabel")
 Label.Size = UDim2.new(1, -40, 0, 40)
 Label.Position = UDim2.new(0, 20, 0, 220)
@@ -101,85 +96,124 @@ Label.TextColor3 = Color3.fromRGB(255, 255, 255)
 Label.TextWrapped = true
 Label.Parent = Frame
 
---// Remotes - Let's find the correct ones
+--// Remotes
 local rs = game:GetService("ReplicatedStorage")
-local remotesFolder = rs:WaitForChild("Remotes") or rs:WaitForChild("RemoteEvents") or rs:WaitForChild("RemoteFunctions")
+local remotes = rs:WaitForChild("RemoteFunctions")
 
--- Function to find remotes
-local function findRemote(name)
-    -- Try different possible locations
-    local locations = {
-        rs:FindFirstChild("Remotes"),
-        rs:FindFirstChild("RemoteEvents"), 
-        rs:FindFirstChild("RemoteFunctions"),
-        rs
-    }
-    
-    for _, location in ipairs(locations) do
-        if location then
-            local remote = location:FindFirstChild(name)
-            if remote then
-                return remote
-            end
-        end
-    end
-    return nil
-end
-
---=== WORKING GTD SCRIPT ===--
-
-function loadWorkingScript()
-    warn("[System] Loading WORKING GTD Script...")
-    
-    -- First, let's test what remotes we can find
-    warn("[DEBUG] Searching for remotes...")
-    
-    -- Common GTD remote names
-    local remoteNames = {
-        "PlaceUnit", "UpgradeUnit", "ToggleAutoSkip", "ChangeTickSpeed", 
-        "PlaceDifficultyVote", "RestartGame", "FireServer", "InvokeServer"
-    }
-    
-    for _, name in ipairs(remoteNames) do
-        local remote = findRemote(name)
-        if remote then
-            warn("[FOUND] " .. name .. " - Type: " .. remote.ClassName)
-        else
-            warn("[MISSING] " .. name)
-        end
-    end
-    
-    -- Let's use the original working approach but with better timing
-    local function safeRemoteCall(remoteName, ...)
-        local remote = findRemote(remoteName)
-        if remote then
-            if remote:IsA("RemoteFunction") then
-                return pcall(function() return remote:InvokeServer(...) end)
-            elseif remote:IsA("RemoteEvent") then
-                return pcall(function() remote:FireServer(...) end)
-            end
-        end
-        return false, "Remote not found: " .. remoteName
-    end
-
-    -- Enable auto skip
-    task.delay(2, function()
-        safeRemoteCall("ToggleAutoSkip", true)
-        safeRemoteCall("AutoSkip", true) -- Try alternative name
-        warn("[System] Auto Skip Attempted")
+task.delay(2, function()
+    pcall(function()
+        remotes.ToggleAutoSkip:InvokeServer(true)
+        warn("[System] Auto Skip Enabled")
     end)
+end)
 
-    -- Set game speed
-    safeRemoteCall("ChangeTickSpeed", 3)
-    safeRemoteCall("TickSpeed", 3) -- Try alternative name
+--=== SMART ID TRACKING SYSTEM ===--
+
+function loadSmartTracking()
+    warn("[System] Loaded SMART ID TRACKING SYSTEM")
     
-    -- Set difficulty
-    safeRemoteCall("PlaceDifficultyVote", "dif_hard")
-    safeRemoteCall("Difficulty", "dif_hard") -- Try alternative name
+    remotes.ChangeTickSpeed:InvokeServer(3)
+
+    -- TRACKING TABLES
+    local unitIdTracker = {
+        tomatoes = {},
+        metalFlowers = {},
+        potatoes = {}
+    }
+    
+    local placedUnits = {}
+    local upgradeQueues = {
+        tomatoes = {},
+        metalFlowers = {},
+        potatoes = {}
+    }
+
+    -- Hook into PlaceUnit to capture the unit ID when it's placed
+    local originalPlaceUnit = remotes.PlaceUnit.InvokeServer
+    remotes.PlaceUnit.InvokeServer = function(self, unitName, data)
+        local result = originalPlaceUnit(self, unitName, data)
+        
+        -- Result should contain the unit ID that was just placed
+        if result then
+            local unitId = result -- Adjust based on what the remote actually returns
+            
+            -- Track the ID based on unit type
+            if unitName == "unit_tomato_rainbow" then
+                table.insert(unitIdTracker.tomatoes, unitId)
+                table.insert(upgradeQueues.tomatoes, unitId)
+                warn("[TRACKED] Tomato ID: " .. tostring(unitId))
+            elseif unitName == "unit_metal_flower" then
+                table.insert(unitIdTracker.metalFlowers, unitId)
+                table.insert(upgradeQueues.metalFlowers, unitId)
+                warn("[TRACKED] Metal Flower ID: " .. tostring(unitId))
+            elseif unitName == "unit_punch_potato" then
+                table.insert(unitIdTracker.potatoes, unitId)
+                table.insert(upgradeQueues.potatoes, unitId)
+                warn("[TRACKED] Potato ID: " .. tostring(unitId))
+            end
+            
+            table.insert(placedUnits, {
+                id = unitId,
+                name = unitName,
+                time = os.clock()
+            })
+        end
+        
+        return result
+    end
+
+    -- Smart upgrade function that only upgrades tracked IDs
+    local function upgradeTrackedUnits(unitType)
+        local queue = upgradeQueues[unitType]
+        
+        for i, unitId in ipairs(queue) do
+            pcall(function()
+                remotes.UpgradeUnit:InvokeServer(unitId)
+                warn("[UPGRADED] " .. unitType .. " ID: " .. tostring(unitId))
+            end)
+            task.wait(0.05) -- Small delay between upgrades
+        end
+    end
+
+    -- Continuous upgrade loops for each unit type
+    local function startTomatoUpgrades()
+        while true do
+            upgradeTrackedUnits("tomatoes")
+            task.wait(0.5) -- Upgrade every 0.5 seconds
+        end
+    end
+
+    local function startMetalFlowerUpgrades()
+        while true do
+            upgradeTrackedUnits("metalFlowers")
+            task.wait(0.5)
+        end
+    end
+
+    local function startPotatoUpgrades()
+        while true do
+            upgradeTrackedUnits("potatoes")
+            task.wait(0.3) -- Faster for potatoes
+        end
+    end
+
+    -- Simple place function
+    local function placeUnit(unitName, data)
+        local success, result = pcall(function()
+            return remotes.PlaceUnit:InvokeServer(unitName, data)
+        end)
+        
+        if success then
+            warn("[Placed] " .. unitName .. " at " .. os.clock())
+            return result
+        else
+            warn("[Failed] " .. unitName)
+            return nil
+        end
+    end
 
     -- Unit placement data
     local unitPlacements = {
-        -- Rainbow Tomatoes
         {
             time = 5,
             unit = "unit_tomato_rainbow",
@@ -200,7 +234,6 @@ function loadWorkingScript()
                 Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
             }
         },
-        -- Metal Flowers
         {
             time = 85,
             unit = "unit_metal_flower",
@@ -231,7 +264,6 @@ function loadWorkingScript()
                 Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
             }
         },
-        -- Punch Potatoes
         {
             time = 185,
             unit = "unit_punch_potato",
@@ -264,146 +296,76 @@ function loadWorkingScript()
         }
     }
 
-    -- Place units function
-    local function placeUnits()
-        for _, placement in ipairs(unitPlacements) do
-            task.delay(placement.time, function()
-                local success, result = safeRemoteCall("PlaceUnit", placement.unit, placement.data)
-                if success then
-                    warn("[PLACED] " .. placement.unit .. " at " .. placement.time .. "s")
-                else
-                    warn("[FAILED] " .. placement.unit .. " - " .. tostring(result))
-                end
-            end)
-        end
-    end
-
-    -- Upgrade system - Let's use the original working approach
-    local function startUpgrades()
-        warn("[UPGRADES] Starting upgrade system...")
-        
-        -- Tomatoes upgrade (start at 10s)
-        task.delay(10, function()
-            warn("[UPGRADES] Starting tomato upgrades")
-            while true do
-                for i = 1, 50 do
-                    safeRemoteCall("UpgradeUnit", i)
-                    task.wait(0.01)
-                end
-                task.wait(0.5)
-            end
-        end)
-        
-        -- Metal flowers upgrade (start at 90s)  
-        task.delay(90, function()
-            warn("[UPGRADES] Starting metal flower upgrades")
-            while true do
-                for i = 20, 70 do
-                    safeRemoteCall("UpgradeUnit", i)
-                    task.wait(0.01)
-                end
-                task.wait(0.5)
-            end
-        end)
-        
-        -- Potatoes upgrade (start at 190s)
-        task.delay(190, function()
-            warn("[UPGRADES] Starting potato upgrades")
-            while true do
-                for i = 100, 200 do
-                    safeRemoteCall("UpgradeUnit", i)
-                    safeRemoteCall("UpgradeUnit", i) -- Double call
-                    task.wait(0.01)
-                end
-                task.wait(0.3)
-            end
-        end)
-    end
-
     -- Main game loop
     local function mainGameLoop()
         while true do
             warn("[GAME START] New game cycle starting...")
             
-            -- Set game settings
-            safeRemoteCall("ChangeTickSpeed", 3)
-            safeRemoteCall("PlaceDifficultyVote", "dif_hard")
+            -- Clear tracking tables for new game
+            unitIdTracker = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
+            upgradeQueues = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
+            placedUnits = {}
             
-            -- Place units
-            placeUnits()
+            remotes.ChangeTickSpeed:InvokeServer(3)
+            remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
             
-            -- Start upgrades
-            startUpgrades()
+            -- Place all units
+            for _, placement in ipairs(unitPlacements) do
+                task.delay(placement.time, function()
+                    placeUnit(placement.unit, placement.data)
+                end)
+            end
+            
+            -- Start upgrade loops after first units are placed
+            task.delay(6, function()
+                warn("[UPGRADES] Starting Tomato upgrades")
+                task.spawn(startTomatoUpgrades)
+            end)
+            
+            task.delay(86, function()
+                warn("[UPGRADES] Starting Metal Flower upgrades")
+                task.spawn(startMetalFlowerUpgrades)
+            end)
+            
+            task.delay(186, function()
+                warn("[UPGRADES] Starting Potato upgrades")
+                task.spawn(startPotatoUpgrades)
+            end)
             
             -- Wait for game duration
-            task.wait(300) -- 5 minutes
+            task.wait(300)
             
             warn("[RESTART] Restarting game...")
-            safeRemoteCall("RestartGame")
-            
-            -- Wait for reset
+            remotes.RestartGame:InvokeServer()
             task.wait(5)
         end
     end
 
-    -- Start everything
-    mainGameLoop()
-end
-
---=== SIMPLIFIED MENU ===--
-local function showStrategyMenu()
-    Frame.Size = UDim2.new(0, 450, 0, 350)
-    Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
-    
-    Title.Text = "WORKING GTD SCRIPT"
-    SubTitle.Text = "Debugging & Wide Range Coverage"
-    TextBox.Visible = false
-    CheckBtn.Visible = false
-    Label.Visible = false
-
-    -- Instructions
-    local Instructions = Instance.new("TextLabel")
-    Instructions.Size = UDim2.new(1, -40, 0, 120)
-    Instructions.Position = UDim2.new(0, 20, 0, 60)
-    Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 WORKING GTD SCRIPT\n• Debugs remote connections first\n• Uses wide ID range coverage\n• Safe remote calling with error handling\n• Works with both RemoteEvents and RemoteFunctions\n• Auto-detects remote locations"
-    Instructions.Font = Enum.Font.Gotham
-    Instructions.TextSize = 14
-    Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
-    Instructions.TextWrapped = true
-    Instructions.Parent = Frame
-
-    -- Working Button
-    local btnWorking = Instance.new("TextButton")
-    btnWorking.Size = UDim2.new(1, -40, 0, 120)
-    btnWorking.Position = UDim2.new(0, 20, 0, 200)
-    btnWorking.Text = "WORKING GTD SCRIPT\nDebug Mode + Wide Range Coverage\nSafe Remote Calling"
-    btnWorking.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnWorking.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnWorking.Font = Enum.Font.GothamBold
-    btnWorking.TextSize = 18
-    btnWorking.BorderSizePixel = 0
-    btnWorking.Parent = Frame
-
-    local btnWorkingCorner = Instance.new("UICorner")
-    btnWorkingCorner.CornerRadius = UDim.new(0, 10)
-    btnWorkingCorner.Parent = btnWorking
-
-    btnWorking.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-        loadWorkingScript()
+    -- Debug: Print tracked units every 10 seconds
+    task.spawn(function()
+        while true do
+            task.wait(10)
+            warn("[DEBUG] Tracked Tomatoes: " .. #unitIdTracker.tomatoes)
+            warn("[DEBUG] Tracked Metal Flowers: " .. #unitIdTracker.metalFlowers)
+            warn("[DEBUG] Tracked Potatoes: " .. #unitIdTracker.potatoes)
+        end
     end)
+
+    mainGameLoop()
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading WORKING SCRIPT..."
+        Label.Text = "✅ Key Verified! Loading SMART SYSTEM..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
         
-        task.delay(1.5, showStrategyMenu)
+        task.delay(1.5, function()
+            ScreenGui:Destroy()
+            loadSmartTracking()
+        end)
     else
         TextBox.Text = ""
         Label.Text = "❌ Invalid Key! Please try again."
@@ -417,21 +379,10 @@ CheckBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Add some visual effects
-TextBox.Focused:Connect(function()
-    TextBoxContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
-end)
-
-TextBox.FocusLost:Connect(function()
-    TextBoxContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-end)
-
--- Load anti-afk scripts
 loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
--- Force GUI to be on top
 ScreenGui.DisplayOrder = 999
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-print("GUI setup complete - Should be visible now!")
+print("Smart ID Tracking system loaded!")
