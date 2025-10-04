@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - DYNAMIC UNIT ID TRACKING
+--// Garden Tower Defense Script - SIMPLE UNIT ID TRACKING
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,23 +113,16 @@ task.delay(2, function()
     end)
 end)
 
---=== DYNAMIC UNIT ID TRACKING SYSTEM ===--
+--=== SIMPLE UNIT ID TRACKING SYSTEM ===--
 
-function loadDynamicIDTracking()
-    warn("[System] Loaded DYNAMIC UNIT ID TRACKING SYSTEM")
+function loadSimpleIDTracking()
+    warn("[System] Loaded SIMPLE UNIT ID TRACKING SYSTEM")
     
     -- Track units by type and their IDs
     local trackedUnits = {
         tomatoes = {},
         metal_flowers = {},
         potatoes = {}
-    }
-    
-    -- Track the last placed unit ID for each type
-    local lastUnitIDs = {
-        tomatoes = nil,
-        metal_flowers = nil,
-        potatoes = nil
     }
     
     -- Simple upgrade function
@@ -145,13 +138,10 @@ function loadDynamicIDTracking()
         
         if unitName == "unit_tomato_rainbow" then
             table.insert(trackedUnits.tomatoes, unitId)
-            lastUnitIDs.tomatoes = unitId
         elseif unitName == "unit_metal_flower" then
             table.insert(trackedUnits.metal_flowers, unitId)
-            lastUnitIDs.metal_flowers = unitId
         elseif unitName == "unit_punch_potato" then
             table.insert(trackedUnits.potatoes, unitId)
-            lastUnitIDs.potatoes = unitId
         end
         
         -- Print current tracked units
@@ -159,25 +149,41 @@ function loadDynamicIDTracking()
             #trackedUnits.tomatoes, #trackedUnits.metal_flowers, #trackedUnits.potatoes))
     end
 
-    -- Hook into PlaceUnit to track IDs
-    local originalPlaceUnit
-    originalPlaceUnit = hookfunction(remotes.PlaceUnit.InvokeServer, function(self, unitName, data)
-        local result = originalPlaceUnit(self, unitName, data)
+    -- Simple place function that also tracks
+    local function placeAndTrackUnit(unitName, data)
+        local success, result = pcall(function()
+            return remotes.PlaceUnit:InvokeServer(unitName, data)
+        end)
         
-        -- Try to detect the unit ID from the result or remote spy
-        if result and type(result) == "number" then
-            trackUnitPlacement(unitName, result)
+        if success then
+            warn("[Placed] " .. unitName .. " at " .. os.clock())
+            
+            -- Try to track the unit ID from the result
+            if result and type(result) == "number" then
+                trackUnitPlacement(unitName, result)
+            else
+                -- If we can't get the ID, we'll use a fallback method
+                -- Assume IDs are sequential and track the count
+                local unitType = ""
+                if unitName == "unit_tomato_rainbow" then
+                    unitType = "tomatoes"
+                elseif unitName == "unit_metal_flower" then
+                    unitType = "metal_flowers"
+                elseif unitName == "unit_punch_potato" then
+                    unitType = "potatoes"
+                end
+                
+                -- Use the count as a pseudo-ID (this is a fallback)
+                local pseudoId = #trackedUnits[unitType] + 1
+                trackUnitPlacement(unitName, pseudoId)
+            end
+            
+            return true
         else
-            -- If we can't get the ID from result, we'll track it by timing
-            -- The ID should be the next available ID after the last placed unit
-            task.delay(0.5, function()
-                -- This is a fallback - we'll try to detect the ID by scanning
-                warn("[FALLBACK] Trying to detect ID for: " .. unitName)
-            end)
+            warn("[Failed] " .. unitName)
+            return false
         end
-        
-        return result
-    end)
+    end
 
     -- Upgrade functions that use tracked IDs
     local function upgradeTrackedTomatoes()
@@ -203,7 +209,7 @@ function loadDynamicIDTracking()
     end
 
     local function upgradeTrackedPotatoes()
-        warn("[UPGRADE] Upgrading tracked potatoes: " .. #trackedUnits.potatoes .. " units)
+        warn("[UPGRADE] Upgrading tracked potatoes: " .. #trackedUnits.potatoes .. " units")
         while true do
             for _, unitId in ipairs(trackedUnits.potatoes) do
                 upgradeUnit(unitId)
@@ -211,27 +217,6 @@ function loadDynamicIDTracking()
                 upgradeUnit(unitId) -- Triple call
             end
             task.wait(0.001) -- Faster for potatoes
-        end
-    end
-
-    -- Simple place function
-    local function placeUnit(unitName, data)
-        local success, result = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(unitName, data)
-        end)
-        
-        if success then
-            warn("[Placed] " .. unitName .. " at " .. os.clock())
-            
-            -- Try to track the unit ID
-            if result and type(result) == "number" then
-                trackUnitPlacement(unitName, result)
-            end
-            
-            return true
-        else
-            warn("[Failed] " .. unitName)
-            return false
         end
     end
 
@@ -338,10 +323,10 @@ function loadDynamicIDTracking()
             remotes.ChangeTickSpeed:InvokeServer(3)
             remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
             
-            -- Place all units
+            -- Place all units with tracking
             for _, placement in ipairs(unitPlacements) do
                 task.delay(placement.time, function()
-                    placeUnit(placement.unit, placement.data)
+                    placeAndTrackUnit(placement.unit, placement.data)
                 end)
             end
             
@@ -384,8 +369,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "DYNAMIC ID TRACKING"
-    SubTitle.Text = "Tracks unit IDs as they're placed"
+    Title.Text = "SIMPLE ID TRACKING"
+    SubTitle.Text = "Tracks unit placements"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -395,39 +380,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 DYNAMIC UNIT ID TRACKING\n• Hooks PlaceUnit to track IDs\n• Upgrades only the actual placed units\n• Works across game restarts\n• No more guessing ID ranges\n• Real-time unit tracking"
+    Instructions.Text = "🎯 SIMPLE UNIT ID TRACKING\n• Tracks when units are placed\n• Uses placement timing\n• Upgrades only placed units\n• Works across game restarts\n• No complex hooking"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Dynamic ID Button
-    local btnDynamic = Instance.new("TextButton")
-    btnDynamic.Size = UDim2.new(1, -40, 0, 120)
-    btnDynamic.Position = UDim2.new(0, 20, 0, 200)
-    btnDynamic.Text = "DYNAMIC ID TRACKING\nTracks Actual Unit IDs\nNo More Guessing"
-    btnDynamic.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnDynamic.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnDynamic.Font = Enum.Font.GothamBold
-    btnDynamic.TextSize = 18
-    btnDynamic.BorderSizePixel = 0
-    btnDynamic.Parent = Frame
+    -- Simple Tracking Button
+    local btnSimple = Instance.new("TextButton")
+    btnSimple.Size = UDim2.new(1, -40, 0, 120)
+    btnSimple.Position = UDim2.new(0, 20, 0, 200)
+    btnSimple.Text = "SIMPLE ID TRACKING\nTracks Unit Placements\nNo Complex Hooking"
+    btnSimple.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnSimple.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnSimple.Font = Enum.Font.GothamBold
+    btnSimple.TextSize = 18
+    btnSimple.BorderSizePixel = 0
+    btnSimple.Parent = Frame
 
-    local btnDynamicCorner = Instance.new("UICorner")
-    btnDynamicCorner.CornerRadius = UDim.new(0, 10)
-    btnDynamicCorner.Parent = btnDynamic
+    local btnSimpleCorner = Instance.new("UICorner")
+    btnSimpleCorner.CornerRadius = UDim.new(0, 10)
+    btnSimpleCorner.Parent = btnSimple
 
-    btnDynamic.MouseButton1Click:Connect(function()
+    btnSimple.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadDynamicIDTracking()
+        loadSimpleIDTracking()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading DYNAMIC TRACKING..."
+        Label.Text = "✅ Key Verified! Loading SIMPLE TRACKING..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
