@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - RELATIVE TIMING SYSTEM
+--// Garden Tower Defense Script - SIMPLE RESTART SYSTEM
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,83 +113,29 @@ task.delay(2, function()
     end)
 end)
 
---=== RELATIVE TIMING SYSTEM ===--
+--=== SIMPLE RESTART SYSTEM ===--
 
-function loadRelativeTimingSystem()
-    warn("[System] Loaded RELATIVE TIMING SYSTEM")
+function loadSimpleRestartSystem()
+    warn("[System] Loaded SIMPLE RESTART SYSTEM")
     
-    -- Create upgrade manager
-    local UpgradeManager = {}
-    UpgradeManager.Active = true
-    UpgradeManager.CurrentPhase = "waiting"
-    UpgradeManager.GameStartTime = 0
-
-    -- Function to upgrade units
+    -- Simple upgrade function
     local function upgradeUnit(unitId)
         pcall(function()
             remotes.UpgradeUnit:InvokeServer(unitId)
         end)
     end
 
-    -- Start permanent upgrade loops
-    local function startPermanentUpgradeLoops()
-        warn("[PERMANENT] Starting permanent upgrade loops...")
-        
-        -- Tomato upgrade loop
-        task.spawn(function()
-            while UpgradeManager.Active do
-                if UpgradeManager.CurrentPhase == "tomatoes" then
-                    for id = 1, 50 do
-                        upgradeUnit(id)
-                        upgradeUnit(id) -- Double call
-                    end
-                end
-                task.wait(0.01)
-            end
-        end)
-        
-        -- Metal Flower upgrade loop
-        task.spawn(function()
-            while UpgradeManager.Active do
-                if UpgradeManager.CurrentPhase == "metal_flowers" then
-                    for id = 20, 80 do
-                        upgradeUnit(id)
-                        upgradeUnit(id) -- Double call
-                    end
-                end
-                task.wait(0.01)
-            end
-        end)
-        
-        -- Potato upgrade loop
-        task.spawn(function()
-            while UpgradeManager.Active do
-                if UpgradeManager.CurrentPhase == "potatoes" then
-                    for id = 230, 280 do
-                        upgradeUnit(id)
-                        upgradeUnit(id) -- Double call
-                        upgradeUnit(id) -- Triple call
-                    end
-                end
-                task.wait(0.001) -- Faster for potatoes
-            end
-        end)
-    end
-
-    -- Start the permanent loops
-    startPermanentUpgradeLoops()
-
-    -- Function to place units
+    -- Simple place function
     local function placeUnit(unitName, data)
         local success = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
-            warn("[Placing] " .. unitName .. " at " .. os.clock())
+            warn("[Placed] " .. unitName)
             return true
         else
-            warn("[Placing] " .. unitName .. " - Failed")
+            warn("[Failed] " .. unitName)
             return false
         end
     end
@@ -281,74 +227,93 @@ function loadRelativeTimingSystem()
         }
     }
 
+    -- Main game function that gets called every match
+    local function startSingleGame()
+        warn("[GAME START] Starting new game!")
+        
+        -- Set game settings
+        remotes.ChangeTickSpeed:InvokeServer(3)
+        remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
+        
+        -- Place all units
+        for _, placement in ipairs(unitPlacements) do
+            task.delay(placement.time, function()
+                placeUnit(placement.unit, placement.data)
+            end)
+        end
+        
+        -- Start tomato upgrades at 6 seconds
+        local tomatoThread = task.delay(6, function()
+            warn("[UPGRADE] Starting TOMATO upgrades!")
+            while true do
+                for id = 1, 50 do
+                    upgradeUnit(id)
+                    upgradeUnit(id) -- Double call
+                end
+                task.wait(0.01)
+            end
+        end)
+        
+        -- Start metal flower upgrades at 86 seconds  
+        local metalThread = task.delay(86, function()
+            warn("[UPGRADE] Starting METAL FLOWER upgrades!")
+            while true do
+                for id = 20, 80 do
+                    upgradeUnit(id)
+                    upgradeUnit(id) -- Double call
+                end
+                task.wait(0.01)
+            end
+        end)
+        
+        -- Start potato upgrades at 186 seconds
+        local potatoThread = task.delay(186, function()
+            warn("[UPGRADE] Starting POTATO upgrades - MAX SPEED!")
+            while true do
+                for id = 230, 280 do
+                    upgradeUnit(id)
+                    upgradeUnit(id) -- Double call
+                    upgradeUnit(id) -- Triple call
+                end
+                task.wait(0.001) -- Very fast for potatoes
+            end
+        end)
+        
+        -- Return the threads so we can stop them later
+        return {
+            tomatoes = tomatoThread,
+            metals = metalThread,
+            potatoes = potatoThread
+        }
+    end
+
     -- Main game loop
-    local function startGameLoop()
-        while UpgradeManager.Active do
-            warn("[GAME START] Beginning new game cycle...")
+    local function mainGameLoop()
+        while true do
+            warn("[CYCLE] Starting new game cycle...")
             
-            -- Reset game settings
-            UpgradeManager.GameStartTime = os.clock()
-            UpgradeManager.CurrentPhase = "waiting"
+            -- Start a game and get the upgrade threads
+            local currentThreads = startSingleGame()
             
-            remotes.ChangeTickSpeed:InvokeServer(3)
-            remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
+            -- Wait for game duration (300 seconds = 5 minutes)
+            task.wait(300)
             
-            -- Schedule unit placements
-            for _, placement in ipairs(unitPlacements) do
-                local placementTime = placement.time
-                task.delay(placementTime, function()
-                    if UpgradeManager.Active then
-                        placeUnit(placement.unit, placement.data)
-                    end
-                end)
-            end
+            warn("[CYCLE] Game finished, restarting...")
             
-            -- Schedule phase changes
-            -- Phase 1: Tomato upgrades (6s)
-            task.delay(6, function()
-                if UpgradeManager.Active then
-                    warn("[PHASE 1] Starting TOMATO upgrades!")
-                    UpgradeManager.CurrentPhase = "tomatoes"
-                end
-            end)
-
-            -- Phase 2: Metal Flower upgrades (86s)  
-            task.delay(86, function()
-                if UpgradeManager.Active then
-                    warn("[PHASE 2] Starting METAL FLOWER upgrades!")
-                    UpgradeManager.CurrentPhase = "metal_flowers"
-                end
-            end)
-
-            -- Phase 3: Potato upgrades (186s)
-            task.delay(186, function()
-                if UpgradeManager.Active then
-                    warn("[PHASE 3] Starting POTATO upgrades - MAXIMUM SPEED!")
-                    UpgradeManager.CurrentPhase = "potatoes"
-                end
-            end)
-
-            -- Wait for game to complete (300 seconds = 5 minutes)
-            local gameDuration = 300
-            warn("[GAME] Waiting " .. gameDuration .. " seconds for game completion...")
-            task.wait(gameDuration)
+            -- Restart the game
+            remotes.RestartGame:InvokeServer()
             
-            -- Restart game
-            if UpgradeManager.Active then
-                warn("[RESTART] Restarting game...")
-                UpgradeManager.CurrentPhase = "waiting"
-                
-                remotes.RestartGame:InvokeServer()
-                
-                -- Wait for game to fully reset
-                warn("[RESTART] Waiting 5 seconds for game reset...")
-                task.wait(5)
-            end
+            -- Wait for game to reset
+            warn("[CYCLE] Waiting 8 seconds for game reset...")
+            task.wait(8)
+            
+            -- The old threads will automatically stop when the game restarts
+            -- and new ones will be created in the next startSingleGame() call
         end
     end
 
-    -- Start the main game loop
-    startGameLoop()
+    -- Start the main loop
+    mainGameLoop()
 end
 
 --=== SIMPLIFIED MENU ===--
@@ -356,8 +321,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "RELATIVE TIMING SYSTEM"
-    SubTitle.Text = "No timing issues between games"
+    Title.Text = "SIMPLE RESTART SYSTEM"
+    SubTitle.Text = "Fresh start every match"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -367,39 +332,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "⏱️ RELATIVE TIMING SYSTEM\n• Uses task.wait() instead of absolute time\n• No timing drift between games\n• Perfect 5-minute cycles\n• Upgrades work every game\n• No 10-second delays"
+    Instructions.Text = "🔄 SIMPLE RESTART SYSTEM\n• Fresh upgrade threads every match\n• No complex phase management\n• 8-second reset wait for stability\n• Upgrades start fresh each game\n• No persistent loops to get stuck"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Relative Timing Button
-    local btnRelative = Instance.new("TextButton")
-    btnRelative.Size = UDim2.new(1, -40, 0, 120)
-    btnRelative.Position = UDim2.new(0, 20, 0, 200)
-    btnRelative.Text = "RELATIVE TIMING SYSTEM\nNo Timing Issues\nPerfect 5-Minute Cycles"
-    btnRelative.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnRelative.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnRelative.Font = Enum.Font.GothamBold
-    btnRelative.TextSize = 18
-    btnRelative.BorderSizePixel = 0
-    btnRelative.Parent = Frame
+    -- Simple System Button
+    local btnSimple = Instance.new("TextButton")
+    btnSimple.Size = UDim2.new(1, -40, 0, 120)
+    btnSimple.Position = UDim2.new(0, 20, 0, 200)
+    btnSimple.Text = "SIMPLE RESTART SYSTEM\nFresh Start Every Match\nNo Stuck Loops"
+    btnSimple.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnSimple.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnSimple.Font = Enum.Font.GothamBold
+    btnSimple.TextSize = 18
+    btnSimple.BorderSizePixel = 0
+    btnSimple.Parent = Frame
 
-    local btnRelativeCorner = Instance.new("UICorner")
-    btnRelativeCorner.CornerRadius = UDim.new(0, 10)
-    btnRelativeCorner.Parent = btnRelative
+    local btnSimpleCorner = Instance.new("UICorner")
+    btnSimpleCorner.CornerRadius = UDim.new(0, 10)
+    btnSimpleCorner.Parent = btnSimple
 
-    btnRelative.MouseButton1Click:Connect(function()
+    btnSimple.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadRelativeTimingSystem()
+        loadSimpleRestartSystem()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading RELATIVE TIMING..."
+        Label.Text = "✅ Key Verified! Loading SIMPLE SYSTEM..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
