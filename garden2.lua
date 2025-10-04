@@ -1,8 +1,8 @@
---// Garden Tower Defense Script - NO HOOK VERSION
+--// Garden Tower Defense Script - SIMPLIFIED
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
-print(plr.Name .. " loaded the script...")
+print(plr.Name .. " loaded script")
 
 --// Key GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -106,11 +106,13 @@ task.delay(2, function()
     end)
 end)
 
---=== TRACKING SYSTEM ===--
-function loadTracking()
-    warn("[System] Loaded ID TRACKING")
+--=== MAIN FUNCTION ===--
+local function startScript()
+    warn("[System] Script started")
     
-    remotes.ChangeTickSpeed:InvokeServer(3)
+    pcall(function()
+        remotes.ChangeTickSpeed:InvokeServer(3)
+    end)
 
     local trackedIds = {
         tomatoes = {},
@@ -125,102 +127,68 @@ function loadTracking()
         end)
     end
 
-    -- Place function with ID capture
-    local function placeUnit(unitName, data)
-        local result = nil
-        local success = pcall(function()
-            result = remotes.PlaceUnit:InvokeServer(unitName, data)
+    -- Place function
+    local function placeUnit(unitName, placeData)
+        local success, result = pcall(function()
+            return remotes.PlaceUnit:InvokeServer(unitName, placeData)
         end)
         
-        if success then
+        if success and result then
             warn("[Placed] " .. unitName)
-            
-            -- Debug: Print what PlaceUnit returns
-            warn("[DEBUG] PlaceUnit returned type: " .. type(result))
+            warn("[DEBUG] Result type: " .. type(result))
             
             if type(result) == "number" then
-                warn("[DEBUG] Got number ID: " .. result)
+                warn("[DEBUG] Got ID: " .. result)
                 
-                if unitName == "unit_tomato_rainbow" then
+                if unitName:find("tomato") then
                     table.insert(trackedIds.tomatoes, result)
-                    warn("[TRACKED] Tomato ID: " .. result)
-                elseif unitName == "unit_metal_flower" then
+                elseif unitName:find("flower") then
                     table.insert(trackedIds.metalFlowers, result)
-                    warn("[TRACKED] Metal Flower ID: " .. result)
-                elseif unitName == "unit_punch_potato" then
+                elseif unitName:find("potato") then
                     table.insert(trackedIds.potatoes, result)
-                    warn("[TRACKED] Potato ID: " .. result)
                 end
-                
             elseif type(result) == "table" then
-                warn("[DEBUG] Got table, checking keys...")
+                warn("[DEBUG] Result is table:")
                 for k, v in pairs(result) do
-                    warn("[DEBUG]   [" .. tostring(k) .. "] = " .. tostring(v))
+                    warn("  " .. tostring(k) .. " = " .. tostring(v))
                 end
-                
-                local id = result.id or result.Id or result.ID or result.unitId or result.UnitId
-                if id then
-                    warn("[DEBUG] Found ID in table: " .. id)
-                    
-                    if unitName == "unit_tomato_rainbow" then
-                        table.insert(trackedIds.tomatoes, id)
-                        warn("[TRACKED] Tomato ID: " .. id)
-                    elseif unitName == "unit_metal_flower" then
-                        table.insert(trackedIds.metalFlowers, id)
-                        warn("[TRACKED] Metal Flower ID: " .. id)
-                    elseif unitName == "unit_punch_potato" then
-                        table.insert(trackedIds.potatoes, id)
-                        warn("[TRACKED] Potato ID: " .. id)
-                    end
-                end
-            else
-                warn("[DEBUG] Unknown return type or nil")
             end
-            
-            return result
         else
             warn("[Failed] " .. unitName)
-            return nil
         end
     end
 
     -- Upgrade loops
-    local function upgradeTomatoes()
+    task.spawn(function()
         while true do
-            if #trackedIds.tomatoes > 0 then
-                for _, id in ipairs(trackedIds.tomatoes) do
-                    upgradeUnit(id)
-                end
-            end
             task.wait(0.3)
-        end
-    end
-
-    local function upgradeMetalFlowers()
-        while true do
-            if #trackedIds.metalFlowers > 0 then
-                for _, id in ipairs(trackedIds.metalFlowers) do
-                    upgradeUnit(id)
-                end
+            for _, id in ipairs(trackedIds.tomatoes) do
+                upgradeUnit(id)
             end
+        end
+    end)
+
+    task.spawn(function()
+        while true do
             task.wait(0.3)
-        end
-    end
-
-    local function upgradePotatoes()
-        while true do
-            if #trackedIds.potatoes > 0 then
-                for _, id in ipairs(trackedIds.potatoes) do
-                    upgradeUnit(id)
-                    upgradeUnit(id)
-                end
+            for _, id in ipairs(trackedIds.metalFlowers) do
+                upgradeUnit(id)
             end
+        end
+    end)
+
+    task.spawn(function()
+        while true do
             task.wait(0.1)
+            for _, id in ipairs(trackedIds.potatoes) do
+                upgradeUnit(id)
+                upgradeUnit(id)
+            end
         end
-    end
+    end)
 
-    -- Unit placements
-    local unitPlacements = {
+    -- Placements
+    local placements = {
         {time = 5, unit = "unit_tomato_rainbow", data = {Valid = true, Rotation = 180, CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)}},
         {time = 55, unit = "unit_tomato_rainbow", data = {Valid = true, Rotation = 180, CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)}},
         {time = 85, unit = "unit_metal_flower", data = {Valid = true, Rotation = 180, CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)}},
@@ -231,60 +199,37 @@ function loadTracking()
         {time = 195, unit = "unit_punch_potato", data = {Valid = true, Rotation = 180, CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)}}
     }
 
-    -- Main game loop
-    local function mainGameLoop()
-        while true do
-            warn("========== GAME START ==========")
-            
-            trackedIds = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
-            
-            remotes.ChangeTickSpeed:InvokeServer(3)
-            remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
-            
-            -- Place units
-            for _, placement in ipairs(unitPlacements) do
-                task.delay(placement.time, function()
-                    placeUnit(placement.unit, placement.data)
-                end)
-            end
-            
-            -- Start upgrades
-            task.delay(7, function()
-                warn("[UPGRADES] Starting Tomatoes: " .. #trackedIds.tomatoes .. " tracked")
-                task.spawn(upgradeTomatoes)
+    -- Main loop
+    while true do
+        warn("=== GAME START ===")
+        trackedIds = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
+        
+        pcall(function() remotes.ChangeTickSpeed:InvokeServer(3) end)
+        pcall(function() remotes.PlaceDifficultyVote:InvokeServer("dif_hard") end)
+        
+        for _, p in ipairs(placements) do
+            task.delay(p.time, function()
+                placeUnit(p.unit, p.data)
             end)
-            
-            task.delay(87, function()
-                warn("[UPGRADES] Starting Metal Flowers: " .. #trackedIds.metalFlowers .. " tracked")
-                task.spawn(upgradeMetalFlowers)
-            end)
-            
-            task.delay(187, function()
-                warn("[UPGRADES] Starting Potatoes: " .. #trackedIds.potatoes .. " tracked")
-                task.spawn(upgradePotatoes)
-            end)
-            
-            task.wait(300)
-            warn("========== RESTART ==========")
-            remotes.RestartGame:InvokeServer()
-            task.wait(5)
         end
+        
+        task.wait(300)
+        warn("=== RESTART ===")
+        pcall(function() remotes.RestartGame:InvokeServer() end)
+        task.wait(5)
     end
-
-    mainGameLoop()
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Loading..."
+        Label.Text = "✅ Starting..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-        CheckBtn.Text = "SUCCESS!"
         
-        task.delay(1.5, function()
+        task.delay(1, function()
             ScreenGui:Destroy()
-            loadTracking()
+            startScript()
         end)
     else
         TextBox.Text = ""
@@ -303,4 +248,4 @@ loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
 ScreenGui.DisplayOrder = 999
-print("Script loaded - NO HOOKS!")
+print("Loaded!")
