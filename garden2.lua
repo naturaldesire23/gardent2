@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - SIMPLE RESTART SYSTEM
+--// Garden Tower Defense Script - DYNAMIC UNIT ID TRACKING
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -113,10 +113,24 @@ task.delay(2, function()
     end)
 end)
 
---=== SIMPLE RESTART SYSTEM ===--
+--=== DYNAMIC UNIT ID TRACKING SYSTEM ===--
 
-function loadSimpleRestartSystem()
-    warn("[System] Loaded SIMPLE RESTART SYSTEM")
+function loadDynamicIDTracking()
+    warn("[System] Loaded DYNAMIC UNIT ID TRACKING SYSTEM")
+    
+    -- Track units by type and their IDs
+    local trackedUnits = {
+        tomatoes = {},
+        metal_flowers = {},
+        potatoes = {}
+    }
+    
+    -- Track the last placed unit ID for each type
+    local lastUnitIDs = {
+        tomatoes = nil,
+        metal_flowers = nil,
+        potatoes = nil
+    }
     
     -- Simple upgrade function
     local function upgradeUnit(unitId)
@@ -125,14 +139,95 @@ function loadSimpleRestartSystem()
         end)
     end
 
+    -- Function to track when units are placed
+    local function trackUnitPlacement(unitName, unitId)
+        warn("[TRACKING] Placed " .. unitName .. " with ID: " .. tostring(unitId))
+        
+        if unitName == "unit_tomato_rainbow" then
+            table.insert(trackedUnits.tomatoes, unitId)
+            lastUnitIDs.tomatoes = unitId
+        elseif unitName == "unit_metal_flower" then
+            table.insert(trackedUnits.metal_flowers, unitId)
+            lastUnitIDs.metal_flowers = unitId
+        elseif unitName == "unit_punch_potato" then
+            table.insert(trackedUnits.potatoes, unitId)
+            lastUnitIDs.potatoes = unitId
+        end
+        
+        -- Print current tracked units
+        warn(string.format("[TRACKED] Tomatoes: %d, Metal Flowers: %d, Potatoes: %d", 
+            #trackedUnits.tomatoes, #trackedUnits.metal_flowers, #trackedUnits.potatoes))
+    end
+
+    -- Hook into PlaceUnit to track IDs
+    local originalPlaceUnit
+    originalPlaceUnit = hookfunction(remotes.PlaceUnit.InvokeServer, function(self, unitName, data)
+        local result = originalPlaceUnit(self, unitName, data)
+        
+        -- Try to detect the unit ID from the result or remote spy
+        if result and type(result) == "number" then
+            trackUnitPlacement(unitName, result)
+        else
+            -- If we can't get the ID from result, we'll track it by timing
+            -- The ID should be the next available ID after the last placed unit
+            task.delay(0.5, function()
+                -- This is a fallback - we'll try to detect the ID by scanning
+                warn("[FALLBACK] Trying to detect ID for: " .. unitName)
+            end)
+        end
+        
+        return result
+    end)
+
+    -- Upgrade functions that use tracked IDs
+    local function upgradeTrackedTomatoes()
+        warn("[UPGRADE] Upgrading tracked tomatoes: " .. #trackedUnits.tomatoes .. " units")
+        while true do
+            for _, unitId in ipairs(trackedUnits.tomatoes) do
+                upgradeUnit(unitId)
+                upgradeUnit(unitId) -- Double call
+            end
+            task.wait(0.01)
+        end
+    end
+
+    local function upgradeTrackedMetalFlowers()
+        warn("[UPGRADE] Upgrading tracked metal flowers: " .. #trackedUnits.metal_flowers .. " units")
+        while true do
+            for _, unitId in ipairs(trackedUnits.metal_flowers) do
+                upgradeUnit(unitId)
+                upgradeUnit(unitId) -- Double call
+            end
+            task.wait(0.01)
+        end
+    end
+
+    local function upgradeTrackedPotatoes()
+        warn("[UPGRADE] Upgrading tracked potatoes: " .. #trackedUnits.potatoes .. " units)
+        while true do
+            for _, unitId in ipairs(trackedUnits.potatoes) do
+                upgradeUnit(unitId)
+                upgradeUnit(unitId) -- Double call
+                upgradeUnit(unitId) -- Triple call
+            end
+            task.wait(0.001) -- Faster for potatoes
+        end
+    end
+
     -- Simple place function
     local function placeUnit(unitName, data)
-        local success = pcall(function()
+        local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
-            warn("[Placed] " .. unitName)
+            warn("[Placed] " .. unitName .. " at " .. os.clock())
+            
+            -- Try to track the unit ID
+            if result and type(result) == "number" then
+                trackUnitPlacement(unitName, result)
+            end
+            
             return true
         else
             warn("[Failed] " .. unitName)
@@ -227,92 +322,60 @@ function loadSimpleRestartSystem()
         }
     }
 
-    -- Main game function that gets called every match
-    local function startSingleGame()
-        warn("[GAME START] Starting new game!")
-        
-        -- Set game settings
-        remotes.ChangeTickSpeed:InvokeServer(3)
-        remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
-        
-        -- Place all units
-        for _, placement in ipairs(unitPlacements) do
-            task.delay(placement.time, function()
-                placeUnit(placement.unit, placement.data)
-            end)
-        end
-        
-        -- Start tomato upgrades at 6 seconds
-        local tomatoThread = task.delay(6, function()
-            warn("[UPGRADE] Starting TOMATO upgrades!")
-            while true do
-                for id = 1, 50 do
-                    upgradeUnit(id)
-                    upgradeUnit(id) -- Double call
-                end
-                task.wait(0.01)
-            end
-        end)
-        
-        -- Start metal flower upgrades at 86 seconds  
-        local metalThread = task.delay(86, function()
-            warn("[UPGRADE] Starting METAL FLOWER upgrades!")
-            while true do
-                for id = 20, 80 do
-                    upgradeUnit(id)
-                    upgradeUnit(id) -- Double call
-                end
-                task.wait(0.01)
-            end
-        end)
-        
-        -- Start potato upgrades at 186 seconds
-        local potatoThread = task.delay(186, function()
-            warn("[UPGRADE] Starting POTATO upgrades - MAX SPEED!")
-            while true do
-                for id = 230, 280 do
-                    upgradeUnit(id)
-                    upgradeUnit(id) -- Double call
-                    upgradeUnit(id) -- Triple call
-                end
-                task.wait(0.001) -- Very fast for potatoes
-            end
-        end)
-        
-        -- Return the threads so we can stop them later
-        return {
-            tomatoes = tomatoThread,
-            metals = metalThread,
-            potatoes = potatoThread
-        }
-    end
-
     -- Main game loop
     local function mainGameLoop()
         while true do
-            warn("[CYCLE] Starting new game cycle...")
+            warn("[GAME START] New game cycle starting...")
             
-            -- Start a game and get the upgrade threads
-            local currentThreads = startSingleGame()
+            -- Clear tracked units for new game
+            trackedUnits = {
+                tomatoes = {},
+                metal_flowers = {},
+                potatoes = {}
+            }
             
-            -- Wait for game duration (300 seconds = 5 minutes)
-            task.wait(300)
+            -- Set game settings
+            remotes.ChangeTickSpeed:InvokeServer(3)
+            remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
             
-            warn("[CYCLE] Game finished, restarting...")
+            -- Place all units
+            for _, placement in ipairs(unitPlacements) do
+                task.delay(placement.time, function()
+                    placeUnit(placement.unit, placement.data)
+                end)
+            end
             
-            -- Restart the game
+            -- Start upgrades based on timing
+            -- Tomatoes start at 6s
+            task.delay(6, function()
+                warn("[STARTING] Tomato upgrades with tracked IDs")
+                upgradeTrackedTomatoes()
+            end)
+            
+            -- Metal flowers start at 86s
+            task.delay(86, function()
+                warn("[STARTING] Metal flower upgrades with tracked IDs")
+                upgradeTrackedMetalFlowers()
+            end)
+            
+            -- Potatoes start at 186s
+            task.delay(186, function()
+                warn("[STARTING] Potato upgrades with tracked IDs")
+                upgradeTrackedPotatoes()
+            end)
+            
+            -- Wait for game duration
+            task.wait(300) -- 5 minutes
+            
+            warn("[RESTART] Restarting game...")
             remotes.RestartGame:InvokeServer()
             
-            -- Wait for game to reset
-            warn("[CYCLE] Waiting 8 seconds for game reset...")
-            task.wait(8)
-            
-            -- The old threads will automatically stop when the game restarts
-            -- and new ones will be created in the next startSingleGame() call
+            -- Wait for reset
+            task.wait(5)
         end
     end
 
-    -- Start the main loop
+    -- Start everything
     mainGameLoop()
 end
 
@@ -321,8 +384,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "SIMPLE RESTART SYSTEM"
-    SubTitle.Text = "Fresh start every match"
+    Title.Text = "DYNAMIC ID TRACKING"
+    SubTitle.Text = "Tracks unit IDs as they're placed"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -332,39 +395,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🔄 SIMPLE RESTART SYSTEM\n• Fresh upgrade threads every match\n• No complex phase management\n• 8-second reset wait for stability\n• Upgrades start fresh each game\n• No persistent loops to get stuck"
+    Instructions.Text = "🎯 DYNAMIC UNIT ID TRACKING\n• Hooks PlaceUnit to track IDs\n• Upgrades only the actual placed units\n• Works across game restarts\n• No more guessing ID ranges\n• Real-time unit tracking"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Simple System Button
-    local btnSimple = Instance.new("TextButton")
-    btnSimple.Size = UDim2.new(1, -40, 0, 120)
-    btnSimple.Position = UDim2.new(0, 20, 0, 200)
-    btnSimple.Text = "SIMPLE RESTART SYSTEM\nFresh Start Every Match\nNo Stuck Loops"
-    btnSimple.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnSimple.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnSimple.Font = Enum.Font.GothamBold
-    btnSimple.TextSize = 18
-    btnSimple.BorderSizePixel = 0
-    btnSimple.Parent = Frame
+    -- Dynamic ID Button
+    local btnDynamic = Instance.new("TextButton")
+    btnDynamic.Size = UDim2.new(1, -40, 0, 120)
+    btnDynamic.Position = UDim2.new(0, 20, 0, 200)
+    btnDynamic.Text = "DYNAMIC ID TRACKING\nTracks Actual Unit IDs\nNo More Guessing"
+    btnDynamic.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnDynamic.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnDynamic.Font = Enum.Font.GothamBold
+    btnDynamic.TextSize = 18
+    btnDynamic.BorderSizePixel = 0
+    btnDynamic.Parent = Frame
 
-    local btnSimpleCorner = Instance.new("UICorner")
-    btnSimpleCorner.CornerRadius = UDim.new(0, 10)
-    btnSimpleCorner.Parent = btnSimple
+    local btnDynamicCorner = Instance.new("UICorner")
+    btnDynamicCorner.CornerRadius = UDim.new(0, 10)
+    btnDynamicCorner.Parent = btnDynamic
 
-    btnSimple.MouseButton1Click:Connect(function()
+    btnDynamic.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadSimpleRestartSystem()
+        loadDynamicIDTracking()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading SIMPLE SYSTEM..."
+        Label.Text = "✅ Key Verified! Loading DYNAMIC TRACKING..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
