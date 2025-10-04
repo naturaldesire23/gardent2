@@ -4,7 +4,7 @@ local plr = Players.LocalPlayer
 
 print(plr.Name .. " loaded the script with SMART TRACKING...")
 
---// GUI Setup (same as before)
+--// GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = plr:WaitForChild("PlayerGui")
 
@@ -121,45 +121,43 @@ function loadSmartTracking()
         potatoes = {}
     }
     
-    local placedUnits = {}
+    local lastPlacedId = 0
     local upgradeQueues = {
         tomatoes = {},
         metalFlowers = {},
         potatoes = {}
     }
 
-    -- Hook into PlaceUnit to capture the unit ID when it's placed
-    local originalPlaceUnit = remotes.PlaceUnit.InvokeServer
-    remotes.PlaceUnit.InvokeServer = function(self, unitName, data)
-        local result = originalPlaceUnit(self, unitName, data)
-        
-        -- Result should contain the unit ID that was just placed
-        if result then
-            local unitId = result -- Adjust based on what the remote actually returns
-            
-            -- Track the ID based on unit type
-            if unitName == "unit_tomato_rainbow" then
-                table.insert(unitIdTracker.tomatoes, unitId)
-                table.insert(upgradeQueues.tomatoes, unitId)
-                warn("[TRACKED] Tomato ID: " .. tostring(unitId))
-            elseif unitName == "unit_metal_flower" then
-                table.insert(unitIdTracker.metalFlowers, unitId)
-                table.insert(upgradeQueues.metalFlowers, unitId)
-                warn("[TRACKED] Metal Flower ID: " .. tostring(unitId))
-            elseif unitName == "unit_punch_potato" then
-                table.insert(unitIdTracker.potatoes, unitId)
-                table.insert(upgradeQueues.potatoes, unitId)
-                warn("[TRACKED] Potato ID: " .. tostring(unitId))
-            end
-            
-            table.insert(placedUnits, {
-                id = unitId,
-                name = unitName,
-                time = os.clock()
-            })
+    -- Track units by monitoring the game for new units
+    -- This method monitors unit creation instead of hooking remotes
+    local function monitorUnits()
+        local unitFolder = workspace:FindFirstChild("Units") -- Adjust path as needed
+        if not unitFolder then
+            warn("[WARNING] Could not find Units folder in workspace")
+            return
         end
         
-        return result
+        unitFolder.ChildAdded:Connect(function(unit)
+            task.wait(0.1) -- Wait for unit to fully initialize
+            
+            -- Try to identify unit type by name or properties
+            if unit.Name:find("Tomato") or unit.Name:find("tomato") then
+                lastPlacedId = lastPlacedId + 1
+                table.insert(unitIdTracker.tomatoes, lastPlacedId)
+                table.insert(upgradeQueues.tomatoes, lastPlacedId)
+                warn("[TRACKED] Tomato ID: " .. lastPlacedId)
+            elseif unit.Name:find("Metal") or unit.Name:find("Flower") then
+                lastPlacedId = lastPlacedId + 1
+                table.insert(unitIdTracker.metalFlowers, lastPlacedId)
+                table.insert(upgradeQueues.metalFlowers, lastPlacedId)
+                warn("[TRACKED] Metal Flower ID: " .. lastPlacedId)
+            elseif unit.Name:find("Potato") or unit.Name:find("potato") then
+                lastPlacedId = lastPlacedId + 1
+                table.insert(unitIdTracker.potatoes, lastPlacedId)
+                table.insert(upgradeQueues.potatoes, lastPlacedId)
+                warn("[TRACKED] Potato ID: " .. lastPlacedId)
+            end
+        end)
     end
 
     -- Smart upgrade function that only upgrades tracked IDs
@@ -169,17 +167,16 @@ function loadSmartTracking()
         for i, unitId in ipairs(queue) do
             pcall(function()
                 remotes.UpgradeUnit:InvokeServer(unitId)
-                warn("[UPGRADED] " .. unitType .. " ID: " .. tostring(unitId))
             end)
-            task.wait(0.05) -- Small delay between upgrades
+            task.wait(0.05)
         end
     end
 
-    -- Continuous upgrade loops for each unit type
+    -- Continuous upgrade loops
     local function startTomatoUpgrades()
         while true do
             upgradeTrackedUnits("tomatoes")
-            task.wait(0.5) -- Upgrade every 0.5 seconds
+            task.wait(0.5)
         end
     end
 
@@ -193,11 +190,12 @@ function loadSmartTracking()
     local function startPotatoUpgrades()
         while true do
             upgradeTrackedUnits("potatoes")
-            task.wait(0.3) -- Faster for potatoes
+            task.wait(0.3)
         end
     end
 
-    -- Simple place function
+    -- Simple place function with ID tracking
+    local currentUnitId = 0
     local function placeUnit(unitName, data)
         local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
@@ -205,6 +203,25 @@ function loadSmartTracking()
         
         if success then
             warn("[Placed] " .. unitName .. " at " .. os.clock())
+            
+            -- Increment and track ID
+            currentUnitId = currentUnitId + 1
+            
+            -- Add to appropriate queue
+            if unitName == "unit_tomato_rainbow" then
+                table.insert(unitIdTracker.tomatoes, currentUnitId)
+                table.insert(upgradeQueues.tomatoes, currentUnitId)
+                warn("[TRACKED] Tomato ID: " .. currentUnitId)
+            elseif unitName == "unit_metal_flower" then
+                table.insert(unitIdTracker.metalFlowers, currentUnitId)
+                table.insert(upgradeQueues.metalFlowers, currentUnitId)
+                warn("[TRACKED] Metal Flower ID: " .. currentUnitId)
+            elseif unitName == "unit_punch_potato" then
+                table.insert(unitIdTracker.potatoes, currentUnitId)
+                table.insert(upgradeQueues.potatoes, currentUnitId)
+                warn("[TRACKED] Potato ID: " .. currentUnitId)
+            end
+            
             return result
         else
             warn("[Failed] " .. unitName)
@@ -301,10 +318,10 @@ function loadSmartTracking()
         while true do
             warn("[GAME START] New game cycle starting...")
             
-            -- Clear tracking tables for new game
+            -- Reset tracking for new game
             unitIdTracker = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
             upgradeQueues = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
-            placedUnits = {}
+            currentUnitId = 0
             
             remotes.ChangeTickSpeed:InvokeServer(3)
             remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
@@ -316,7 +333,7 @@ function loadSmartTracking()
                 end)
             end
             
-            -- Start upgrade loops after first units are placed
+            -- Start upgrade loops
             task.delay(6, function()
                 warn("[UPGRADES] Starting Tomato upgrades")
                 task.spawn(startTomatoUpgrades)
@@ -332,7 +349,6 @@ function loadSmartTracking()
                 task.spawn(startPotatoUpgrades)
             end)
             
-            -- Wait for game duration
             task.wait(300)
             
             warn("[RESTART] Restarting game...")
@@ -341,23 +357,24 @@ function loadSmartTracking()
         end
     end
 
-    -- Debug: Print tracked units every 10 seconds
+    -- Debug logging
     task.spawn(function()
         while true do
             task.wait(10)
-            warn("[DEBUG] Tracked Tomatoes: " .. #unitIdTracker.tomatoes)
-            warn("[DEBUG] Tracked Metal Flowers: " .. #unitIdTracker.metalFlowers)
-            warn("[DEBUG] Tracked Potatoes: " .. #unitIdTracker.potatoes)
+            warn("[DEBUG] Tracked - Tomatoes: " .. #unitIdTracker.tomatoes .. " | Metal Flowers: " .. #unitIdTracker.metalFlowers .. " | Potatoes: " .. #unitIdTracker.potatoes)
         end
     end)
 
+    -- Try to monitor units in workspace
+    pcall(monitorUnits)
+    
     mainGameLoop()
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading SMART SYSTEM..."
+        Label.Text = "✅ Key Verified! Loading..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
@@ -368,7 +385,7 @@ CheckBtn.MouseButton1Click:Connect(function()
         end)
     else
         TextBox.Text = ""
-        Label.Text = "❌ Invalid Key! Please try again."
+        Label.Text = "❌ Invalid Key!"
         Label.TextColor3 = Color3.fromRGB(255, 100, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
         
@@ -383,6 +400,4 @@ loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
 ScreenGui.DisplayOrder = 999
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-print("Smart ID Tracking system loaded!")
+print("Smart tracking loaded!")
