@@ -1,4 +1,4 @@
---// Garden Tower Defense Script - SIMPLE UNIT ID TRACKING
+--// Garden Tower Defense Script - REAL UNIT TRACKING SYSTEM
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -105,6 +105,14 @@ Label.Parent = Frame
 local rs = game:GetService("ReplicatedStorage")
 local remotes = rs:WaitForChild("RemoteFunctions")
 
+-- Unit tracking system
+local unitTracker = {
+    tomatoes = {},
+    metalFlowers = {},
+    potatoes = {},
+    allUnits = {}
+}
+
 -- Auto Skip (enable once at start)
 task.delay(2, function()
     pcall(function()
@@ -113,114 +121,135 @@ task.delay(2, function()
     end)
 end)
 
---=== SIMPLE UNIT ID TRACKING SYSTEM ===--
+--=== REAL UNIT TRACKING SYSTEM ===--
 
-function loadSimpleIDTracking()
-    warn("[System] Loaded SIMPLE UNIT ID TRACKING SYSTEM")
+function loadRealTracking()
+    warn("[System] Loaded REAL UNIT TRACKING SYSTEM")
     
-    -- Track units by type and their IDs
-    local trackedUnits = {
-        tomatoes = {},
-        metal_flowers = {},
-        potatoes = {}
-    }
+    -- Clear previous units
+    unitTracker.tomatoes = {}
+    unitTracker.metalFlowers = {}
+    unitTracker.potatoes = {}
+    unitTracker.allUnits = {}
     
-    -- Simple upgrade function
-    local function upgradeUnit(unitId)
-        pcall(function()
-            remotes.UpgradeUnit:InvokeServer(unitId)
-        end)
-    end
+    remotes.ChangeTickSpeed:InvokeServer(3)
 
-    -- Function to track when units are placed
+    -- Track when units are placed
     local function trackUnitPlacement(unitName, unitId)
-        warn("[TRACKING] Placed " .. unitName .. " with ID: " .. tostring(unitId))
+        if not unitId then return end
         
-        if unitName == "unit_tomato_rainbow" then
-            table.insert(trackedUnits.tomatoes, unitId)
-        elseif unitName == "unit_metal_flower" then
-            table.insert(trackedUnits.metal_flowers, unitId)
-        elseif unitName == "unit_punch_potato" then
-            table.insert(trackedUnits.potatoes, unitId)
+        unitTracker.allUnits[unitId] = {
+            name = unitName,
+            id = unitId,
+            placedTime = os.clock()
+        }
+        
+        if string.find(unitName:lower(), "tomato") then
+            unitTracker.tomatoes[unitId] = true
+            warn("[TRACKER] Tomato placed - ID: " .. unitId)
+        elseif string.find(unitName:lower(), "metal") then
+            unitTracker.metalFlowers[unitId] = true
+            warn("[TRACKER] Metal Flower placed - ID: " .. unitId)
+        elseif string.find(unitName:lower(), "potato") then
+            unitTracker.potatoes[unitId] = true
+            warn("[TRACKER] Potato placed - ID: " .. unitId)
         end
-        
-        -- Print current tracked units
-        warn(string.format("[TRACKED] Tomatoes: %d, Metal Flowers: %d, Potatoes: %d", 
-            #trackedUnits.tomatoes, #trackedUnits.metal_flowers, #trackedUnits.potatoes))
     end
 
-    -- Simple place function that also tracks
-    local function placeAndTrackUnit(unitName, data)
+    -- Smart upgrade function that only upgrades existing units
+    local function upgradeUnit(unitId)
+        if unitTracker.allUnits[unitId] then
+            pcall(function()
+                remotes.UpgradeUnit:InvokeServer(unitId)
+            end)
+            return true
+        end
+        return false
+    end
+
+    -- Smart place function that tracks the returned unit ID
+    local function placeUnit(unitName, data)
         local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
-        if success then
-            warn("[Placed] " .. unitName .. " at " .. os.clock())
-            
-            -- Try to track the unit ID from the result
-            if result and type(result) == "number" then
-                trackUnitPlacement(unitName, result)
-            else
-                -- If we can't get the ID, we'll use a fallback method
-                -- Assume IDs are sequential and track the count
-                local unitType = ""
-                if unitName == "unit_tomato_rainbow" then
-                    unitType = "tomatoes"
-                elseif unitName == "unit_metal_flower" then
-                    unitType = "metal_flowers"
-                elseif unitName == "unit_punch_potato" then
-                    unitType = "potatoes"
-                end
-                
-                -- Use the count as a pseudo-ID (this is a fallback)
-                local pseudoId = #trackedUnits[unitType] + 1
-                trackUnitPlacement(unitName, pseudoId)
-            end
-            
-            return true
+        if success and result then
+            warn("[Placed] " .. unitName .. " - Returned: " .. tostring(result))
+            trackUnitPlacement(unitName, result)
+            return true, result
         else
             warn("[Failed] " .. unitName)
             return false
         end
     end
 
-    -- Upgrade functions that use tracked IDs
-    local function upgradeTrackedTomatoes()
-        warn("[UPGRADE] Upgrading tracked tomatoes: " .. #trackedUnits.tomatoes .. " units")
-        while true do
-            for _, unitId in ipairs(trackedUnits.tomatoes) do
-                upgradeUnit(unitId)
-                upgradeUnit(unitId) -- Double call
+    -- REAL UPGRADE SYSTEM: Only upgrades existing units
+
+    -- Upgrade tomatoes with actual tracking
+    local function upgradeTomatoesReal()
+        warn("[REAL TRACKING] Starting TOMATO upgrades - " .. #unitTracker.tomatoes .. " tomatoes found")
+        
+        task.spawn(function()
+            while true do
+                local upgraded = 0
+                for unitId, _ in pairs(unitTracker.tomatoes) do
+                    if upgradeUnit(unitId) then
+                        upgraded += 1
+                    end
+                    task.wait(0.001)
+                end
+                if upgraded > 0 then
+                    warn("[TOMATO UPGRADES] Upgraded " .. upgraded .. " tomatoes")
+                end
+                task.wait(0.1)
             end
-            task.wait(0.01)
-        end
+        end)
     end
 
-    local function upgradeTrackedMetalFlowers()
-        warn("[UPGRADE] Upgrading tracked metal flowers: " .. #trackedUnits.metal_flowers .. " units")
-        while true do
-            for _, unitId in ipairs(trackedUnits.metal_flowers) do
-                upgradeUnit(unitId)
-                upgradeUnit(unitId) -- Double call
+    -- Upgrade metal flowers with actual tracking
+    local function upgradeMetalFlowersReal()
+        warn("[REAL TRACKING] Starting METAL FLOWER upgrades - " .. #unitTracker.metalFlowers .. " metal flowers found")
+        
+        task.spawn(function()
+            while true do
+                local upgraded = 0
+                for unitId, _ in pairs(unitTracker.metalFlowers) do
+                    if upgradeUnit(unitId) then
+                        upgraded += 1
+                    end
+                    task.wait(0.001)
+                end
+                if upgraded > 0 then
+                    warn("[METAL FLOWER UPGRADES] Upgraded " .. upgraded .. " metal flowers")
+                end
+                task.wait(0.1)
             end
-            task.wait(0.01)
-        end
+        end)
     end
 
-    local function upgradeTrackedPotatoes()
-        warn("[UPGRADE] Upgrading tracked potatoes: " .. #trackedUnits.potatoes .. " units")
-        while true do
-            for _, unitId in ipairs(trackedUnits.potatoes) do
-                upgradeUnit(unitId)
-                upgradeUnit(unitId) -- Double call
-                upgradeUnit(unitId) -- Triple call
+    -- Upgrade potatoes with actual tracking
+    local function upgradePotatoesReal()
+        warn("[REAL TRACKING] Starting POTATO upgrades - " .. #unitTracker.potatoes .. " potatoes found")
+        
+        task.spawn(function()
+            while true do
+                local upgraded = 0
+                for unitId, _ in pairs(unitTracker.potatoes) do
+                    if upgradeUnit(unitId) then
+                        upgraded += 1
+                        upgradeUnit(unitId) -- Double call for faster upgrades
+                    end
+                    task.wait(0.001)
+                end
+                if upgraded > 0 then
+                    warn("[POTATO UPGRADES] Upgraded " .. upgraded .. " potatoes")
+                end
+                task.wait(0.05)
             end
-            task.wait(0.001) -- Faster for potatoes
-        end
+        end)
     end
 
-    -- Unit placement data
+    -- Unit placement data with timing
     local unitPlacements = {
         -- Rainbow Tomatoes
         {
@@ -307,52 +336,54 @@ function loadSimpleIDTracking()
         }
     }
 
-    -- Main game loop
+    -- Main game loop with proper reset
     local function mainGameLoop()
         while true do
             warn("[GAME START] New game cycle starting...")
             
-            -- Clear tracked units for new game
-            trackedUnits = {
-                tomatoes = {},
-                metal_flowers = {},
-                potatoes = {}
-            }
+            -- Clear units for new game
+            unitTracker.tomatoes = {}
+            unitTracker.metalFlowers = {}
+            unitTracker.potatoes = {}
+            unitTracker.allUnits = {}
             
             -- Set game settings
             remotes.ChangeTickSpeed:InvokeServer(3)
             remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
             
-            -- Place all units with tracking
+            -- Place all units and track their IDs
             for _, placement in ipairs(unitPlacements) do
                 task.delay(placement.time, function()
-                    placeAndTrackUnit(placement.unit, placement.data)
+                    local success, unitId = placeUnit(placement.unit, placement.data)
+                    if success and unitId then
+                        warn("[PLACEMENT TRACKED] " .. placement.unit .. " - ID: " .. tostring(unitId))
+                    end
                 end)
             end
             
-            -- Start upgrades based on timing
-            -- Tomatoes start at 6s
-            task.delay(6, function()
-                warn("[STARTING] Tomato upgrades with tracked IDs")
-                upgradeTrackedTomatoes()
+            -- Start REAL upgrades based on actual unit tracking
+            -- Tomatoes start at 10s (after placement)
+            task.delay(10, function()
+                warn("[REAL TRACKING] Starting TOMATO upgrades - Tracking " .. #unitTracker.tomatoes .. " units")
+                upgradeTomatoesReal()
             end)
             
-            -- Metal flowers start at 86s
-            task.delay(86, function()
-                warn("[STARTING] Metal flower upgrades with tracked IDs")
-                upgradeTrackedMetalFlowers()
+            -- Metal flowers start at 90s
+            task.delay(90, function()
+                warn("[REAL TRACKING] Starting METAL FLOWER upgrades - Tracking " .. #unitTracker.metalFlowers .. " units")
+                upgradeMetalFlowersReal()
             end)
             
-            -- Potatoes start at 186s
-            task.delay(186, function()
-                warn("[STARTING] Potato upgrades with tracked IDs")
-                upgradeTrackedPotatoes()
+            -- Potatoes start at 200s
+            task.delay(200, function()
+                warn("[REAL TRACKING] Starting POTATO upgrades - Tracking " .. #unitTracker.potatoes .. " units")
+                upgradePotatoesReal()
             end)
             
             -- Wait for game duration
             task.wait(300) -- 5 minutes
             
-            warn("[RESTART] Restarting game...")
+            warn("[RESTART] Restarting game and clearing unit tracker...")
             remotes.RestartGame:InvokeServer()
             
             -- Wait for reset
@@ -369,8 +400,8 @@ local function showStrategyMenu()
     Frame.Size = UDim2.new(0, 450, 0, 350)
     Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
     
-    Title.Text = "SIMPLE ID TRACKING"
-    SubTitle.Text = "Tracks unit placements"
+    Title.Text = "REAL UNIT TRACKING SYSTEM"
+    SubTitle.Text = "Actual Unit ID Tracking - No Guessing"
     TextBox.Visible = false
     CheckBtn.Visible = false
     Label.Visible = false
@@ -380,39 +411,39 @@ local function showStrategyMenu()
     Instructions.Size = UDim2.new(1, -40, 0, 120)
     Instructions.Position = UDim2.new(0, 20, 0, 60)
     Instructions.BackgroundTransparency = 1
-    Instructions.Text = "🎯 SIMPLE UNIT ID TRACKING\n• Tracks when units are placed\n• Uses placement timing\n• Upgrades only placed units\n• Works across game restarts\n• No complex hooking"
+    Instructions.Text = "🎯 REAL UNIT TRACKING SYSTEM\n• Tracks actual unit IDs from placement\n• Only upgrades existing units\n• Survives rematches\n• No wasted upgrade calls\n• Smart unit categorization"
     Instructions.Font = Enum.Font.Gotham
     Instructions.TextSize = 14
     Instructions.TextColor3 = Color3.fromRGB(100, 255, 100)
     Instructions.TextWrapped = true
     Instructions.Parent = Frame
 
-    -- Simple Tracking Button
-    local btnSimple = Instance.new("TextButton")
-    btnSimple.Size = UDim2.new(1, -40, 0, 120)
-    btnSimple.Position = UDim2.new(0, 20, 0, 200)
-    btnSimple.Text = "SIMPLE ID TRACKING\nTracks Unit Placements\nNo Complex Hooking"
-    btnSimple.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-    btnSimple.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnSimple.Font = Enum.Font.GothamBold
-    btnSimple.TextSize = 18
-    btnSimple.BorderSizePixel = 0
-    btnSimple.Parent = Frame
+    -- Real Tracking Button
+    local btnReal = Instance.new("TextButton")
+    btnReal.Size = UDim2.new(1, -40, 0, 120)
+    btnReal.Position = UDim2.new(0, 20, 0, 200)
+    btnReal.Text = "REAL UNIT TRACKING SYSTEM\nActual Unit ID Tracking\nSurvives Rematches"
+    btnReal.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+    btnReal.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnReal.Font = Enum.Font.GothamBold
+    btnReal.TextSize = 18
+    btnReal.BorderSizePixel = 0
+    btnReal.Parent = Frame
 
-    local btnSimpleCorner = Instance.new("UICorner")
-    btnSimpleCorner.CornerRadius = UDim.new(0, 10)
-    btnSimpleCorner.Parent = btnSimple
+    local btnRealCorner = Instance.new("UICorner")
+    btnRealCorner.CornerRadius = UDim.new(0, 10)
+    btnRealCorner.Parent = btnReal
 
-    btnSimple.MouseButton1Click:Connect(function()
+    btnReal.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
-        loadSimpleIDTracking()
+        loadRealTracking()
     end)
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading SIMPLE TRACKING..."
+        Label.Text = "✅ Key Verified! Loading REAL TRACKING SYSTEM..."
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
