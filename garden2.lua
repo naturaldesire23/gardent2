@@ -1,10 +1,10 @@
---// Garden Tower Defense Script - SMART ID TRACKING SYSTEM
+--// Garden Tower Defense Script - IMPROVED HYBRID TRACKING
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
-print(plr.Name .. " loaded the script with SMART TRACKING...")
+print(plr.Name .. " loaded the script. Waiting for key...")
 
---// GUI Setup
+--// Key GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = plr:WaitForChild("PlayerGui")
 
@@ -41,7 +41,7 @@ local SubTitle = Instance.new("TextLabel")
 SubTitle.Size = UDim2.new(1, 0, 0, 30)
 SubTitle.Position = UDim2.new(0, 0, 0, 40)
 SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "Smart ID Tracking"
+SubTitle.Text = "Enter Access Key"
 SubTitle.TextColor3 = Color3.fromRGB(200, 200, 220)
 SubTitle.Font = Enum.Font.Gotham
 SubTitle.TextSize = 16
@@ -107,281 +107,162 @@ task.delay(2, function()
     end)
 end)
 
---=== SMART ID TRACKING SYSTEM ===--
-
-function loadSmartTracking()
-    warn("[System] Loaded SMART ID TRACKING SYSTEM")
+--=== IMPROVED HYBRID SYSTEM ===--
+function loadHybridTracking()
+    warn("[System] Loaded IMPROVED HYBRID TRACKING")
     
     remotes.ChangeTickSpeed:InvokeServer(3)
 
-    -- TRACKING TABLES
-    local unitIdTracker = {
+    -- Track placed unit IDs
+    local placedUnitIds = {
         tomatoes = {},
         metalFlowers = {},
         potatoes = {}
     }
     
-    local lastPlacedId = 0
-    local upgradeQueues = {
-        tomatoes = {},
-        metalFlowers = {},
-        potatoes = {}
-    }
+    local nextExpectedId = 1
 
-    -- Track units by monitoring the game for new units
-    -- This method monitors unit creation instead of hooking remotes
-    local function monitorUnits()
-        local unitFolder = workspace:FindFirstChild("Units") -- Adjust path as needed
-        if not unitFolder then
-            warn("[WARNING] Could not find Units folder in workspace")
-            return
-        end
-        
-        unitFolder.ChildAdded:Connect(function(unit)
-            task.wait(0.1) -- Wait for unit to fully initialize
-            
-            -- Try to identify unit type by name or properties
-            if unit.Name:find("Tomato") or unit.Name:find("tomato") then
-                lastPlacedId = lastPlacedId + 1
-                table.insert(unitIdTracker.tomatoes, lastPlacedId)
-                table.insert(upgradeQueues.tomatoes, lastPlacedId)
-                warn("[TRACKED] Tomato ID: " .. lastPlacedId)
-            elseif unit.Name:find("Metal") or unit.Name:find("Flower") then
-                lastPlacedId = lastPlacedId + 1
-                table.insert(unitIdTracker.metalFlowers, lastPlacedId)
-                table.insert(upgradeQueues.metalFlowers, lastPlacedId)
-                warn("[TRACKED] Metal Flower ID: " .. lastPlacedId)
-            elseif unit.Name:find("Potato") or unit.Name:find("potato") then
-                lastPlacedId = lastPlacedId + 1
-                table.insert(unitIdTracker.potatoes, lastPlacedId)
-                table.insert(upgradeQueues.potatoes, lastPlacedId)
-                warn("[TRACKED] Potato ID: " .. lastPlacedId)
-            end
+    -- Upgrade function
+    local function upgradeUnit(unitId)
+        pcall(function()
+            remotes.UpgradeUnit:InvokeServer(unitId)
         end)
     end
 
-    -- Smart upgrade function that only upgrades tracked IDs
-    local function upgradeTrackedUnits(unitType)
-        local queue = upgradeQueues[unitType]
-        
-        for i, unitId in ipairs(queue) do
-            pcall(function()
-                remotes.UpgradeUnit:InvokeServer(unitId)
-            end)
-            task.wait(0.05)
-        end
-    end
-
-    -- Continuous upgrade loops
-    local function startTomatoUpgrades()
-        while true do
-            upgradeTrackedUnits("tomatoes")
-            task.wait(0.5)
-        end
-    end
-
-    local function startMetalFlowerUpgrades()
-        while true do
-            upgradeTrackedUnits("metalFlowers")
-            task.wait(0.5)
-        end
-    end
-
-    local function startPotatoUpgrades()
-        while true do
-            upgradeTrackedUnits("potatoes")
-            task.wait(0.3)
-        end
-    end
-
-    -- Simple place function with ID tracking
-    local currentUnitId = 0
+    -- Place function with ID tracking
     local function placeUnit(unitName, data)
-        local success, result = pcall(function()
-            return remotes.PlaceUnit:InvokeServer(unitName, data)
+        local success = pcall(function()
+            remotes.PlaceUnit:InvokeServer(unitName, data)
         end)
         
         if success then
-            warn("[Placed] " .. unitName .. " at " .. os.clock())
+            warn("[Placed] " .. unitName .. " - Tracking ID: " .. nextExpectedId)
             
-            -- Increment and track ID
-            currentUnitId = currentUnitId + 1
-            
-            -- Add to appropriate queue
+            -- Track the ID
             if unitName == "unit_tomato_rainbow" then
-                table.insert(unitIdTracker.tomatoes, currentUnitId)
-                table.insert(upgradeQueues.tomatoes, currentUnitId)
-                warn("[TRACKED] Tomato ID: " .. currentUnitId)
+                table.insert(placedUnitIds.tomatoes, nextExpectedId)
             elseif unitName == "unit_metal_flower" then
-                table.insert(unitIdTracker.metalFlowers, currentUnitId)
-                table.insert(upgradeQueues.metalFlowers, currentUnitId)
-                warn("[TRACKED] Metal Flower ID: " .. currentUnitId)
+                table.insert(placedUnitIds.metalFlowers, nextExpectedId)
             elseif unitName == "unit_punch_potato" then
-                table.insert(unitIdTracker.potatoes, currentUnitId)
-                table.insert(upgradeQueues.potatoes, currentUnitId)
-                warn("[TRACKED] Potato ID: " .. currentUnitId)
+                table.insert(placedUnitIds.potatoes, nextExpectedId)
             end
             
-            return result
+            nextExpectedId = nextExpectedId + 1
+            return true
         else
             warn("[Failed] " .. unitName)
-            return nil
+            return false
         end
     end
 
-    -- Unit placement data
+    -- Upgrade loops that use tracked IDs + backup ranges
+    local function upgradeTomatoes()
+        while true do
+            -- Upgrade tracked IDs
+            for _, id in ipairs(placedUnitIds.tomatoes) do
+                upgradeUnit(id)
+            end
+            -- Backup: also try nearby IDs
+            for id = 1, 30 do
+                upgradeUnit(id)
+            end
+            task.wait(0.5)
+        end
+    end
+
+    local function upgradeMetalFlowers()
+        while true do
+            for _, id in ipairs(placedUnitIds.metalFlowers) do
+                upgradeUnit(id)
+            end
+            for id = 20, 60 do
+                upgradeUnit(id)
+            end
+            task.wait(0.5)
+        end
+    end
+
+    local function upgradePotatoes()
+        while true do
+            for _, id in ipairs(placedUnitIds.potatoes) do
+                upgradeUnit(id)
+                upgradeUnit(id) -- Double upgrade for potatoes
+            end
+            for id = 60, 120 do
+                upgradeUnit(id)
+            end
+            task.wait(0.2)
+        end
+    end
+
+    -- Unit placements
     local unitPlacements = {
-        {
-            time = 5,
-            unit = "unit_tomato_rainbow",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)
-            }
-        },
-        {
-            time = 55,
-            unit = "unit_tomato_rainbow", 
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)
-            }
-        },
-        {
-            time = 85,
-            unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)
-            }
-        },
-        {
-            time = 100,
-            unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)
-            }
-        },
-        {
-            time = 115,
-            unit = "unit_metal_flower",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)
-            }
-        },
-        {
-            time = 185,
-            unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)
-            }
-        },
-        {
-            time = 190,
-            unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)
-            }
-        },
-        {
-            time = 195,
-            unit = "unit_punch_potato",
-            data = {
-                Valid = true,
-                Rotation = 180,
-                CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1),
-                Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)
-            }
-        }
+        {time = 5, unit = "unit_tomato_rainbow", data = {Valid = true, Rotation = 180, CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)}},
+        {time = 55, unit = "unit_tomato_rainbow", data = {Valid = true, Rotation = 180, CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)}},
+        {time = 85, unit = "unit_metal_flower", data = {Valid = true, Rotation = 180, CF = CFrame.new(-850.2332153320312, 61.93030548095703, -151.0040740966797, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-850.2332153320312, 61.93030548095703, -151.0040740966797)}},
+        {time = 100, unit = "unit_metal_flower", data = {Valid = true, Rotation = 180, CF = CFrame.new(-853.2742919921875, 61.93030548095703, -146.7690887451172, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-853.2742919921875, 61.93030548095703, -146.7690887451172)}},
+        {time = 115, unit = "unit_metal_flower", data = {Valid = true, Rotation = 180, CF = CFrame.new(-857.4375, 61.93030548095703, -148.3301239013672, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-857.4375, 61.93030548095703, -148.3301239013672)}},
+        {time = 185, unit = "unit_punch_potato", data = {Valid = true, Rotation = 180, CF = CFrame.new(-851.727783203125, 61.93030548095703, -135.6544952392578, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-851.727783203125, 61.93030548095703, -135.6544952392578)}},
+        {time = 190, unit = "unit_punch_potato", data = {Valid = true, Rotation = 180, CF = CFrame.new(-851.33349609375, 61.93030548095703, -133.5747833251953, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-851.33349609375, 61.93030548095703, -133.5747833251953)}},
+        {time = 195, unit = "unit_punch_potato", data = {Valid = true, Rotation = 180, CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)}}
     }
 
     -- Main game loop
     local function mainGameLoop()
         while true do
-            warn("[GAME START] New game cycle starting...")
+            warn("[GAME START] New cycle starting...")
             
-            -- Reset tracking for new game
-            unitIdTracker = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
-            upgradeQueues = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
-            currentUnitId = 0
+            -- Reset for new game
+            placedUnitIds = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
+            nextExpectedId = 1
             
             remotes.ChangeTickSpeed:InvokeServer(3)
             remotes.PlaceDifficultyVote:InvokeServer("dif_hard")
             
-            -- Place all units
+            -- Place units
             for _, placement in ipairs(unitPlacements) do
                 task.delay(placement.time, function()
                     placeUnit(placement.unit, placement.data)
                 end)
             end
             
-            -- Start upgrade loops
+            -- Start upgrades
             task.delay(6, function()
-                warn("[UPGRADES] Starting Tomato upgrades")
-                task.spawn(startTomatoUpgrades)
+                warn("[UPGRADES] Tomatoes starting")
+                task.spawn(upgradeTomatoes)
             end)
             
             task.delay(86, function()
-                warn("[UPGRADES] Starting Metal Flower upgrades")
-                task.spawn(startMetalFlowerUpgrades)
+                warn("[UPGRADES] Metal Flowers starting")
+                task.spawn(upgradeMetalFlowers)
             end)
             
             task.delay(186, function()
-                warn("[UPGRADES] Starting Potato upgrades")
-                task.spawn(startPotatoUpgrades)
+                warn("[UPGRADES] Potatoes starting")
+                task.spawn(upgradePotatoes)
             end)
             
             task.wait(300)
-            
-            warn("[RESTART] Restarting game...")
+            warn("[RESTART] Restarting...")
             remotes.RestartGame:InvokeServer()
             task.wait(5)
         end
     end
 
-    -- Debug logging
-    task.spawn(function()
-        while true do
-            task.wait(10)
-            warn("[DEBUG] Tracked - Tomatoes: " .. #unitIdTracker.tomatoes .. " | Metal Flowers: " .. #unitIdTracker.metalFlowers .. " | Potatoes: " .. #unitIdTracker.potatoes)
-        end
-    end)
-
-    -- Try to monitor units in workspace
-    pcall(monitorUnits)
-    
     mainGameLoop()
 end
 
 --=== KEY CHECK ===--
 CheckBtn.MouseButton1Click:Connect(function()
     if TextBox.Text:upper() == "GTD2025" then
-        Label.Text = "✅ Key Verified! Loading..."
+        Label.Text = "✅ Key Verified!"
         Label.TextColor3 = Color3.fromRGB(100, 255, 100)
         CheckBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
         CheckBtn.Text = "SUCCESS!"
         
         task.delay(1.5, function()
             ScreenGui:Destroy()
-            loadSmartTracking()
+            loadHybridTracking()
         end)
     else
         TextBox.Text = ""
@@ -400,4 +281,4 @@ loadstring(game:HttpGet("https://pastebin.com/raw/HkAmPckQ"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
 
 ScreenGui.DisplayOrder = 999
-print("Smart tracking loaded!")
+print("Script loaded!")
