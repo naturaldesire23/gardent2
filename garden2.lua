@@ -123,51 +123,8 @@ function loadRealTracking()
     local allUnitIds = {}
     local currentPlacingUnit = nil
 
-    -- Hook PlaceUnit to capture returned ID
-    local oldPlaceUnit = remotes.PlaceUnit.InvokeServer
-    remotes.PlaceUnit.InvokeServer = function(self, unitName, ...)
-        currentPlacingUnit = unitName
-        local result = oldPlaceUnit(self, unitName, ...)
-        
-        -- Try to extract ID from result
-        local capturedId = nil
-        if type(result) == "number" then
-            capturedId = result
-        elseif type(result) == "table" then
-            -- Check common keys
-            capturedId = result.id or result.Id or result.ID or result.unitId or result.UnitId
-            
-            -- If still not found, print the table to see what's in it
-            if not capturedId then
-                warn("[DEBUG] PlaceUnit returned table:")
-                for k, v in pairs(result) do
-                    warn("  [" .. tostring(k) .. "] = " .. tostring(v))
-                end
-            end
-        end
-        
-        if capturedId then
-            table.insert(allUnitIds, capturedId)
-            
-            if unitName == "unit_tomato_rainbow" then
-                table.insert(trackedIds.tomatoes, capturedId)
-                warn("[CAPTURED] Tomato ID: " .. capturedId)
-            elseif unitName == "unit_metal_flower" then
-                table.insert(trackedIds.metalFlowers, capturedId)
-                warn("[CAPTURED] Metal Flower ID: " .. capturedId)
-            elseif unitName == "unit_punch_potato" then
-                table.insert(trackedIds.potatoes, capturedId)
-                warn("[CAPTURED] Potato ID: " .. capturedId)
-            end
-        else
-            warn("[WARNING] Could not extract ID from PlaceUnit result")
-            warn("[DEBUG] Result type: " .. type(result))
-            warn("[DEBUG] Result value: " .. tostring(result))
-        end
-        
-        currentPlacingUnit = nil
-        return result
-    end
+    -- No hooking - we'll use a different method
+    -- Instead, we'll try to find units in workspace after placing them
 
     -- Upgrade function
     local function upgradeUnit(unitId)
@@ -176,7 +133,7 @@ function loadRealTracking()
         end)
     end
 
-    -- Place function
+    -- Place function with result capture
     local function placeUnit(unitName, data)
         local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, data)
@@ -184,6 +141,39 @@ function loadRealTracking()
         
         if success then
             warn("[Placed] " .. unitName)
+            
+            -- Try to extract ID from result
+            local capturedId = nil
+            if type(result) == "number" then
+                capturedId = result
+            elseif type(result) == "table" then
+                capturedId = result.id or result.Id or result.ID or result.unitId or result.UnitId
+                
+                if not capturedId then
+                    warn("[DEBUG] PlaceUnit returned table:")
+                    for k, v in pairs(result) do
+                        warn("  [" .. tostring(k) .. "] = " .. tostring(v))
+                    end
+                end
+            end
+            
+            if capturedId then
+                table.insert(allUnitIds, capturedId)
+                
+                if unitName == "unit_tomato_rainbow" then
+                    table.insert(trackedIds.tomatoes, capturedId)
+                    warn("[CAPTURED] Tomato ID: " .. capturedId)
+                elseif unitName == "unit_metal_flower" then
+                    table.insert(trackedIds.metalFlowers, capturedId)
+                    warn("[CAPTURED] Metal Flower ID: " .. capturedId)
+                elseif unitName == "unit_punch_potato" then
+                    table.insert(trackedIds.potatoes, capturedId)
+                    warn("[CAPTURED] Potato ID: " .. capturedId)
+                end
+            else
+                warn("[DEBUG] Result type: " .. type(result) .. " | Value: " .. tostring(result))
+            end
+            
             return result
         else
             warn("[Failed] " .. unitName .. " - Error: " .. tostring(result))
