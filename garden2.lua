@@ -1,10 +1,11 @@
---// Garden Tower Defense Script - SIMPLIFIED
+--// Garden Tower Defense Script - ENHANCED
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local plr = Players.LocalPlayer
 
 print(plr.Name .. " loaded script")
 
---// Key GUI
+--// Key GUI (unchanged)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = plr:WaitForChild("PlayerGui")
 
@@ -96,8 +97,7 @@ Label.TextWrapped = true
 Label.Parent = Frame
 
 --// Remotes
-local rs = game:GetService("ReplicatedStorage")
-local remotes = rs:WaitForChild("RemoteFunctions")
+local remotes = ReplicatedStorage:WaitForChild("RemoteFunctions")
 
 task.delay(2, function()
     pcall(function()
@@ -120,14 +120,23 @@ local function startScript()
         potatoes = {}
     }
 
-    -- Upgrade function
+    -- Upgrade function with validation
     local function upgradeUnit(unitId)
+        if unitId == nil or type(unitId) ~= "number" then
+            warn("[UpgradeUnit] Invalid unitId: ", unitId)
+            return
+        end
         pcall(function()
-            remotes.UpgradeUnit:InvokeServer(unitId)
+            local success = remotes.UpgradeUnit:InvokeServer(unitId)
+            if success then
+                warn("[UpgradeUnit] Upgraded unit: ", unitId)
+            else
+                warn("[UpgradeUnit] Failed to upgrade unit: ", unitId)
+            end
         end)
     end
 
-    -- Place function
+    -- Place function with enhanced ID tracking
     local function placeUnit(unitName, placeData)
         local success, result = pcall(function()
             return remotes.PlaceUnit:InvokeServer(unitName, placeData)
@@ -135,33 +144,53 @@ local function startScript()
         
         if success and result then
             warn("[Placed] " .. unitName)
-            warn("[DEBUG] Result type: " .. type(result))
+            warn("[DEBUG] Result: ", result)
             
+            local unitId = nil
             if type(result) == "number" then
-                warn("[DEBUG] Got ID: " .. result)
-                
+                unitId = result
+            elseif type(result) == "table" and result.unitId then
+                unitId = result.unitId -- Adjust based on actual return structure from SimpleSpy logs
+            end
+            
+            if unitId then
+                warn("[DEBUG] Got ID: " .. unitId)
                 if unitName:find("tomato") then
-                    table.insert(trackedIds.tomatoes, result)
+                    table.insert(trackedIds.tomatoes, unitId)
                 elseif unitName:find("flower") then
-                    table.insert(trackedIds.metalFlowers, result)
+                    table.insert(trackedIds.metalFlowers, unitId)
                 elseif unitName:find("potato") then
-                    table.insert(trackedIds.potatoes, result)
+                    table.insert(trackedIds.potatoes, unitId)
                 end
-            elseif type(result) == "table" then
-                warn("[DEBUG] Result is table:")
-                for k, v in pairs(result) do
-                    warn("  " .. tostring(k) .. " = " .. tostring(v))
-                end
+            else
+                warn("[DEBUG] No valid unit ID returned for " .. unitName)
             end
         else
-            warn("[Failed] " .. unitName)
+            warn("[Failed] " .. unitName, result or "No result")
         end
     end
 
-    -- Upgrade loops
+    -- Function to clear invalid IDs
+    local function validateIds()
+        for unitType, ids in pairs(trackedIds) do
+            for i = #ids, 1, -1 do
+                local id = ids[i]
+                local success = pcall(function()
+                    return remotes.UpgradeUnit:InvokeServer(id)
+                end)
+                if not success then
+                    warn("[ValidateIds] Removing invalid ID: ", id, " from ", unitType)
+                    table.remove(ids, i)
+                end
+            end
+        end
+    end
+
+    -- Upgrade loops with periodic validation
     task.spawn(function()
         while true do
             task.wait(0.3)
+            validateIds() -- Check for invalid IDs
             for _, id in ipairs(trackedIds.tomatoes) do
                 upgradeUnit(id)
             end
@@ -171,6 +200,7 @@ local function startScript()
     task.spawn(function()
         while true do
             task.wait(0.3)
+            validateIds()
             for _, id in ipairs(trackedIds.metalFlowers) do
                 upgradeUnit(id)
             end
@@ -180,14 +210,15 @@ local function startScript()
     task.spawn(function()
         while true do
             task.wait(0.1)
+            validateIds()
             for _, id in ipairs(trackedIds.potatoes) do
                 upgradeUnit(id)
-                upgradeUnit(id)
+                upgradeUnit(id) -- Double upgrade for potatoes
             end
         end
     end)
 
-    -- Placements
+    -- Placements (unchanged)
     local placements = {
         {time = 5, unit = "unit_tomato_rainbow", data = {Valid = true, Rotation = 180, CF = CFrame.new(-850.7767333984375, 61.93030548095703, -155.0453338623047, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-850.7767333984375, 61.93030548095703, -155.0453338623047)}},
         {time = 55, unit = "unit_tomato_rainbow", data = {Valid = true, Rotation = 180, CF = CFrame.new(-852.2405395507812, 61.93030548095703, -150.1680450439453, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-852.2405395507812, 61.93030548095703, -150.1680450439453)}},
@@ -199,24 +230,26 @@ local function startScript()
         {time = 195, unit = "unit_punch_potato", data = {Valid = true, Rotation = 180, CF = CFrame.new(-846.9492797851562, 61.93030548095703, -133.9480743408203, -1, 0, -8.742277657347586e-08, 0, 1, 0, 8.742277657347586e-08, 0, -1), Position = Vector3.new(-846.9492797851562, 61.93030548095703, -133.9480743408203)}}
     }
 
-    -- Main loop
+    -- Main loop with restart handling
     while true do
         warn("=== GAME START ===")
-        trackedIds = {tomatoes = {}, metalFlowers = {}, potatoes = {}}
+        trackedIds = {tomatoes = {}, metalFlowers = {}, potatoes = {}} -- Reset IDs for new match
         
         pcall(function() remotes.ChangeTickSpeed:InvokeServer(3) end)
         pcall(function() remotes.PlaceDifficultyVote:InvokeServer("dif_hard") end)
         
+        -- Place units
         for _, p in ipairs(placements) do
             task.delay(p.time, function()
                 placeUnit(p.unit, p.data)
             end)
         end
         
-        task.wait(300)
+        task.wait(300) -- Wait for match duration
         warn("=== RESTART ===")
         pcall(function() remotes.RestartGame:InvokeServer() end)
-        task.wait(5)
+        task.wait(5) -- Wait for game to reset
+        validateIds() -- Clear any lingering invalid IDs
     end
 end
 
