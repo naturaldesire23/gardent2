@@ -247,7 +247,7 @@ local function CreateScriptCard(data)
     Library:ApplyStrokeGradient(ExecStroke)
 
     if not data.Working then
-        ExecuteBtn.Text = "Locked"
+        ExecuteBtn.Text = "In development"
         ExecuteBtn.TextColor3 = Library.Theme.TextDark
         ExecuteBtn.AutoButtonColor = false
         ExecuteBtn.Active = false
