@@ -233,7 +233,7 @@ local function CreateScriptCard(data)
     Library:ApplyStrokeGradient(CardStroke)
 
     local StatusColor = data.Working and Library.Theme.Success or Library.Theme.Error
-    local StatusText = data.Working and "Operational" or "Pending"
+    local StatusText = data.Working and "Working" or "Down"
 
     local StatusDot = Library:Create("Frame", {Parent = Card, Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(0, 15, 0.5, -4), BackgroundColor3 = StatusColor, BorderSizePixel = 0, ZIndex = 3})
     Library:Create("UICorner", {Parent = StatusDot, CornerRadius = UDim.new(1, 0)})
