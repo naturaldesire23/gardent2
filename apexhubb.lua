@@ -149,7 +149,6 @@ local Util = setmetatable({
 
 -- ============================================================
 -- BackgroundManager
--- Handles image, video, animated backgrounds with overlay + scale
 -- ============================================================
 
 local BackgroundManager = {}
@@ -266,7 +265,11 @@ function BackgroundManager:_save_config()
         overlay_opacity = self._overlay_opacity,
         element_transparency = self._element_transparency
     }
-    Config:save(game.GameId, Library._config)
+    
+    pcall(function()
+        local encoded = HttpService:JSONEncode(Library._config)
+        writefile('AchaoticUI/AllusiveModified/'..game.GameId..'.json', encoded)
+    end)
 end
 
 function BackgroundManager:_apply_scale_mode(gui_object: GuiObject)
@@ -478,7 +481,7 @@ function BackgroundManager:get_state()
 end
 
 -- ============================================================
--- AcrylicBlur (unchanged)
+-- AcrylicBlur
 -- ============================================================
 
 local AcrylicBlur = {}
@@ -632,7 +635,7 @@ function AcrylicBlur:change_visiblity(state: boolean)
 end
 
 -- ============================================================
--- Config (unchanged)
+-- Config
 -- ============================================================
 
 local Config = setmetatable({
@@ -767,7 +770,7 @@ function Library.SendNotification(settings)
 
     task.spawn(function()
         local tweenIn = TweenService:Create(InnerFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, 0, 0, 10 + NotificationContainer.Size.Y.Offset)
+            Position = UDim2.new(0,0,0, 10 + NotificationContainer.Size.Y.Offset)
         })
         tweenIn:Play()
 
@@ -844,7 +847,6 @@ function Library:create_ui(config: table)
     ContainerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     ContainerStroke.Parent = Container
 
-    -- Initialize BackgroundManager immediately after container creation
     self._background_manager = BackgroundManager.new(Container, config)
     
     local Handler = Instance.new('Frame')
@@ -1022,7 +1024,6 @@ function Library:create_ui(config: table)
         end
     end
 
-    -- Expose background controls on the library instance
     function self:SetBackgroundImage(url: string)
         self._background_manager:set_image(url)
     end
