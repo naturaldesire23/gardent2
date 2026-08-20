@@ -183,6 +183,8 @@ function BackgroundManager.new(parent_container: Frame, config: table)
         _overlay_opacity = 0.5,
         _element_transparency = 0.05,
         _animation_fps = 10,
+        _animation_timer = 0,
+        _paused = false,
         _applied_transparency = false
     }, BackgroundManager)
 
@@ -356,7 +358,7 @@ function BackgroundManager:set_video(url: string, save: boolean?)
     video_frame.ZIndex = 0
     video_frame.Looped = true
     video_frame.Volume = 0
-    video_frame.Playing = true
+    video_frame.Playing = not self._paused
     video_frame.Parent = self._background_layer
 
     if string.find(url, '^rbxassetid://') then
@@ -385,14 +387,15 @@ function BackgroundManager:set_animated(frame_urls: table, fps: number, save: bo
         frame.BackgroundTransparency = 1
         frame.BorderSizePixel = 0
         frame.ZIndex = 0
-        frame.Visible = (index == 1)
-
+        frame.Visible = true
+        
         if string.find(url, '^https?://') or string.find(url, '^rbxassetid://') then
             frame.Image = url
         else
             frame.Image = 'rbxassetid://' .. url
         end
 
+        frame.ImageTransparency = (index == 1) and 0 or 1
         frame.Parent = self._background_layer
         self:_apply_scale_mode(frame)
         table.insert(self._animation_frames, frame)
@@ -400,19 +403,34 @@ function BackgroundManager:set_animated(frame_urls: table, fps: number, save: bo
 
     self._animation_index = 1
     local interval = 1 / self._animation_fps
+    local fade_time = math.clamp(interval * 0.6, 0.1, 0.3)
 
     self._animation_connection = RunService.Heartbeat:Connect(function(dt)
+        if self._paused then return end
+        
         self._animation_timer = (self._animation_timer or 0) + dt
         if self._animation_timer >= interval then
             self._animation_timer = 0
-            if #self._animation_frames == 0 then return end
+            if #self._animation_frames <= 1 then return end
 
-            self._animation_frames[self._animation_index].Visible = false
+            local old_index = self._animation_index
             self._animation_index = self._animation_index + 1
             if self._animation_index > #self._animation_frames then
                 self._animation_index = 1
             end
-            self._animation_frames[self._animation_index].Visible = true
+            
+            local old_frame = self._animation_frames[old_index]
+            local new_frame = self._animation_frames[self._animation_index]
+            
+            if old_frame and new_frame then
+                TweenService:Create(old_frame, TweenInfo.new(fade_time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    ImageTransparency = 1
+                }):Play()
+                
+                TweenService:Create(new_frame, TweenInfo.new(fade_time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    ImageTransparency = 0
+                }):Play()
+            end
         end
     end)
 
@@ -454,6 +472,13 @@ function BackgroundManager:set_element_transparency(transparency: number, save: 
     end
 
     if save then self:_save_config() end
+end
+
+function BackgroundManager:set_paused(state: boolean)
+    self._paused = state
+    if self._video_frame then
+        self._video_frame.Playing = not state
+    end
 end
 
 function BackgroundManager:clear(save: boolean?)
@@ -1021,6 +1046,10 @@ function Library:create_ui(config: table)
             TweenService:Create(Container, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 Size = UDim2.fromOffset(104.5, 52)
             }):Play()
+        end
+        
+        if self._background_manager then
+            self._background_manager:set_paused(not state)
         end
     end
 
