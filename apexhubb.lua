@@ -205,10 +205,6 @@ function BackgroundManager:_create_layers()
     background_layer.ClipsDescendants = true
     background_layer.Parent = self._container
 
-    local bg_corner = Instance.new('UICorner')
-    bg_corner.CornerRadius = UDim.new(0, 10)
-    bg_corner.Parent = background_layer
-
     local overlay_layer = Instance.new('Frame')
     overlay_layer.Name = 'OverlayLayer'
     overlay_layer.Size = UDim2.new(1, 0, 1, 0)
@@ -217,11 +213,12 @@ function BackgroundManager:_create_layers()
     overlay_layer.BackgroundTransparency = 1 - self._overlay_opacity
     overlay_layer.BorderSizePixel = 0
     overlay_layer.ZIndex = 1
-    overlay_layer.Parent = background_layer
-
+    
     local overlay_corner = Instance.new('UICorner')
     overlay_corner.CornerRadius = UDim.new(0, 10)
     overlay_corner.Parent = overlay_layer
+
+    overlay_layer.Parent = background_layer
 
     self._background_layer = background_layer
     self._overlay_layer = overlay_layer
@@ -277,19 +274,18 @@ end
 function BackgroundManager:_apply_scale_mode(gui_object: GuiObject)
     if not gui_object then return end
 
+    gui_object.Size = UDim2.new(1, 0, 1, 0)
+    gui_object.Position = UDim2.new(0, 0, 0, 0)
+
     if self._current_scale_mode == SCALE_MODES.Stretch then
-        gui_object.Size = UDim2.new(1, 0, 1, 0)
-        gui_object.Position = UDim2.new(0, 0, 0, 0)
-        gui_object.ScaleType = Enum.ScaleType.Stretch
+        if gui_object:IsA('ImageLabel') or gui_object:IsA('ImageButton') then
+            gui_object.ScaleType = Enum.ScaleType.Stretch
+        end
     elseif self._current_scale_mode == SCALE_MODES.Fit then
-        gui_object.Size = UDim2.new(1, 0, 1, 0)
-        gui_object.Position = UDim2.new(0, 0, 0, 0)
         if gui_object:IsA('ImageLabel') or gui_object:IsA('ImageButton') then
             gui_object.ScaleType = Enum.ScaleType.Fit
         end
     elseif self._current_scale_mode == SCALE_MODES.Crop then
-        gui_object.Size = UDim2.new(1, 0, 1, 0)
-        gui_object.Position = UDim2.new(0, 0, 0, 0)
         if gui_object:IsA('ImageLabel') or gui_object:IsA('ImageButton') then
             gui_object.ScaleType = Enum.ScaleType.Crop
         end
@@ -337,6 +333,10 @@ function BackgroundManager:set_image(url: string, save: boolean?)
     else
         image_label.Image = 'rbxassetid://' .. url
     end
+    
+    local img_corner = Instance.new('UICorner')
+    img_corner.CornerRadius = UDim.new(0, 10)
+    img_corner.Parent = image_label
 
     self._image_label = image_label
     self:_apply_scale_mode(image_label)
@@ -367,6 +367,10 @@ function BackgroundManager:set_video(url: string, save: boolean?)
         video_frame.Video = 'rbxassetid://' .. url
     end
 
+    local vid_corner = Instance.new('UICorner')
+    vid_corner.CornerRadius = UDim.new(0, 10)
+    vid_corner.Parent = video_frame
+
     self._video_frame = video_frame
     self:_apply_scale_mode(video_frame)
 
@@ -394,6 +398,10 @@ function BackgroundManager:set_animated(frame_urls: table, fps: number, save: bo
         else
             frame.Image = 'rbxassetid://' .. url
         end
+
+        local frame_corner = Instance.new('UICorner')
+        frame_corner.CornerRadius = UDim.new(0, 10)
+        frame_corner.Parent = frame
 
         frame.ImageTransparency = (index == 1) and 0 or 1
         frame.Parent = self._background_layer
