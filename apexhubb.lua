@@ -1,7 +1,11 @@
--- Fallen UI Library | full rebuild
--- fixed: notification slide/stack, slider drag math, header-only window drag,
--- separate FPS + ping overlays, keybind list overlay, Customize tab, minimize option
--- api: Library.new() -> Window -> CreateTab -> CreateSection -> components
+-- Fallen UI Library
+-- additions on top of the tested build (api unchanged):
+--   + toggles fire notifications on state change (Toggle Notifications option in Customize)
+--   + toggle rows darken when off, lighten when on
+--   + keybind list panel darker
+--   + background support: Customize controls + Window:SetBackground(id), old texture tile preserved
+-- fixed earlier: notification slide/stack, slider drag math, header-only window drag,
+-- separate FPS + ping overlays, keybind list overlay, minimize option
 
 local cloneref = cloneref or function(object) return object end
 
@@ -215,6 +219,11 @@ local function defaultInterface()
         ping_mode = 'number',
         notif_position = 'left',
         hide_on_minimize = false,
+        toggle_notifications = true,
+        background_enabled = false,
+        background_asset = '',
+        background_transparency = 0.5,
+        texture_enabled = true,
     }
 end
 
@@ -262,6 +271,16 @@ function Config:load()
     interface.show_fps = interface.show_fps == true
     interface.show_ping = interface.show_ping == true
     interface.hide_on_minimize = interface.hide_on_minimize == true
+    interface.toggle_notifications = interface.toggle_notifications ~= false
+    interface.background_enabled = interface.background_enabled == true
+    interface.texture_enabled = interface.texture_enabled ~= false
+    if type(interface.background_asset) ~= 'string' then
+        interface.background_asset = ''
+    end
+    if type(interface.background_transparency) ~= 'number' then
+        interface.background_transparency = 0.5
+    end
+    interface.background_transparency = math.clamp(interface.background_transparency, 0, 1)
     if interface.ping_mode ~= 'number' and interface.ping_mode ~= 'graph' then
         interface.ping_mode = 'number'
     end
@@ -837,13 +856,13 @@ local function buildKeybindOverlay()
     panel.Position = UDim2.new(0, 16, 0, 16)
     panel.Size = UDim2.new(0, 208, 0, 42)
     panel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    panel.BackgroundTransparency = 0.4
+    panel.BackgroundTransparency = 0.05
     panel.BorderSizePixel = 0
     panel.Active = true
     panel.Parent = gui
     addCorner(panel, 10)
-    addStroke(panel, 0.84)
-    addDarkGradient(panel, 120)
+    addStroke(panel, 0.7)
+    addDarkGradient(panel, 60)
     makeDraggable(panel)
     watchResize(panel)
 
@@ -983,10 +1002,11 @@ end
 
 local function buildToggle(parent, settings)
     if type(settings) ~= 'table' then settings = {} end
+    local title = tostring(settings.Title or 'Toggle')
     local module = newModule(parent, 46)
 
     addText(module, {
-        Text = tostring(settings.Title or 'Toggle'),
+        Text = title,
         Size = 13,
         Size2 = UDim2.new(1, -104, 0, 14),
         Position = UDim2.new(0, 12, 0, 16),
@@ -1014,8 +1034,20 @@ local function buildToggle(parent, settings)
     local controller = { Value = false }
     local storage, storeKey = flagStorage(settings)
 
+    local function notifyState(value)
+        if Library._interface.toggle_notifications == false then return end
+        Library:Notify({
+            Title = title,
+            Text = value and 'Enabled' or 'Disabled',
+            Duration = 2,
+        })
+    end
+
     local function apply(value)
         controller.Value = value
+        TweenService:Create(module, TWEEN_FAST, {
+            BackgroundColor3 = value and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(112, 112, 122),
+        }):Play()
         TweenService:Create(switch, TWEEN_FAST, {
             BackgroundColor3 = value and Color3.fromRGB(228, 228, 234) or Color3.fromRGB(70, 70, 78),
         }):Play()
@@ -1043,6 +1075,7 @@ local function buildToggle(parent, settings)
             if settings.Callback then
                 task.spawn(settings.Callback, controller.Value)
             end
+            notifyState(controller.Value)
         end
     end)
 
@@ -1052,6 +1085,7 @@ local function buildToggle(parent, settings)
         if settings.Callback then
             task.spawn(settings.Callback, controller.Value)
         end
+        notifyState(controller.Value)
     end
 
     return controller
@@ -1591,6 +1625,49 @@ local function buildCustomize(window)
         end,
     })
 
+    overlays:Toggle({
+        Title = 'Show Background',
+        Interface = 'background_enabled',
+        Default = false,
+        Callback = function(value)
+            local bg = window._background
+            if bg then
+                bg.Visible = value and bg.Image ~= ''
+            end
+        end,
+    })
+    overlays:Slider({
+        Title = 'Background Transparency',
+        Interface = 'background_transparency',
+        Min = 0,
+        Max = 1,
+        Default = 0.5,
+        Step = 0.05,
+        Callback = function(value)
+            if window._background then
+                window._background.ImageTransparency = value
+            end
+        end,
+    })
+    overlays:TextBox({
+        Title = 'Background Asset',
+        Interface = 'background_asset',
+        Placeholder = 'rbxassetid://...',
+        Callback = function(text)
+            window:SetBackground(text)
+        end,
+    })
+    overlays:Toggle({
+        Title = 'Background Texture',
+        Interface = 'texture_enabled',
+        Default = true,
+        Callback = function(value)
+            if window._texture then
+                window._texture.Visible = value
+            end
+        end,
+    })
+
     windowSection:Keybind({
         Title = 'UI Toggle',
         Default = 'RightShift',
@@ -1608,6 +1685,11 @@ local function buildCustomize(window)
             end
         end,
     })
+    windowSection:Toggle({
+        Title = 'Toggle Notifications',
+        Interface = 'toggle_notifications',
+        Default = true,
+    })
     windowSection:Dropdown({
         Title = 'Notification Position',
         Interface = 'notif_position',
@@ -1618,8 +1700,8 @@ local function buildCustomize(window)
         end,
     })
     windowSection:Paragraph({
-        Title = 'Keybind List',
-        Text = 'Show Keybinds opens a small overlay listing every bound function and its key. Drag any panel, it stays on screen. Backspace clears a bind, Escape cancels choosing.',
+        Title = 'Customization',
+        Text = 'Toggles notify on every state change, switch them off with Toggle Notifications if that gets loud. Set a Background Asset to enable the window background and fade it with the slider. Keybind list shows every bound function. Drag any panel, it stays on screen.',
     })
 end
 
@@ -1665,6 +1747,39 @@ function Library.new(options)
 
     addCorner(container, 10)
     addStroke(container, 0.58, Color3.fromRGB(68, 68, 68))
+
+    local background = Instance.new('ImageLabel')
+    background.Name = 'Background'
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.BackgroundTransparency = 1
+    background.BorderSizePixel = 0
+    background.Image = ''
+    background.ImageTransparency = 0.5
+    background.ScaleType = Enum.ScaleType.Crop
+    background.ZIndex = 0
+    background.Visible = false
+    background.Parent = container
+    addCorner(background, 10)
+
+    local texture = Instance.new('ImageLabel')
+    texture.Name = 'Texture'
+    texture.Size = UDim2.new(1, 0, 1, 0)
+    texture.BackgroundTransparency = 1
+    texture.BorderSizePixel = 0
+    texture.Image = 'rbxassetid://9968344227'
+    texture.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    texture.ImageTransparency = 0.88
+    texture.ScaleType = Enum.ScaleType.Tile
+    texture.TileSize = UDim2.new(0, 128, 0, 128)
+    texture.ZIndex = 0
+    texture.Parent = container
+
+    background.Image = tostring(Library._interface.background_asset or '')
+    background.ImageTransparency = math.clamp(tonumber(Library._interface.background_transparency) or 0.5, 0, 1)
+    background.Visible = Library._interface.background_enabled == true and background.Image ~= ''
+    texture.Visible = Library._interface.texture_enabled ~= false
+    self._background = background
+    self._texture = texture
 
     local shadowHolder = Instance.new('Frame')
     shadowHolder.Name = 'ShadowHolder'
@@ -1978,6 +2093,15 @@ function Library.new(options)
         return tab
     end
 
+    function self:SetBackground(assetId)
+        local id = tostring(assetId or '')
+        Library._interface.background_asset = id
+        Library._interface.background_enabled = id ~= ''
+        background.Image = id
+        background.Visible = id ~= ''
+        Config:save()
+    end
+
     local function applyMinimizeLayout(minimized)
         if minimized then
             nameLabel.Size = UDim2.new(0, BAR_WIDTH - nameX - 36, 0, 19)
@@ -2133,7 +2257,11 @@ function Library.new(options)
 
     Library._window = self
 
-    buildCustomize(self)
+    task.defer(function()
+        if self._gui and self._gui.Parent then
+            buildCustomize(self)
+        end
+    end)
 
     shadowHolder.Visible = true
     TweenService:Create(container, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -2153,18 +2281,17 @@ return Library
 
     local Main = Window:CreateTab('Main')
     local Left = Main:CreateSection('left')
-    local Right = Main:CreateSection('right')
 
-    Left:Toggle({ Title = 'Feature One', Flag = 'feature_one', Default = false, Callback = function(v) print(v) end })
+    Left:Toggle({ Title = 'Fly', Flag = 'fly_enabled', Default = false, Callback = function(v) print(v) end })
     Left:Slider({ Title = 'Speed', Flag = 'speed', Min = 0, Max = 100, Default = 50, Step = 1, Callback = function(v) print(v) end })
-    Right:Dropdown({ Title = 'Mode', Flag = 'mode', Options = { 'A', 'B', 'C' }, Default = 'A', Callback = function(v) print(v) end })
-    Right:Keybind({ Title = 'Toggle Fly', Default = 'F', Callback = function() print('fly toggled') end })
-    Right:Button({ Title = 'Test', Callback = function() print('clicked') end })
-    Right:TextBox({ Title = 'Webhook', Flag = 'webhook', Placeholder = 'https://...', Callback = function(text) print(text) end })
-    Right:Paragraph({ Title = 'Notes', Text = 'Some text here' })
+
+    -- background from code (also settable in the Customize tab):
+    Window:SetBackground('rbxassetid://123456789')
 
     Library:Notify({ Title = 'Loaded', Text = 'Fallen is ready', Duration = 4 })
 
-    Customize tab is built automatically: Show Keybinds, Show FPS, Show Ping,
-    Ping Display mode, Notification Position, UI Toggle keybind, Hide When Minimized.
+    Customize tab (added automatically, sits after your tabs):
+      Show Keybinds, Show FPS, Show Ping, Ping Display,
+      Show Background, Background Transparency, Background Asset, Background Texture,
+      UI Toggle keybind, Hide When Minimized, Toggle Notifications, Notification Position.
 ]]
