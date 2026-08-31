@@ -40,21 +40,23 @@ function convertTableToString(inputTable)
     return table.concat(inputTable, ", ")
 end
 
-local Connections = setmetatable({
+local Connections = {
     disconnect = function(self, connection)
         if not self[connection] then return end
         self[connection]:Disconnect()
         self[connection] = nil
     end,
     disconnect_all = function(self)
-        for _, value in self do
+        for _, value in pairs(self) do
             if typeof(value) == 'function' then continue end
-            value:Disconnect()
+            if type(value) == 'RBXScriptConnection' then
+                value:Disconnect()
+            end
         end
     end
-}, Connections)
+}
 
-local Config = setmetatable({
+local Config = {
     save = function(self, file_name, config)
         local success, result = pcall(function()
             local flags = HttpService:JSONEncode(config)
@@ -66,22 +68,21 @@ local Config = setmetatable({
         local success, result = pcall(function()
             if not isfile('Fallen/'..file_name..'.json') then
                 self:save(file_name, config)
-                return
+                return config
             end
             local flags = readfile('Fallen/'..file_name..'.json')
             if not flags then
                 self:save(file_name, config)
-                return
+                return config
             end
             return HttpService:JSONDecode(flags)
         end)
-        if not success then warn('failed to load config', result) end
-        if not result then
+        if not success or not result then
             result = { _flags = {}, _keybinds = {} }
         end
         return result
     end
-}, Config)
+}
 
 local Library = {
     _config = Config:load(game.GameId, { _flags = {}, _keybinds = {} }),
@@ -253,23 +254,22 @@ function Library:get_device()
     self._device = device
 end
 
-function Library:removed(action: any)
+function Library:removed(action)
     self._ui.AncestryChanged:Once(action)
 end
 
-function Library:flag_type(flag: any, flag_type: any)
+function Library:flag_type(flag, flag_type)
     if Library._config._flags[flag] == nil then return end
     return typeof(Library._config._flags[flag]) == flag_type
 end
 
-function Library:remove_table_value(__table: any, table_value: string)
+function Library:remove_table_value(__table, table_value)
     for index, value in __table do
         if value ~= table_value then continue end
         table.remove(__table, index)
     end
 end
 
--- ===== KEYBIND LIST FUNCTIONS =====
 function Library:register_keybind(flag, label, key)
     if not self._keybind_list_data then self._keybind_list_data = {} end
     self._keybind_list_data[flag] = {
@@ -327,17 +327,13 @@ function Library:update_keybind_list()
     end
 end
 
--- ===== NOTIFICATIONS TOGGLE =====
 function Library:set_notifications_enabled(state)
     self._notification_enabled = state
     if state then
         Library.SendNotification({ title = "Notifications", text = "Enabled", duration = 1.5 })
-    else
-        -- Notifications disabled
     end
 end
 
--- ===== OVERLAYS =====
 function Library:init_overlays()
     self:create_fps_overlay()
     self:create_ping_overlay()
@@ -567,18 +563,6 @@ function Library:update_ping_graph()
     local height = self._ping_graph.AbsoluteSize.Y or 20
     if width < 2 or height < 2 then return end
     
-    local pixels = {}
-    local maxPing = math.max(200, math.max(unpack(self._ping_history)) + 10)
-    
-    for i = 1, width do
-        local idx = math.floor((i / width) * #self._ping_history)
-        idx = math.clamp(idx, 1, #self._ping_history)
-        local val = self._ping_history[idx]
-        local y = height - (val / maxPing) * height
-        table.insert(pixels, string.format("%d,%d", i, math.clamp(y, 0, height)))
-    end
-    
-    -- Fallback: показываем число
     self._ping_label.Text = "Ping: " .. math.floor(self._ping_history[#self._ping_history]) .. "ms"
     if self._ping_graph then self._ping_graph.Visible = false end
 end
@@ -621,7 +605,6 @@ function Library:toggle_ping_mode()
     Config:save(game.GameId, Library._config)
 end
 
--- ===== WINDOW CONTROLS =====
 function Library:set_minimized(state)
     self._minimized = state
     if state then
@@ -935,7 +918,7 @@ function Library:create_ui()
 
     self._ui = Fallen
 
-    local function on_drag(input: InputObject, process: boolean)
+    local function on_drag(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             self._dragging = true
             self._drag_start = input.Position
@@ -949,13 +932,13 @@ function Library:create_ui()
         end
     end
 
-    local function update_drag(input: any)
+    local function update_drag(input)
         local delta = input.Position - self._drag_start
         local position = UDim2.new(self._container_position.X.Scale, self._container_position.X.Offset + delta.X, self._container_position.Y.Scale, self._container_position.Y.Offset + delta.Y)
         TweenService:Create(Container, TweenInfo.new(0.2), { Position = position }):Play()
     end
 
-    local function drag(input: InputObject, process: boolean)
+    local function drag(input)
         if not self._dragging then return end
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             update_drag(input)
@@ -970,7 +953,7 @@ function Library:create_ui()
         Connections:disconnect_all()
     end)
 
-    function self:change_visiblity(state: boolean)
+    function self:change_visiblity(state)
         Library._ui_open = state
         ShadowHolder.Visible = state
         if state then
@@ -1005,7 +988,7 @@ function Library:create_ui()
         end
     end
 
-    function self:set_gui_visibility(state: boolean)
+    function self:set_gui_visibility(state)
         if not self._ui then return end
         if state then
             self._ui.Enabled = true
@@ -1050,7 +1033,7 @@ function Library:create_ui()
         }):Play()
     end
 
-    function self:update_tabs(tab: TextButton)
+    function self:update_tabs(tab)
         for index, object in Tabs:GetChildren() do
             if object.Name ~= 'Tab' then continue end
 
@@ -1104,7 +1087,7 @@ function Library:create_ui()
         end
     end
 
-    function self:update_sections(left_section: ScrollingFrame, right_section: ScrollingFrame)
+    function self:update_sections(left_section, right_section)
         for _, object in Sections:GetChildren() do
             if object == left_section or object == right_section then
                 object.Visible = true
@@ -1114,7 +1097,7 @@ function Library:create_ui()
         end
     end
 
-    function self:create_tab(title: string, icon: string, icon_size: number, idle_color: Color3?, active_color: Color3?)
+    function self:create_tab(title, icon, icon_size, idle_color, active_color)
         local TabManager = {}
 
         local font_params = Instance.new('GetTextBoundsParams')
@@ -1250,7 +1233,7 @@ function Library:create_ui()
             self:update_sections(LeftSection, RightSection)
         end)
 
-        function TabManager:create_module(settings: any)
+        function TabManager:create_module(settings)
             local LayoutOrderModule = 0;
             local ModuleManager = {
                 _state = false,
@@ -1566,7 +1549,7 @@ function Library:create_ui()
             UIListLayout_Opts.SortOrder = Enum.SortOrder.LayoutOrder
             UIListLayout_Opts.Parent = Options
 
-            function ModuleManager:change_state(state: boolean)
+            function ModuleManager:change_state(state)
                 self._state = state
                 ModuleScrollTrack.Visible = self._state and settings.section.Visible
                 task.defer(UpdateModuleScrollIndicator)
@@ -1607,14 +1590,14 @@ function Library:create_ui()
 
             function ModuleManager:connect_keybind()
                 if not Library._config._keybinds[settings.flag] then return end
-                Connections[settings.flag..'_keybind'] = UserInputService.InputBegan:Connect(function(input: InputObject, process: boolean)
+                Connections[settings.flag..'_keybind'] = UserInputService.InputBegan:Connect(function(input, process)
                     if process then return end
                     if tostring(input.KeyCode) ~= Library._config._keybinds[settings.flag] then return end
                     self:change_state(not self._state)
                 end)
             end
 
-            function ModuleManager:scale_keybind(empty: boolean)
+            function ModuleManager:scale_keybind(empty)
                 if Library._config._keybinds[settings.flag] and not empty then
                     local keybind_string = string.gsub(tostring(Library._config._keybinds[settings.flag]), 'Enum.KeyCode.', '')
 
@@ -1663,7 +1646,6 @@ function Library:create_ui()
                 ModuleManager:scale_keybind()
             end
 
-            -- Регистрируем в Keybind List
             local label = settings.keybind_label or settings.title or settings.flag
             local key = Library._config._keybinds[settings.flag] and string.gsub(tostring(Library._config._keybinds[settings.flag]), 'Enum.KeyCode.', '') or "None"
             Library:register_keybind(settings.flag, label, key)
@@ -1689,7 +1671,7 @@ function Library:create_ui()
                     end
                 end
 
-                Connections['keybind_choose_start'] = UserInputService.InputBegan:Connect(function(input: InputObject, process: boolean)
+                Connections['keybind_choose_start'] = UserInputService.InputBegan:Connect(function(input, process)
                     if process then return end
                     
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1727,7 +1709,6 @@ function Library:create_ui()
                     local keybind_string = string.gsub(tostring(Library._config._keybinds[settings.flag]), 'Enum.KeyCode.', '')
                     TextLabel.Text = keybind_string
                     
-                    -- Update keybind list
                     local label = settings.keybind_label or settings.title or settings.flag
                     Library:register_keybind(settings.flag, label, keybind_string)
                     
@@ -1740,7 +1721,7 @@ function Library:create_ui()
                 ModuleManager:change_state(not ModuleManager._state)
             end)
 
-            function ModuleManager:create_checkbox(settings: any)
+            function ModuleManager:create_checkbox(settings)
                 LayoutOrderModule = LayoutOrderModule + 1
                 local CheckboxManager = { _state = false }
 
@@ -1843,7 +1824,7 @@ function Library:create_ui()
                 KnobCorner.CornerRadius = UDim.new(1, 0)
                 KnobCorner.Parent = Knob
 
-                function CheckboxManager:change_state(state: boolean)
+                function CheckboxManager:change_state(state)
                     self._state = state
                     TweenService:Create(Toggle, TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                         BackgroundColor3 = state and Color3.fromRGB(225, 225, 230) or Color3.fromRGB(36, 36, 42)
@@ -1947,7 +1928,7 @@ function Library:create_ui()
                 return CheckboxManager
             end
 
-            function ModuleManager:create_keybind_row(settings: any)
+            function ModuleManager:create_keybind_row(settings)
                 LayoutOrderModule = LayoutOrderModule + 1
 
                 if self._size == 0 then self._size = 11 end
@@ -2081,7 +2062,7 @@ function Library:create_ui()
                 end)
             end
 
-            function ModuleManager:create_slider(settings: any)
+            function ModuleManager:create_slider(settings)
                 LayoutOrderModule = LayoutOrderModule + 1
 
                 local SliderManager = {}
@@ -2201,7 +2182,7 @@ function Library:create_ui()
                 Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                 Value.Parent = Slider
 
-                function SliderManager:set_percentage(percentage: number)
+                function SliderManager:set_percentage(percentage)
                     local rounded_number = 0
                     if settings.round_number then
                         rounded_number = math.floor(percentage)
@@ -2236,7 +2217,7 @@ function Library:create_ui()
                     Connections['slider_drag_'..settings.flag] = mouse.Move:Connect(function()
                         SliderManager:update()
                     end)
-                    Connections['slider_input_'..settings.flag] = UserInputService.InputEnded:Connect(function(input: InputObject, process: boolean)
+                    Connections['slider_input_'..settings.flag] = UserInputService.InputEnded:Connect(function(input, process)
                         if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
                         Connections:disconnect('slider_drag_'..settings.flag)
                         Connections:disconnect('slider_input_'..settings.flag)
@@ -2264,7 +2245,7 @@ function Library:create_ui()
                 return SliderManager
             end
 
-            function ModuleManager:create_button(settings: any)
+            function ModuleManager:create_button(settings)
                 LayoutOrderModule = LayoutOrderModule + 1
 
                 if self._size == 0 then self._size = 11 end
@@ -2311,7 +2292,7 @@ function Library:create_ui()
                 Btn.MouseButton1Click:Connect(settings.callback)
             end
 
-            function ModuleManager:create_textbox(settings: any)
+            function ModuleManager:create_textbox(settings)
                 LayoutOrderModule = LayoutOrderModule + 1
 
                 if self._size == 0 then self._size = 11 end
@@ -2364,7 +2345,7 @@ function Library:create_ui()
                 return Box
             end
 
-            function ModuleManager:create_dropdown(settings: any)
+            function ModuleManager:create_dropdown(settings)
                 if not settings.Order then
                     LayoutOrderModule = LayoutOrderModule + 1;
                 end;
@@ -2524,7 +2505,7 @@ function Library:create_ui()
                 UIListLayout2.SortOrder = Enum.SortOrder.LayoutOrder
                 UIListLayout2.Parent = Box
 
-                function DropdownManager:update(option: string)
+                function DropdownManager:update(option)
                     if settings.multi_dropdown then
                         if not Library._config._flags[settings.flag] then
                             Library._config._flags[settings.flag] = {};
@@ -2772,7 +2753,6 @@ function Library:create_ui()
         return TabManager
     end
 
-    -- Keybind List Container - для отображения всех биндов
     self._keybind_list_container = Instance.new("Frame")
     self._keybind_list_container.Name = "KeybindListContainer"
     self._keybind_list_container.Size = UDim2.new(0, 220, 0, 300)
@@ -2823,7 +2803,7 @@ function Library:create_ui()
         self:update_keybind_list()
     end)
 
-    Connections['library_visiblity'] = UserInputService.InputBegan:Connect(function(input: InputObject, process: boolean)
+    Connections['library_visiblity'] = UserInputService.InputBegan:Connect(function(input, process)
         local custom = Library._config._keybinds['Minimize_Keybind']
         if custom then
             if tostring(input.KeyCode) ~= custom then return end
