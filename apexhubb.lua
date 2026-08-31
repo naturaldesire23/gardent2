@@ -1163,7 +1163,7 @@ function Library:create_ui()
                 _multiplier = 0
             }
 
-            local module_flag = settings.flag or ("module_" .. self._tab .. "_" .. LayoutOrderModule)
+local module_flag = settings.flag or ("module_" .. tostring(self._tab or 0) .. "_" .. tostring(LayoutOrderModule or 0))
 
             if settings.section == 'right' then
                 settings.section = RightSection
