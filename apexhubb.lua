@@ -1,3 +1,4 @@
+local cloneref = cloneref or function(x) return x end
 local UserInputService = cloneref(game:GetService('UserInputService'))
 local TweenService = cloneref(game:GetService('TweenService'))
 local HttpService = cloneref(game:GetService('HttpService'))
