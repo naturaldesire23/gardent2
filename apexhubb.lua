@@ -2343,4 +2343,3 @@ function Library:create_ui()
     return self
 end
 return Library
-return Library
