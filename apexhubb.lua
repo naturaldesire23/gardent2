@@ -39,21 +39,27 @@ function convertTableToString(inputTable)
     return table.concat(inputTable, ", ")
 end
 
-local Connections = setmetatable({
-    disconnect = function(self, connection)
-        if not self[connection] then return end
-        self[connection]:Disconnect()
-        self[connection] = nil
-    end,
-    disconnect_all = function(self)
-        for _, value in self do
-            if typeof(value) == 'function' then continue end
+local Connections = {}
+Connections.__index = Connections
+
+function Connections:disconnect(connection)
+    if not self[connection] then return end
+    self[connection]:Disconnect()
+    self[connection] = nil
+end
+
+function Connections:disconnect_all()
+    for key, value in pairs(self) do
+        if typeof(value) == 'RBXScriptConnection' then
             value:Disconnect()
+            self[key] = nil
         end
     end
-}, Connections)
+end
 
-local Config = setmetatable({
+setmetatable(Connections, Connections)
+
+local Config = {
     save = function(self, file_name, config)
         local success, result = pcall(function()
             local flags = HttpService:JSONEncode(config)
@@ -83,7 +89,7 @@ local Config = setmetatable({
         end
         return result
     end
-}, Config)
+}
 
 local Library = {
     _config = Config:load(game.GameId, { _flags = {}, _keybinds = {}, _interface = {} }),
@@ -378,32 +384,6 @@ local function setOverlayEnabled(enabled)
     end
 end
 
-local function setNotificationPosition(position)
-    Library._notif_position = position
-    local container = NotificationContainer
-    if not container then return end
-
-    if position == "left" then
-        container.AnchorPoint = Vector2.new(0, 1)
-        container.Position = UDim2.new(0, 22, 1, -22)
-        container.Size = UDim2.new(0, 300, 0, 0)
-        UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
-        UIListLayout_Notif.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    elseif position == "right" then
-        container.AnchorPoint = Vector2.new(1, 1)
-        container.Position = UDim2.new(1, -22, 1, -22)
-        container.Size = UDim2.new(0, 300, 0, 0)
-        UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
-        UIListLayout_Notif.HorizontalAlignment = Enum.HorizontalAlignment.Right
-    elseif position == "center" then
-        container.AnchorPoint = Vector2.new(0.5, 1)
-        container.Position = UDim2.new(0.5, 0, 1, -22)
-        container.Size = UDim2.new(0, 300, 0, 0)
-        UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
-        UIListLayout_Notif.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    end
-end
-
 local NotificationContainer = Instance.new("Frame")
 NotificationContainer.Name = "RobloxCoreGuis"
 NotificationContainer.Size = UDim2.new(0, 300, 0, 0)
@@ -432,6 +412,32 @@ UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
 UIListLayout_Notif.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout_Notif.Padding = UDim.new(0, 8)
 UIListLayout_Notif.Parent = NotificationContainer
+
+local function setNotificationPosition(position)
+    Library._notif_position = position
+    local container = NotificationContainer
+    if not container then return end
+
+    if position == "left" then
+        container.AnchorPoint = Vector2.new(0, 1)
+        container.Position = UDim2.new(0, 22, 1, -22)
+        container.Size = UDim2.new(0, 300, 0, 0)
+        UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        UIListLayout_Notif.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    elseif position == "right" then
+        container.AnchorPoint = Vector2.new(1, 1)
+        container.Position = UDim2.new(1, -22, 1, -22)
+        container.Size = UDim2.new(0, 300, 0, 0)
+        UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        UIListLayout_Notif.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    elseif position == "center" then
+        container.AnchorPoint = Vector2.new(0.5, 1)
+        container.Position = UDim2.new(0.5, 0, 1, -22)
+        container.Size = UDim2.new(0, 300, 0, 0)
+        UIListLayout_Notif.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        UIListLayout_Notif.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    end
+end
 
 function Library.SendNotification(settings)
     local position = Library._notif_position or "left"
@@ -558,16 +564,16 @@ function Library:get_device()
     self._device = device
 end
 
-function Library:removed(action: any)
+function Library:removed(action)
     self._ui.AncestryChanged:Once(action)
 end
 
-function Library:flag_type(flag: any, flag_type: any)
+function Library:flag_type(flag, flag_type)
     if Library._config._flags[flag] == nil then return end
     return typeof(Library._config._flags[flag]) == flag_type
 end
 
-function Library:remove_table_value(__table: any, table_value: string)
+function Library:remove_table_value(__table, table_value)
     for index, value in __table do
         if value ~= table_value then continue end
         table.remove(__table, index)
@@ -853,7 +859,7 @@ function Library:create_ui()
     self._client_name = ClientName
     self._handler = Handler
 
-    local function on_drag(input: InputObject, process: boolean)
+    local function on_drag(input, process)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             self._dragging = true
             self._drag_start = input.Position
@@ -867,13 +873,13 @@ function Library:create_ui()
         end
     end
 
-    local function update_drag(input: any)
+    local function update_drag(input)
         local delta = input.Position - self._drag_start
         local position = UDim2.new(self._container_position.X.Scale, self._container_position.X.Offset + delta.X, self._container_position.Y.Scale, self._container_position.Y.Offset + delta.Y)
         TweenService:Create(Container, TweenInfo.new(0.2), { Position = position }):Play()
     end
 
-    local function drag(input: InputObject, process: boolean)
+    local function drag(input, process)
         if not self._dragging then return end
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             update_drag(input)
@@ -889,7 +895,7 @@ function Library:create_ui()
         Connections:disconnect_all()
     end)
 
-    function self:change_visiblity(state: boolean)
+    function self:change_visiblity(state)
         Library._ui_open = state
         Library._minimized = not state
 
@@ -933,7 +939,7 @@ function Library:create_ui()
         end
     end
 
-    function self:set_gui_visibility(state: boolean)
+    function self:set_gui_visibility(state)
         if not self._ui then return end
         if state then
             self._ui.Enabled = true
@@ -978,7 +984,7 @@ function Library:create_ui()
         }):Play()
     end
 
-    function self:update_tabs(tab: TextButton)
+    function self:update_tabs(tab)
         for index, object in Tabs:GetChildren() do
             if object.Name ~= 'Tab' then continue end
 
@@ -1025,14 +1031,14 @@ function Library:create_ui()
                     Offset = Vector2.new(0, 0)
                 }):Play()
 
-                TweenService:Create(object.Icon, TweenService:Create(object.Icon, TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                TweenService:Create(object.Icon, TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                     ImageColor3 = object.Icon:GetAttribute('IdleColor') or Color3.fromRGB(138, 138, 138)
                 }):Play()
             end
         end
     end
 
-    function self:update_sections(left_section: ScrollingFrame, right_section: ScrollingFrame)
+    function self:update_sections(left_section, right_section)
         for _, object in Sections:GetChildren() do
             if object == left_section or object == right_section then
                 object.Visible = true
@@ -1042,7 +1048,7 @@ function Library:create_ui()
         end
     end
 
-    function self:create_tab(title: string, icon: string, icon_size: number, idle_color: Color3?, active_color: Color3?)
+    function self:create_tab(title, icon, icon_size, idle_color, active_color)
         local TabManager = {}
 
         local font_params = Instance.new('GetTextBoundsParams')
@@ -1178,7 +1184,7 @@ function Library:create_ui()
             self:update_sections(LeftSection, RightSection)
         end)
 
-        function TabManager:create_module(settings: any)
+        function TabManager:create_module(settings)
             local LayoutOrderModule = 0
             local ModuleManager = {
                 _state = false,
@@ -1554,7 +1560,7 @@ function Library:create_ui()
                 end
             end)
 
-            function ModuleManager:change_state(state: boolean)
+            function ModuleManager:change_state(state)
                 self._state = state
                 ModuleScrollTrack.Visible = self._state and settings.section.Visible
                 task.defer(UpdateModuleScrollIndicator)
@@ -1585,7 +1591,7 @@ function Library:create_ui()
                 end
             end
 
-            function ModuleManager:add_slider(slider_settings: any)
+            function ModuleManager:add_slider(slider_settings)
                 LayoutOrderModule += 1
                 local sliderHeight = 32
                 ModuleManager._size += sliderHeight + 7
@@ -1685,7 +1691,7 @@ function Library:create_ui()
                 return sliderValue
             end
 
-            function ModuleManager:add_toggle(toggle_settings: any)
+            function ModuleManager:add_toggle(toggle_settings)
                 LayoutOrderModule += 1
                 local toggleHeight = 22
                 ModuleManager._size += toggleHeight + 7
@@ -1754,7 +1760,7 @@ function Library:create_ui()
                 return toggleValue
             end
 
-            function ModuleManager:add_dropdown(dropdown_settings: any)
+            function ModuleManager:add_dropdown(dropdown_settings)
                 LayoutOrderModule += 1
                 local dropdownHeight = 22
                 local optionHeight = 24
@@ -1918,7 +1924,7 @@ function Library:create_ui()
                 return dropdownValue
             end
 
-            function ModuleManager:add_button(button_settings: any)
+            function ModuleManager:add_button(button_settings)
                 LayoutOrderModule += 1
                 local buttonHeight = 26
                 ModuleManager._size += buttonHeight + 7
@@ -1965,7 +1971,7 @@ function Library:create_ui()
                 end)
             end
 
-            function ModuleManager:add_keybind(keybind_settings: any)
+            function ModuleManager:add_keybind(keybind_settings)
                 LayoutOrderModule += 1
                 local kbHeight = 22
                 ModuleManager._size += kbHeight + 7
@@ -2041,7 +2047,7 @@ function Library:create_ui()
                 end)
             end
 
-            function ModuleManager:add_textbox(textbox_settings: any)
+            function ModuleManager:add_textbox(textbox_settings)
                 LayoutOrderModule += 1
                 local tbHeight = 36
                 ModuleManager._size += tbHeight + 7
@@ -2097,7 +2103,7 @@ function Library:create_ui()
                 end)
             end
 
-            function ModuleManager:set_callback(cb: (boolean) -> ())
+            function ModuleManager:set_callback(cb)
                 ModuleManager._callback = cb
             end
 
@@ -2342,4 +2348,5 @@ function Library:create_ui()
 
     return self
 end
+
 return Library
